@@ -1404,7 +1404,7 @@ class TaxLotViewSet(GenericViewSet):
             columns.append({
                 'name': name,
                 'displayName': c.column_name,
-            # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
+                # '%s (%s)' % (c.column_name, Column.SOURCE_CHOICES_MAP[c.extra_data_source])
                 'related': c.extra_data_source != Column.SOURCE_TAXLOT and c.table_name != 'TaxLotState',
                 'extraData': True
             })
