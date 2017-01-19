@@ -313,6 +313,70 @@ class PropertyViewSet(GenericViewSet):
         taxlot_id = request.query_params.get('taxlot_id')
         return pair_unpair_property_taxlot(pk, taxlot_id, organization_id, False)
 
+    def _match_unmatch_worker(self, org_id, property_id_1, property_id_2, match_or_unmatch):
+        if match_or_unmatch:
+            pass  # do some matching of these two properties
+        else:
+            pass  # do some un-matching of these two properties
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['PUT'])
+    def match(self, request):
+        """
+        Match two properties
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: source_property
+              description: One property ID to match
+              required: true
+              paramType: int
+            - name: target_property
+              description: The second property ID to match
+              required: true
+              paramType: int
+        """
+        # TODO: Call with PUT /api/v2/properties/match/?organization_id=1  with POST body source_ and target_property
+        organization_id = request.query_params.get('organization_id')
+        source_property = request.data['source_property']
+        target_property = request.data['target_property']
+        return self._match_unmatch_worker(organization_id, source_property, target_property, True)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['PUT'])
+    def unmatch(self, request):
+        """
+        Un-Match two properties
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: source_property
+              description: One property ID to un-match
+              required: true
+              paramType: int
+            - name: target_property
+              description: The second property ID to un-match
+              required: true
+              paramType: int
+        """
+        # TODO: Call with PUT /api/v2/properties/unmatch/?organization_id=1  with POST body source_ and target_property
+        organization_id = request.query_params.get('organization_id')
+        source_property = request.data['source_property']
+        target_property = request.data['target_property']
+        return self._match_unmatch_worker(organization_id, source_property, target_property, False)
+
     # @require_organization_id
     # @require_organization_membership
     @api_endpoint_class
@@ -1079,6 +1143,70 @@ class TaxLotViewSet(GenericViewSet):
         organization_id = request.query_params.get('organization_id')
         property_id = request.query_params.get('property_id')
         return pair_unpair_property_taxlot(property_id, pk, organization_id, False)
+
+    def _match_unmatch_worker(self, org_id, taxlot_id_1, taxlot_id_2, match_or_unmatch):
+        if match_or_unmatch:
+            pass  # do some matching of these two taxlots
+        else:
+            pass  # do some un-matching of these two taxlots
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['PUT'])
+    def match(self, request):
+        """
+        Match two taxlots
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: source_taxlot
+              description: One taxlot ID to match
+              required: true
+              paramType: int
+            - name: target_taxlot
+              description: The second taxlot ID to match
+              required: true
+              paramType: int
+        """
+        # TODO: Call with PUT /api/v2/taxlots/match/?organization_id=1  with POST body source_ and target_taxlot
+        organization_id = request.query_params.get('organization_id')
+        source_taxlot = request.data['source_taxlot']
+        target_taxlot = request.data['target_taxlot']
+        return self._match_unmatch_worker(organization_id, source_taxlot, target_taxlot, True)
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_viewer')
+    @list_route(methods=['PUT'])
+    def unmatch(self, request):
+        """
+        Un-Match two taxlots
+        ---
+        parameter_strategy: replace
+        parameters:
+            - name: organization_id
+              description: The organization_id for this user's organization
+              required: true
+              paramType: query
+            - name: source_taxlot
+              description: One taxlot ID to un-match
+              required: true
+              paramType: int
+            - name: target_taxlot
+              description: The second taxlot ID to un-match
+              required: true
+              paramType: int
+        """
+        # TODO: Call with PUT /api/v2/taxlots/unmatch/?organization_id=1  with POST body source_ and target_taxlot
+        organization_id = request.query_params.get('organization_id')
+        source_taxlot = request.data['source_taxlot']
+        target_taxlot = request.data['target_taxlot']
+        return self._match_unmatch_worker(organization_id, source_taxlot, target_taxlot, False)
 
     # @require_organization_id
     # @require_organization_membership
