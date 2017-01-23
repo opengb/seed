@@ -215,6 +215,8 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, *args, **kwarg
     # individual values (e.g. tax lot ids). The definition of the delimited field is currently
     # hard coded
     try:
+        # Note that the column mappings will pull any field for an organization that is mapped to
+        # TaxLotState.jurisdiction_tax_lot_id and make it an expanded field.
         delimited_fields = {}
         if 'TaxLotState' in table_mappings.keys():
             tmp = table_mappings['TaxLotState'].keys()[table_mappings['TaxLotState'].values().index(

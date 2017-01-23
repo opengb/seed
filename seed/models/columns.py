@@ -8,6 +8,7 @@
 from django.db import models
 from django.utils.translation import ugettext_lazy as _
 
+
 from seed.landing.models import SEEDUser as User
 from seed.lib.mappings.mapping_data import MappingData
 from seed.lib.superperms.orgs.models import Organization as SuperOrganization
@@ -16,6 +17,7 @@ from seed.models.models import (
     Unit,
     SEED_DATA_SOURCES,
 )
+from seed.data_importer.models import ImportFile
 
 import logging
 
@@ -106,10 +108,11 @@ class Column(models.Model):
     unit = models.ForeignKey(Unit, blank=True, null=True)
     enum = models.ForeignKey(Enum, blank=True, null=True)
     is_extra_data = models.BooleanField(default=False)
-    extra_data_source = models.CharField(
+    extra_data_source = models.CharField( # TODO: Remove this from database/code
         max_length=1, null=True, blank=True,
         db_index=True, choices=SOURCE_CHOICES
     )
+    import_file = models.ManyToManyField(ImportFile, blank=True)
 
     class Meta:
         unique_together = (
@@ -119,21 +122,14 @@ class Column(models.Model):
         return u'{0}'.format(self.column_name)
 
     @staticmethod
-    def create_mappings(mappings, organization, user):
+    def create_mappings(mappings, organization, user, import_file):
         """
         Create the mappings for an organization and a user based on a simple
         array of array object.
 
-        .. note:
+        :param mappings: dictionary containing mapping information
 
-            Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
-            will no longer magically appear in the extra_data field if the user did not specify how
-            to map it.
-
-        Args:
-            mappings: dictionary containing mapping information
-
-                mappings: [
+            mappings: [
                     {
                         'from_field': 'eui',
                         'to_field': 'energy_use_intensity',
@@ -146,8 +142,16 @@ class Column(models.Model):
                     }
                 ]
 
-            organization: Organization object
-            user: User object
+        :param organization: Organization object
+        :param user: User object
+        :param import_file: ImportFile object (if exists)
+        :return:
+
+        .. note:
+
+            Note that as of 09/15/2016 - extra data still needs to be defined in the mappings, it
+            will no longer magically appear in the extra_data field if the user did not specify how
+            to map it.
 
         Returns:
             True (data are saved in the ColumnMapping table in the database)
@@ -157,6 +161,8 @@ class Column(models.Model):
         # Take the existing object and return the same object with the db column objects added to
         # the dictionary (to_column_object and from_column_object)
         mappings = Column._column_fields_to_columns(mappings, organization)
+        # import_file = import_file if import_file else None
+        # print import_file
         for mapping in mappings:
             if isinstance(mapping, dict):
                 try:
@@ -346,6 +352,9 @@ class ColumnMapping(models.Model):
                                            blank=True, null=True, related_name='column_mappings')
     column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
     column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
+
+
+    import_file = models.ManyToManyField(ImportFile, blank=True)
 
     def is_direct(self):
         """
