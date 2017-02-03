@@ -13,6 +13,9 @@ RUN apt-get update \
         swig \
         python-pip \
         python-dev \
+        python-enchant \
+        python-numpy \
+        python-scipy \
         libssl-dev \
         liblzma-dev \
         libevent1-dev \
