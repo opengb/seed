@@ -13,6 +13,9 @@ RUN apt-get update \
         swig \
         python-pip \
         python-dev \
+        python-enchant \
+        python-numpy \
+        python-scipy \
         libssl-dev \
         liblzma-dev \
         libevent1-dev \
@@ -43,6 +46,8 @@ RUN /seed/bin/install_javascript_dependencies.sh
 ### Install python requirements
 COPY ./requirements.txt /seed/requirements.txt
 COPY ./requirements/*.txt /seed/requirements/
+# next line needed to avoid breakage in sphinx?
+RUN pip install imagesize configparser enum
 RUN pip install -r requirements/local.txt
 
 ### Copy over the remaining part of the SEED application
