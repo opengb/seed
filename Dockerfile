@@ -46,6 +46,8 @@ RUN /seed/bin/install_javascript_dependencies.sh
 ### Install python requirements
 COPY ./requirements.txt /seed/requirements.txt
 COPY ./requirements/*.txt /seed/requirements/
+# next line needed to avoid breakage in sphinx?
+RUN pip install imagesize configparser enum
 RUN pip install -r requirements/local.txt
 
 ### Copy over the remaining part of the SEED application

@@ -6,8 +6,3 @@ django-debug-toolbar==1.4
 # numpy
 # scipy
 ipython
-
-# ?? prevents docker build failure in sphinx
-imagesize
-enum
-configparser
