@@ -28,6 +28,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.tree',
   'focus-if',
   'xeditable',
+  'pascalprecht.translate',
   angularDragula(angular)
 ]);
 angular.module('BE.seed.controllers', [
@@ -1117,6 +1118,35 @@ SEED_app.config(['$compileProvider', function ($compileProvider) {
   $compileProvider.debugInfoEnabled(window.BE.debug);
   $compileProvider.commentDirectivesEnabled(false);
   // $compileProvider.cssClassDirectivesEnabled(false); // This cannot be enabled due to the draggable ui-grid rows
+}]);
+
+/**
+ * Adds translation support
+ */
+SEED_app.config(['$translateProvider', function ($translateProvider) {
+  var en = {
+    WELCOME: {
+      WELCOME: 'Welcome to SEED Platform™',
+      BULLET_1: 'Get started using SEED Platform by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data.',
+      BULLET_2: 'Match-up your buildings list with the Portfolio Manager dataset to tie building records together.',
+      BULLET_3: 'Use SEED Platform\'s flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance.',
+    },
+    LOGIN: 'Log in to SEED Platform',
+  };
+  var fr = {
+    WELCOME: {
+      WELCOME: 'Bienvenue au SEED Plate-Forme&#x1F16A;',
+      BULLET_1: 'Commencez à utiliser la plate-forme SEED en téléchargeant votre liste de bâtiments (données de l\'évaluateur de la taxe municipale) et ensuite vos données du Gestionnaire de Portefeuille de l\'EPA.',
+      BULLET_2: 'Faites correspondre votre liste de bâtiments avec l\'ensemble de données du Gestionnaire de Portefeuille pour lier les enregistrements de construction ensemble.',
+      BULLET_3: "Utilisez le système d'étiquetage flexible et facile à utiliser de SEED Platform et les groupes de projets pour suivre l'état de la soumission, de l'examen et de la conformité des données.",
+    },
+    LOGIN: 'Connectez-vous à SEED Plate-Forme',
+  };
+  $translateProvider
+    .translations('en', en)
+    .translations('fr', fr)
+    .preferredLanguage('fr')
+    .fallbackLanguage('en');
 }]);
 
 /**
