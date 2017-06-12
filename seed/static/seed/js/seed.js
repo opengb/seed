@@ -1132,6 +1132,10 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       BULLET_3: 'Use SEED Platform\'s flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance.',
     },
     LOGIN: 'Log in to SEED Platform',
+    GETTING_STARTED: {
+      GETTING_STARTED: "Getting Started",
+      EXPLANATION: "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
+    },
   };
   var fr = {
     WELCOME: {
@@ -1141,12 +1145,16 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       BULLET_3: "Utilisez le système d'étiquetage flexible et facile à utiliser de SEED Platform et les groupes de projets pour suivre l'état de la soumission, de l'examen et de la conformité des données.",
     },
     LOGIN: 'Connectez-vous à SEED Plate-Forme',
+    GETTING_STARTED: {
+      GETTING_STARTED: "Commencer",
+      EXPLANATION: "Le DOE a développé la plate-forme standard de données sur l'efficacité énergétique (SEED) Platform ™ en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, l'entreposage et l'analyse des informations sur les performances énergétiques des grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
+    },
   };
   $translateProvider
-    .translations('en', en)
+    // .translations('en', en)
     .translations('fr', fr)
-    .preferredLanguage('fr')
-    .fallbackLanguage('en');
+    .preferredLanguage('fr');
+    // .fallbackLanguage('en');
 }]);
 
 /**
