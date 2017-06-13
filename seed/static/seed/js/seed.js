@@ -1132,9 +1132,25 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       BULLET_3: 'Use SEED Platform\'s flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance.',
     },
     LOGIN: 'Log in to SEED Platform',
+    HOME: {
+      PROJECTS: "Projects",
+      INVENTORY: "Inventory",
+      DATA: "Data",
+      CONTACT: "Contact"
+    },
     GETTING_STARTED: {
       GETTING_STARTED: "Getting Started",
-      EXPLANATION: "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started."
+      EXPLANATION: "The DOE developed the Standard Energy Efficiency Data (SEED) Platform™ as a free software tool that provides a standardized format for collecting, storing and analyzing building energy performance information about large portfolios. Upload your buildings list to get started.",
+      UPLOAD: "Upload your buildings list",
+      GUIDE: "Getting Started Guide",
+      UPLOAD_YOUR_DATA: "Upload your data",
+      UPLOAD_BUMPF: "Get started using SEED Platform™ by uploading your buildings list (city tax assessor data) and then your EPA Portfolio Manager data. Make sure these files are each in .csv, .xls, .xlsx, or .xml format. The SEED Platform will help you map and validate your data in the process of loading.",
+      SAMPLE_DATA: "Download Sample Data",
+      HIGHLIGHTS: "Highlights of SEED Platform&#0153;",
+      MATCH_YOUR_DATA: "Match your data",
+      MATCH_BUMPF: "Match-up your buildings list with the Portfolio Manager dataset to tie building records together. SEED Platform will help you by auto-matching high confidence pairings and then provide you with tools to match the rest of your dataset.",
+      MANAGE: "Manage compliance",
+      MANAGE_BUMPF: "Use SEED Platform's flexible, easy-to-use labeling system and project groupings to track the status of data submission, review, and compliance."
     },
   };
   var fr = {
@@ -1145,9 +1161,25 @@ SEED_app.config(['$translateProvider', function ($translateProvider) {
       BULLET_3: "Utilisez le système d'étiquetage flexible et facile à utiliser de SEED Platform et les groupes de projets pour suivre l'état de la soumission, de l'examen et de la conformité des données.",
     },
     LOGIN: 'Connectez-vous à SEED Plate-Forme',
+    HOME: {
+      PROJECTS: "Projets",
+      INVENTORY: "Inventaire",
+      DATA: "Les Données",
+      CONTACT: "Contactez-nous"
+    },
     GETTING_STARTED: {
       GETTING_STARTED: "Commencer",
-      EXPLANATION: "Le DOE a développé la plate-forme standard de données sur l'efficacité énergétique (SEED) Platform ™ en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, l'entreposage et l'analyse des informations sur les performances énergétiques des grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer."
+      EXPLANATION: "Le DOE a développé la plate-forme standard de données sur l'efficacité énergétique (SEED) Platform ™ en tant qu'outil logiciel gratuit qui fournit un format standardisé pour la collecte, l'entreposage et l'analyse des informations sur les performances énergétiques des grands portefeuilles. Téléchargez votre liste de bâtiments pour commencer.",
+      UPLOAD: "Téléchargez votre liste de bâtiments",
+      GUIDE: "Guide de Démarrage",
+      UPLOAD_YOUR_DATA: "Téléchargez vos données",
+      UPLOAD_BUMPF: "Commencez à utiliser SEED Platform ™ en téléchargeant votre liste de bâtiments (données de l'évaluateur de la taxe municipale), puis vos données du gestionnaire de portefeuille de l'EPA. Assurez-vous que ces fichiers sont chacun en format .csv, .xls, .xlsx ou .xml. La plate-forme SEED vous aidera à mapper et à valider vos données en cours de chargement.",
+      SAMPLE_DATA: "Télécharger des exemples de données",
+      HIGHLIGHTS: "Faits saillants de SEED Platform™",
+      MATCH_YOUR_DATA: "Faites correspondre vos données",
+      MATCH_BUMPF: "Faites correspondre votre liste de bâtiments avec l'ensemble de données du Gestionnaire de portefeuille pour lier les enregistrements de construction ensemble. SEED Platform vous aidera en combinant automatiquement les jumelages de confiance élevés et vous fournira des outils pour correspondre au reste de votre jeu de données.",
+      MANAGE: "Gérer la conformité",
+      MANAGE_BUMPF: "Utilisez le système d'étiquetage flexible et facile à utiliser de SEED Platform et les groupements de projets pour suivre l'état de la soumission, de l'examen et de la conformité des données."
     },
   };
   $translateProvider
