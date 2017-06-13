@@ -101,3 +101,9 @@ if 'local_untracked_exists' in locals():
     from config.settings.local_untracked import *  # noqa
 else:
     print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
+
+LANGUAGE_CODE = 'fr'
+LOCALE_PATHS = ('/vagrant/repo/locale', )
+
+USE_I18N = True
+USE_L10N = True

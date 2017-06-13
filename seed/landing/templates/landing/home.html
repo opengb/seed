@@ -1,4 +1,5 @@
 {% extends "landing/base.html" %}
+{% load i18n %}
 {% load compress %}
 
 {% block content %}
@@ -19,8 +20,8 @@
 				    <table class="signup_table">
 				        {{login_form.as_table}}
 				    </table>
-				    <input type="submit" class="btn btn-primary" value="Log In">
-				    <input type="reset" class="btn btn-default" value="Cancel">
+            <input type="submit" class="btn btn-primary" value="{% trans "Log In" %}">
+            <input type="reset" class="btn btn-default" value="{% trans "Cancel" %}">
 				    <a class="forgot_password" href="{% url "landing:password_reset" %}">Forgot password?</a>
 				</form>
                 {% include "landing/_password_note.html" %}
