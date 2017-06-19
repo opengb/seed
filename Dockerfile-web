@@ -1,4 +1,4 @@
-FROM ryanmccuaig/seed:progress
+FROM ryanmccuaig/seed:skeleton-base
 
 EXPOSE 8000
 CMD ./docker/start_uwsgi_docker.sh

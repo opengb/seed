@@ -15,9 +15,7 @@ services:
     volumes:
       - $HOME/seed_data:/seed/collected_static
   web:
-    image: ryanmccuaig/seed:web
-    # build: .
-    # command: /seed/docker/start_uwsgi_docker.sh
+    image: ryanmccuaig/seed:skeleton-web
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
@@ -34,9 +32,7 @@ services:
     ports:
       - "8000:8000"
   web-celery:
-    image: ryanmccuaig/seed:celery
-    # build: .
-    # command: /seed/docker/start_celery_docker.sh
+    image: ryanmccuaig/seed:skeleton-celery
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed

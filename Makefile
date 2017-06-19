@@ -16,3 +16,8 @@ coverage:
 
 tags:
 	ctags -R --fields=+l --languages=python --python-kinds=-iv seed
+
+build:
+	docker build --tag ryanmccuaig/seed:skeleton-base .
+	docker build -f Dockerfile-web --tag ryanmccuaig/seed:skeleton-web  .
+	docker build -f Dockerfile-celery --tag ryanmccuaig/seed:skeleton-celery .
