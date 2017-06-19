@@ -7,25 +7,14 @@
 FROM ubuntu:16.10
 
 ### Required dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends npm \
-        nodejs \
-        build-essential \
-        git \
-        python2.7 \
-        python-pip \
-        python-dev \
-        python-gdbm \
-        libpcre3 \
-        libpcre3-dev \
-    && pip install --upgrade pip \
-    && pip install setuptools \
-    && rm -rf /var/lib/apt/lists/*
+RUN apt-get update && apt-get install -y --no-install-recommends \
+        build-essential                                          \
+        vim                                                      \
+        git                                                      \
+        libpcre3                                                 \
+        libpcre3-dev
 
 ### Development Dependencies
-RUN apt-get update && apt-get install -y --no-install-recommends enchant \
-        vim \
-    && rm -rf /var/lib/apt/lists/*
-
 ##        emacs24-nox \
 ##        swig \
 ##        libssl-dev \
@@ -35,25 +24,41 @@ RUN apt-get update && apt-get install -y --no-install-recommends enchant \
 ##        libpq-dev \
 ##        enchant \
 
+### Install JavaScript requirements
+RUN apt-get install -y --no-install-recommends \
+        npm \
+        nodejs
+
 ### link the apt install of nodejs to node (expected by bower)
 RUN ln -s /usr/bin/nodejs /usr/bin/node
 
+COPY ./bower.json /seed/bower.json
+COPY ./.bowerrc /seed/.bowerrc
+COPY ./package.json /seed/package.json
+# stops the no readme warning
+COPY ./README.md /seed/README.md
+RUN npm update
+COPY ./bin/install_javascript_dependencies.sh /seed/bin/install_javascript_dependencies.sh
+RUN /seed/bin/install_javascript_dependencies.sh
+
 ### Install python requirements
+RUN apt-get install -y --no-install-recommends \
+        python2.7                              \
+        python-pip                             \
+        python-dev                             \
+        python-gdbm                            \
+        python-scipy                           \
+        python-numpy                           \
+        enchant                                \
+    && pip install --upgrade pip               \
+    && pip install setuptools
+
 WORKDIR /seed
 COPY ./requirements.txt /seed/requirements.txt
 COPY ./requirements/*.txt /seed/requirements/
 RUN pip install -r requirements/local.txt
 
-### Install JavaScript requirements - do this first because they take awhile
-### and the dependencies will probably change slower than python packages.
-### README.md stops the no readme warning
-COPY ./bower.json /seed/bower.json
-COPY ./.bowerrc /seed/.bowerrc
-COPY ./package.json /seed/package.json
-COPY ./README.md /seed/README.md
-RUN npm update
-COPY ./bin/install_javascript_dependencies.sh /seed/bin/install_javascript_dependencies.sh
-RUN /seed/bin/install_javascript_dependencies.sh
+RUN rm -rf /var/lib/apt/lists/*
 
 ### Copy over the remaining part of the SEED application and some helpers
 COPY . /seed/
