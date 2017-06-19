@@ -1,0 +1,3 @@
+FROM ryanmccuaig/seed:progress
+
+CMD ./docker/start_celery_docker.sh

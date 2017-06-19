@@ -1,0 +1,4 @@
+FROM ryanmccuaig/seed:progress
+
+EXPOSE 8000
+CMD ./docker/start_uwsgi_docker.sh
