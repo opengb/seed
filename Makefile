@@ -3,6 +3,9 @@ test: testpy testjs
 testpy:
 	python manage.py test --settings=config.settings.test
 
+testjs:
+	open http://localhost:9000/app/angular_js_tests/
+
 lint: lintpy lintjs 
 
 lintjs:
