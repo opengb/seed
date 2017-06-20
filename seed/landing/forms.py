@@ -13,13 +13,13 @@ class LoginForm(forms.Form):
         label=_("Email"),
         help_text=_("ex: joe@company.com"),
         widget=forms.TextInput(
-            attrs={'class': 'field', 'placeholder': _('Email Address')}
+            attrs={'class': 'field', 'placeholder': 'Email Address'}
         )
     )
     password = forms.CharField(
         label=_("Password"),
         widget=forms.PasswordInput(
-            attrs={'class': 'field', 'placeholder': _('Password')}
+            attrs={'class': 'field', 'placeholder': 'Password'}
         ),
         required=True
     )
