@@ -54,7 +54,7 @@
   tasks:
     - apt: name=postgresql-9.4 update_cache=True
     - apt: name=python-psycopg2 # for postgres ansible modules
-    - postgresql_user: name=seed-user password=seed-user priv=all
+    - postgresql_user: name=seed-user password=seed-user role_attr_flags=CREATEDB
       become_user: postgres
     - postgresql_db: name=seed-dev owner=seed-user
       become_user: postgres

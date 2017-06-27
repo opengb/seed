@@ -214,7 +214,7 @@ angular.module('BE.seed.controller.data_upload_modal', [])
        * @param {string} file_id: the id of the import file
        */
       var save_map_match_PM_data = function (file_id, cycle_id) {
-        $scope.uploader.status_message = 'saving energy data';
+        $scope.uploader.status_message = 'saving some kind of energy data';
         $scope.uploader.progress = 25;
         uploader_service.save_raw_data(file_id, cycle_id)
           .then(function (data) {

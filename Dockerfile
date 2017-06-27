@@ -15,6 +15,8 @@ RUN apt-get update && apt-get install -y --no-install-recommends npm \
         python-pip \
         python-dev \
         python-gdbm \
+        python-scipy \
+        python-numpy \
         libpcre3 \
         libpcre3-dev \
     && pip install --upgrade pip \
