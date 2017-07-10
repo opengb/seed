@@ -32,19 +32,20 @@ from seed.utils.time import convert_datestr
 
 _log = logging.getLogger(__name__)
 
-import pint
+# import pint
+from quantityfield.fields import QuantityField
 
-class QuantityField(models.CharField):
-    """A physical quantity like m**2 or EUI (kWh/m**2/yr)"""
-    description = "A physical quantity like m**2 or EUI (kWh/m**2/yr)"
-    def __init__(self, *args, **kwargs):
-        kwargs['max_length'] = 128
-        super(QuantityField, self).__init__(*args, **kwargs)
+# class QuantityField(models.CharField):
+#     """A physical quantity like m**2 or EUI (kWh/m**2/yr)"""
+#     description = "A physical quantity like m**2 or EUI (kWh/m**2/yr)"
+#     def __init__(self, *args, **kwargs):
+#         kwargs['max_length'] = 128
+#         super(QuantityField, self).__init__(*args, **kwargs)
 
-    def deconstruct(self):
-        name, path, args, kwargs = super(QuantityField, self).deconstruct()
-        del kwargs["max_length"]
-        return name, path, args, kwargs
+#     def deconstruct(self):
+#         name, path, args, kwargs = super(QuantityField, self).deconstruct()
+#         del kwargs["max_length"]
+#         return name, path, args, kwargs
 
     # def from_db_value(self, value, expression, connection, context):
     #     if value is None:
@@ -133,13 +134,13 @@ class PropertyState(models.Model):
     use_description = models.CharField(max_length=255, null=True, blank=True)
 
     gross_floor_area = models.FloatField(null=True, blank=True)
-    gross_floor_area_ogbs = QuantityField(null=True, blank=True)
+    gross_floor_area_ogbs = QuantityField('ft**2', null=True, blank=True)
     year_built = models.IntegerField(null=True, blank=True)
     recent_sale_date = models.DateTimeField(null=True, blank=True)
     conditioned_floor_area = models.FloatField(null=True, blank=True)
-    conditioned_floor_area_ogbs = QuantityField(null=True, blank=True)
+    conditioned_floor_area_ogbs = QuantityField('ft**2', null=True, blank=True)
     occupied_floor_area = models.FloatField(null=True, blank=True)
-    occupied_floor_area_ogbs = QuantityField(null=True, blank=True)
+    occupied_floor_area_ogbs = QuantityField('ft**2', null=True, blank=True)
 
     # Normalize eventually on owner/address table
     owner = models.CharField(max_length=255, null=True, blank=True)
@@ -151,15 +152,15 @@ class PropertyState(models.Model):
 
     energy_score = models.IntegerField(null=True, blank=True)
     site_eui = models.FloatField(null=True, blank=True)
-    site_eui_ogbs = QuantityField(null=True, blank=True)
+    site_eui_ogbs = QuantityField("kBTU/ft^2/year", null=True, blank=True)
     generation_date = models.DateTimeField(null=True, blank=True)
     release_date = models.DateTimeField(null=True, blank=True)
     source_eui_weather_normalized = models.FloatField(null=True, blank=True)
     site_eui_weather_normalized = models.FloatField(null=True, blank=True)
-    source_eui_weather_normalized_ogbs = QuantityField(null=True, blank=True)
-    site_eui_weather_normalized_ogbs = QuantityField(null=True, blank=True)
+    source_eui_weather_normalized_ogbs = QuantityField("kBTU/ft^2/year", null=True, blank=True)
+    site_eui_weather_normalized_ogbs = QuantityField("kBTU/ft^2/year", null=True, blank=True)
     source_eui = models.FloatField(null=True, blank=True)
-    source_eui_ogbs = QuantityField(null=True, blank=True)
+    source_eui_ogbs = QuantityField("kBTU/ft^2/year", null=True, blank=True)
     energy_alerts = models.TextField(null=True, blank=True)
     space_alerts = models.TextField(null=True, blank=True)
     building_certification = models.CharField(max_length=255, null=True, blank=True)
