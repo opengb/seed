@@ -6,7 +6,7 @@ testpy:
 testjs:
 	open http://localhost:9000/app/angular_js_tests/
 
-lint: lintpy lintjs 
+lint: lintpy lintjs
 
 lintjs:
 	jshint seed/static/seed/js
@@ -18,7 +18,9 @@ coverage:
 	coverage report --fail-under=83
 
 tags:
-	ctags -R --fields=+l --languages=python --python-kinds=-iv seed
+	ctags -R --fields=+l --languages=python --python-kinds=-iv api seed
+
+.PHONY: tags
 
 build:
 	# docker build --tag ryanmccuaig/seed:skeleton-base .
