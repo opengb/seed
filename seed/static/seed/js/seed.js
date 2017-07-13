@@ -188,6 +188,23 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }]
         }
       })
+
+      .state({
+        name: 'localization',
+        url: '/localization',
+        templateUrl: static_url + 'seed/partials/localization.html',
+        controller: 'localization_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser']);
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      })
+
       .state({
         name: 'security',
         url: '/profile/security',
