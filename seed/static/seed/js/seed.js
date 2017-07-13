@@ -56,6 +56,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
+  'BE.seed.controller.localization',
   'BE.seed.controller.mapping',
   'BE.seed.controller.matching_list',
   'BE.seed.controller.matching_detail',
@@ -188,10 +189,9 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }]
         }
       })
-
       .state({
         name: 'localization',
-        url: '/localization',
+        url: '/profile/localization',
         templateUrl: static_url + 'seed/partials/localization.html',
         controller: 'localization_controller',
         resolve: {
@@ -204,7 +204,6 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
           }]
         }
       })
-
       .state({
         name: 'security',
         url: '/profile/security',
