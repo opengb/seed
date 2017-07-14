@@ -31,14 +31,14 @@
                  <div class="form-group">
                    <label class="control-label" for="prefers_metric">Prefer Metric?</label>
                    <div>
-                     <input type="checkbox" class="form-control" name="prefer_metric">
+                     <input type="checkbox" class="form-control" name="prefer_metric" ng-model="user.prefers_metric">
                    </div>
                  </div>
 
                  <div class="form-group">
                    <label class="control-label" for="language_preference">User interface language</label>
                    <div>
-                     <select name="language_preference">
+                     <select name="language_preference" ng-model="user.language_preference">
                        <option value="en-US">English (US)</option>
                        <option value="en-CA">English (Canada)</option>
                        <option value="fr-CA">French (Canada)</option>
