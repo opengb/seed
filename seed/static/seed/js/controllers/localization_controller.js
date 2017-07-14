@@ -21,14 +21,16 @@ angular.module('BE.seed.controller.localization', [])
       $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
 
       /**
-       * updates the user's PI
+       * updates the user's localization prefs
        */
       $scope.submit_form = function () {
-        user_service.update_user($scope.user).then(function () {
-          $scope.user_updated = true;
-          user_copy = angular.copy($scope.user);
-          $scope.username = user_profile_payload.first_name + ' ' + user_profile_payload.last_name;
-        });
+        user_service
+          .update_localization_prefs($scope.user)
+          .then(function (result) {
+            $scope.user_updated = true;
+            user_copy = angular.copy($scope.user);
+            console.debug("submit", result);
+          });
       };
 
       /**

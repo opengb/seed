@@ -147,6 +147,25 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
       });
     };
 
+    user_factory.update_localization_prefs = function (user, prefers_metric, lang_code) {
+      var result;
+
+      var make_endpoint = function (uid) { return '/api/v2/users/' + uid + '/update_localization_prefs/'; }
+
+      var submit_change = function (uid, prefers_metric, lang_code) {
+        var endpoint = make_endpoint(uid);
+        var payload = { prefers_metric: prefers_metric, lang_code: lang_code };
+        var response = $http.put(endpoint, payload);
+        return response;
+      }
+
+      result = user_factory.get_user_id()
+        .then(_.partial(submit_change, _, prefers_metric, lang_code))
+        .then(function (res) { return res.data; });
+
+      return result;
+    };
+
     /**
      * sets the user's password
      * @param {string} current_password

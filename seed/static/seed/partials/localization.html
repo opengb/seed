@@ -25,7 +25,7 @@
               <form
                  name="localization_form"
                  role="form"
-                 ng-submit="do_something(localization_form.$valid)"
+                 ng-submit="submit_form(localization_form.$valid)"
                  novalidate
                  >
                  <div class="form-group">
@@ -45,6 +45,9 @@
                      </select>
                    </div>
                  </div>
+
+                 <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid">Save Changes <i class="fa fa-check" ng-show="user_updated"></i></button>
+                 <button type="button" class="btn btn-default" ng-click="reset_form()">Cancel</button>
 
               </form>
             </div>
