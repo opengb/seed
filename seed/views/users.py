@@ -280,6 +280,24 @@ class UserViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_owner')
     @detail_route(methods=['PUT'])
+    def update_localization_prefs(self, request, pk=None):
+        body = request.data
+        ok, content = self.validate_request_user(pk, request)
+        if ok:
+            user = content
+        else:
+            return content
+        json_prefs = body
+        _log.debug("yo")
+        return JsonResponse({
+            'status': 'success',
+            'whatevs': 'whatevs'
+        });
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @detail_route(methods=['PUT'])
     def update_role(self, request, pk=None):
         """
         Updates a user's role within an organization.
