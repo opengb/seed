@@ -281,17 +281,19 @@ class UserViewSet(viewsets.ViewSet):
     @has_perm_class('requires_owner')
     @detail_route(methods=['PUT'])
     def update_localization_prefs(self, request, pk=None):
-        body = request.data
-        ok, content = self.validate_request_user(pk, request)
+        ok, user_or_err = self.validate_request_user(pk, request)
         if ok:
-            user = content
+            user = user_or_err
         else:
-            return content
-        json_prefs = body
-        _log.debug("yo")
+            return user_or_err
+        json_prefs = request.data
+        user.prefers_metric = json_prefs.get('prefers_metric')
+        user.language_preference = json_prefs.get('lang_code')
+        user.save()
         return JsonResponse({
             'status': 'success',
-            'whatevs': 'whatevs'
+            'prefers_metric': user.prefers_metric,
+            'language_preference': user.language_preference
         });
 
     @api_endpoint_class
