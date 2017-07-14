@@ -391,6 +391,8 @@ class UserViewSet(viewsets.ViewSet):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
+            'prefers_metric': user.prefers_metric,
+            'language_preference': user.language_preference,
             'api_key': user.api_key,
         })
 
