@@ -42,31 +42,22 @@ CACHES = {
 }
 
 LOGGING = {
-    'version': 1,
-    'disable_existing_loggers': False,
-    'formatters': {
-        'plain': {
-            'format': '%(message)s'
-        },
-        'file_line_number': {
-            'format': "%(pathname)s:%(lineno)d - %(message)s"
-        }
-    },
-    # set up some log message handlers to choose from
-    'handlers': {
-        'console': {
-            'level': 'DEBUG',
-            'class': 'logging.StreamHandler',
-            'formatter': 'file_line_number',
-        }
-    },
-    'loggers': {
-        # the name of the logger, if empty, then this is the default logger
-        '': {
-            'level': 'DEBUG',
-            'handlers': ['console'],
-        }
-    },
+        'version': 1,
+        'disable_existing_loggers': False,
+        'handlers': {
+            'file': {
+                'level': 'DEBUG',
+                'class': 'logging.FileHandler',
+                'filename': 'debug.log',
+                },
+            },
+        'loggers': {
+            'django': {
+                'handlers': ['file'],
+                'level': 'DEBUG',
+                'propagate': True,
+                },
+            },
 }
 
 # CELERY_BROKER_URL with AWS ElastiCache redis looks something like:

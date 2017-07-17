@@ -5,6 +5,7 @@
 :author
 """
 import logging
+import sys
 
 from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.tokens import default_token_generator
@@ -295,6 +296,8 @@ class UserViewSet(viewsets.ViewSet):
             'prefers_metric': user.prefers_metric,
             'language_preference': user.language_preference
         });
+
+        # print >> sys.stderr, request.data
 
     @api_endpoint_class
     @ajax_request_class
