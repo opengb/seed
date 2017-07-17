@@ -5,11 +5,13 @@
 angular.module('BE.seed.controller.localization', [])
   .controller('localization_controller', [
     '$scope',
+    '$translate',
     'urls',
     'auth_payload',
     'user_profile_payload',
     'user_service',
     function ($scope,
+              $translate,
               urls,
               auth_payload,
               user_profile_payload,
@@ -28,8 +30,8 @@ angular.module('BE.seed.controller.localization', [])
           .update_localization_prefs($scope.user)
           .then(function (result) {
             $scope.user_updated = true;
+            $translate.use($scope.user.language_preference);
             user_copy = angular.copy($scope.user);
-            console.debug("submit", result);
           });
       };
 

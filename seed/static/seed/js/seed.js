@@ -1123,19 +1123,15 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
 }]);
 
 SEED_app.config(['$translateProvider', function ($translateProvider) {
-  // $translateProvider.translations('en-US', {
-  //   'UI_LANG': 'User Interface Language',
-  //   'PREFER_METRIC' : 'Prefer Metric Units?',
-  //   'LOCALIZATION_PREFERENCES': 'Localization Preferences'
-  // });
-
   $translateProvider.translations('fr-CA', {
     'Localization Preferences': 'Préférences de localisation',
     'User Interface Language': "Langue de l'interface utilisateur",
     'Prefer Metric' : 'Prévoir les unités métriques?',
     'English (US)': 'Anglais (Americain)',
     'English (Canada)': 'Anglais (Canadien)',
-    'French (Canada)': 'Français (Canadien)'
+    'French (Canada)': 'Français (Canadien)',
+    'Save Changes': 'Sauvegarder',
+    'Cancel': 'Annuler'
   });
 
   $translateProvider.preferredLanguage('fr-CA');
