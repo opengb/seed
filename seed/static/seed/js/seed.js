@@ -1123,18 +1123,11 @@ SEED_app.config(['$httpProvider', function ($httpProvider) {
 }]);
 
 SEED_app.config(['$translateProvider', function ($translateProvider) {
-  $translateProvider.translations('fr-CA', {
-    'Localization Preferences': 'Préférences de localisation',
-    'User Interface Language': "Langue de l'interface utilisateur",
-    'Prefer Metric' : 'Prévoir les unités métriques?',
-    'English (US)': 'Anglais (Americain)',
-    'English (Canada)': 'Anglais (Canadien)',
-    'French (Canada)': 'Français (Canadien)',
-    'Save Changes': 'Sauvegarder',
-    'Cancel': 'Annuler'
+  $translateProvider.useStaticFilesLoader({
+    prefix: "/static/seed/lang/",
+    suffix: ".json"
   });
-
-  $translateProvider.preferredLanguage('fr-CA');
+  $translateProvider.preferredLanguage('fr_CA');
 }]);
 
 /**
