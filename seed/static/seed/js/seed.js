@@ -28,7 +28,8 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.tree',
   'focus-if',
   'xeditable',
-  angularDragula(angular)
+  angularDragula(angular),
+  'pascalprecht.translate'
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',
@@ -1119,6 +1120,25 @@ SEED_app.config([
 SEED_app.config(['$httpProvider', function ($httpProvider) {
   $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
   $httpProvider.defaults.paramSerializer = 'httpParamSerializerSeed';
+}]);
+
+SEED_app.config(['$translateProvider', function ($translateProvider) {
+  // $translateProvider.translations('en-US', {
+  //   'UI_LANG': 'User Interface Language',
+  //   'PREFER_METRIC' : 'Prefer Metric Units?',
+  //   'LOCALIZATION_PREFERENCES': 'Localization Preferences'
+  // });
+
+  $translateProvider.translations('fr-CA', {
+    'Localization Preferences': 'Préférences de localisation',
+    'User Interface Language': "Langue de l'interface utilisateur",
+    'Prefer Metric' : 'Prévoir les unités métriques?',
+    'English (US)': 'Anglais (Americain)',
+    'English (Canada)': 'Anglais (Canadien)',
+    'French (Canada)': 'Français (Canadien)'
+  });
+
+  $translateProvider.preferredLanguage('fr-CA');
 }]);
 
 /**
