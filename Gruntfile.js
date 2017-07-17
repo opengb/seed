@@ -6,7 +6,7 @@ module.exports = function(grunt) {
         default_options: {
           src: [ 'seed/static/seed/**/*.js', 'seed/static/seed/**/*.html' ],
           lang:     ['fr_CA'],
-          dest:     'tmp'
+          dest:     'seed/static/seed/lang'
         }
       },
         // connect: {
