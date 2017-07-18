@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2017-06-13 04:27+0000\n"
+"POT-Creation-Date: 2017-07-18 10:42-0700\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: FULL NAME <EMAIL@ADDRESS>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -16,6 +16,10 @@ msgstr ""
 "MIME-Version: 1.0\n"
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
+
+#: seed/exception_handler.py:45
+msgid "Cannot delete protected objects while related objects still exist"
+msgstr ""
 
 #: seed/landing/forms.py:13
 msgid "Email"
@@ -84,19 +88,21 @@ msgstr ""
 msgid "api key"
 msgstr ""
 
-#: seed/landing/models.py:82
+#: seed/landing/models.py:84
 msgid "user"
 msgstr ""
 
-#: seed/landing/models.py:83
+#: seed/landing/models.py:85
 msgid "users"
 msgstr ""
 
-#: seed/landing/templates/landing/_marketing_bullets.html:2
-msgid "Welcome to SEED Platform™"
-msgstr "Bienvenue à la Plate-Forme SEED (mc)"
+#: seed/landing/templates/landing/_marketing_bullets.html:3
+#, fuzzy
+#| msgid "Welcome to SEED Platform™"
+msgid "Welcome to SEED Platform"
+msgstr "Bienvenue à la Plate-Forme SEED"
 
-#: seed/landing/templates/landing/_marketing_bullets.html:5
+#: seed/landing/templates/landing/_marketing_bullets.html:7
 msgid ""
 "Get started using SEED Platform by uploading your buildings list (city tax "
 "assessor data) and then your EPA Portfolio Manager data."
@@ -105,47 +111,62 @@ msgstr ""
 "bâtiments (données de l'évaluateur de la taxe municipale) et ensuite vos "
 "données du Gestionnaire de Portefeuille de l'EPA."
 
-#: seed/landing/templates/landing/_marketing_bullets.html:10
+#: seed/landing/templates/landing/_marketing_bullets.html:13
 msgid ""
 "Match-up your buildings list with the Portfolio Manager dataset to tie "
 "building records together."
 msgstr ""
-"Faites correspondre votre liste de bâtiments avec l'ensemble de données "
-"du Gestionnaire de Portefeuille pour lier les enregistrements de "
-"construction ensemble."
+"Faites correspondre votre liste de bâtiments avec l'ensemble de données du "
+"Gestionnaire de Portefeuille pour lier les enregistrements de construction "
+"ensemble."
 
-#: seed/landing/templates/landing/_marketing_bullets.html:15
+#: seed/landing/templates/landing/_marketing_bullets.html:19
 msgid ""
 "Use SEED Platform's flexible, easy-to-use labeling system and project "
 "groupings to track the status of data submission, review, and compliance."
 msgstr ""
-"Utilisez le système d'étiquetage flexible et facile à utiliser de la Plate-Forme SEED "
-"et les groupes de projets pour suivre l'état de la soumission, "
-"de l'examen et de la conformité des données."
+"Utilisez le système d'étiquetage flexible et facile à utiliser de la Plate-"
+"Forme SEED et les groupes de projets pour suivre l'état de la soumission, de "
+"l'examen et de la conformité des données."
 
 #: seed/landing/templates/landing/_password_note.html:1
 msgid ""
 "Note: Passwords must be 8 or more characters, and must contain at least 1 "
 "uppercase character, 1 lowercase character, and 1 digit."
 msgstr ""
-"Remarque: les mots de passe doivent comporter 8 caractères ou plus, et doivent contenir au moins 1 "
-"caractère majuscule, 1 caractère minuscule et 1 chiffre."
+"Remarque: les mots de passe doivent comporter 8 caractères ou plus, et "
+"doivent contenir au moins 1 caractère majuscule, 1 caractère minuscule et 1 "
+"chiffre."
 
-#: seed/landing/templates/landing/home.html:15
-msgid "LOGIN"
-msgstr "Connectez-vous à SEED Plate-Forme"
+#: seed/landing/templates/landing/home.html:16
+#, fuzzy
+#| msgid "Welcome to SEED Platform™"
+msgid "Log in to SEED Platform"
+msgstr "Bienvenue à la Plate-Forme SEED (mc)"
 
-#: seed/landing/templates/landing/home.html:22
-msgid "Log In"
-msgstr "S'identifier"
+#: seed/landing/templates/landing/home.html:18
+msgid "You have successfully logged out. You may log in again below."
+msgstr ""
+"Vous avez déconnecté avec succès. Vous pouvez vous connecter à nouveau ci-"
+"dessous."
 
 #: seed/landing/templates/landing/home.html:23
+msgid "Log In"
+msgstr "Connectez-vous"
+
+#: seed/landing/templates/landing/home.html:24
 msgid "Cancel"
 msgstr "Annuler"
+
+#: seed/landing/templates/landing/home.html:25
+msgid "Forgot password?"
+msgstr "Oublié votre mot de passe?"
 
 #: seed/landing/templates/landing/password_reset_email.html:2
 msgid "You're receiving this e-mail because you requested a password reset"
 msgstr ""
+"Vous recevez ce courrier électronique car vous avez demandé une "
+"réinitialisation du mot de passe."
 
 #: seed/landing/templates/landing/password_reset_email.html:3
 msgid "for your SEED Platform user account"
@@ -182,31 +203,31 @@ msgstr ""
 
 #: seed/models/models.py:177
 msgid "red"
-msgstr ""
+msgstr "rouge"
 
 #: seed/models/models.py:178
 msgid "blue"
-msgstr ""
+msgstr "bleu"
 
 #: seed/models/models.py:179
 msgid "light blue"
-msgstr ""
+msgstr "bleu clair"
 
 #: seed/models/models.py:180
 msgid "green"
-msgstr ""
+msgstr "vert"
 
 #: seed/models/models.py:181
 msgid "white"
-msgstr ""
+msgstr "blanc"
 
 #: seed/models/models.py:182
 msgid "orange"
-msgstr ""
+msgstr "orange"
 
 #: seed/models/models.py:183
 msgid "gray"
-msgstr ""
+msgstr "gris"
 
 #: seed/models/models.py:186 seed/models/projects.py:30
 msgid "name"
@@ -297,6 +318,17 @@ msgid ""
 "account."
 msgstr ""
 
+#: seed/templates/seed/account_create_email.html:6
+msgid ""
+"SEED is easy, flexible, and cost effective software designed to help "
+"organizations clean, manage and share information about large portfolios of "
+"buildings. SEED is a free, open source web application that you can use "
+"privately.  While SEED was originally designed to help cities and States "
+"implement benchmarking programs for public or private buildings, it has the "
+"potential to be useful for many other activities by public entities, "
+"efficiency programs and private companies."
+msgstr ""
+
 #: seed/templates/seed/account_create_email.html:8
 msgid "Please go to the following page and setup your account:"
 msgstr ""
@@ -313,6 +345,10 @@ msgstr ""
 #: seed/validators.py:24
 #, python-format
 msgid "Your password must contain at least %(quantity)d %(type)s characters."
+msgstr ""
+
+#: seed/views/users.py:566
+msgid "current password is not valid"
 msgstr ""
 
 #: src/django-tos-master/tos/models.py:34
@@ -349,6 +385,9 @@ msgstr ""
 #: src/django-tos-master/tos/views.py:72
 msgid "You cannot login without agreeing to the terms of this site."
 msgstr ""
+
+#~ msgid "LOGIN"
+#~ msgstr "Connectez-vous à SEED Plate-Forme"
 
 #~ msgid "WELCOME.WELCOME"
 #~ msgstr "Bienvenue au SEED Plate-FormeMC"
