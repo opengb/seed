@@ -15,7 +15,7 @@
 <div class="section">
     <div class="section_header_container">
         <div class="section_header">
-            <h2><i class="fa fa-info-circle"></i> Profile Information</h2>
+            <h2 translate><i class="fa fa-info-circle"></i> Profile Information</h2>
         </div>
     </div>
     <div class="section_content_container">
@@ -33,7 +33,7 @@
                         <div class="form-group"  ng-class="{ 'has-error' : profile_form.last_name.$invalid && !profile_form.last_name.$pristine }">
                             <label class="control-label" for="last-name-text" translate>Last Name:</label>
                             <div class="">
-                                <input id="last-name-text" type="text" class="form-control" name="last_name" placeholder="Enter last name" ng-model="user.last_name" required>
+                              <input id="last-name-text" type="text" class="form-control" name="last_name" placeholder="{$ 'Enter last name' | translate $}" ng-model="user.last_name" required>
                                  <p ng-show="profile_form.last_name.$invalid && !profile_form.last_name.$pristine" class="help-block">Last name is required.</p>
                             </div>
                         </div>

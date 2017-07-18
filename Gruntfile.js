@@ -6,6 +6,7 @@ module.exports = function(grunt) {
         default_options: {
           default_lang: 'en_US',
           src: [
+            'seed/templates/**/*.html',
             'seed/static/seed/**/*.js',
             'seed/static/seed/**/*.html'
           ],
@@ -18,7 +19,7 @@ module.exports = function(grunt) {
             startDelimiter: '{$',
             endDelimiter: '$}',
           },
-          // safeMode: true
+          safeMode: true
         }
       },
         // connect: {
