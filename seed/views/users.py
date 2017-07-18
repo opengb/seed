@@ -12,6 +12,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+from django.utils.translation import ugettext as _
+
 from rest_framework import viewsets, status, serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
@@ -561,7 +563,7 @@ class UserViewSet(viewsets.ViewSet):
         p1 = body.get('password_1')
         p2 = body.get('password_2')
         if not user.check_password(current_password):
-            return JsonResponse({'status': 'error', 'message': 'current password is not valid'},
+            return JsonResponse({'status': 'error', 'message': _('current password is not valid')},
                                 status=status.HTTP_400_BAD_REQUEST)
         if p1 is None or p1 != p2:
             return JsonResponse({'status': 'error', 'message': 'entered password do not match'},
