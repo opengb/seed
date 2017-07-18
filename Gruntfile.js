@@ -125,13 +125,13 @@ module.exports = function(grunt) {
     // grunt.loadTasks('tasks');
 
     // These plugins provide necessary tasks.
-    // grunt.loadNpmTasks('grunt-protractor-coverage');
-    // grunt.loadNpmTasks('grunt-contrib-clean');
-    // grunt.loadNpmTasks('grunt-contrib-copy');
-    // grunt.loadNpmTasks('grunt-istanbul');
-    // grunt.loadNpmTasks('grunt-coveralls');
-  grunt.loadNpmTasks('grunt-angular-translate');
-  grunt.loadNpmTasks('grunt-po2json-angular-translate');
+    grunt.loadNpmTasks('grunt-protractor-coverage');
+    grunt.loadNpmTasks('grunt-contrib-clean');
+    grunt.loadNpmTasks('grunt-contrib-copy');
+    grunt.loadNpmTasks('grunt-istanbul');
+    grunt.loadNpmTasks('grunt-coveralls');
+    grunt.loadNpmTasks('grunt-angular-translate');
+    grunt.loadNpmTasks('grunt-po2json-angular-translate');
 
     // Whenever the "test" task is run, first clean the "tmp" dir, then run this
     // plugin's task(s), then test the result.
@@ -143,11 +143,11 @@ module.exports = function(grunt) {
     // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'protractor_coverage:local', 'copy:copyBack']);    
 
     //without coveralls
-    // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport']);
-    // grunt.registerTask('report', ['makeReport']);
+    grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport']);
+    grunt.registerTask('report', ['makeReport']);
 
     //with coveralls
     // grunt.registerTask('coverage', ['clean', 'copy:save', 'instrument', 'copy:instrument', 'protractor_coverage:local', 'copy:copyBack', 'makeReport', 'coveralls']);
 
-    // grunt.registerTask('test', ['coverage']);
+    grunt.registerTask('test', ['coverage']);
 };
