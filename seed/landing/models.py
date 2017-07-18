@@ -72,7 +72,7 @@ class SEEDUser(AbstractBaseUser, PermissionsMixin):
         default='',
         db_index=True
     )
-    language_preference = models.CharField(max_length=16, default="en-US") # per https://tools.ietf.org/html/bcp47
+    language_preference = models.CharField(max_length=16, default="en_US") # per https://tools.ietf.org/html/bcp47, need _ for filenames for angular
     prefers_metric = models.BooleanField(default=False)
 
     objects = UserManager()

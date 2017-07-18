@@ -10,8 +10,7 @@ module.exports = function(grunt) {
             'seed/static/seed/**/*.html'
           ],
           lang:     [
-            'en_CA',
-            'en_US',
+            // 'en_US',
             'fr_CA'
           ],
           dest: 'seed/static/seed/lang',
