@@ -4,9 +4,22 @@ module.exports = function(grunt) {
     grunt.initConfig({
       i18nextract: {
         default_options: {
-          src: [ 'seed/static/seed/**/*.js', 'seed/static/seed/**/*.html' ],
-          lang:     ['fr_CA'],
-          dest:     'seed/static/seed/lang'
+          default_lang: 'en_US',
+          src: [
+            'seed/static/seed/**/*.js',
+            'seed/static/seed/**/*.html'
+          ],
+          lang:     [
+            'en_CA',
+            'en_US',
+            'fr_CA'
+          ],
+          dest: 'seed/static/seed/lang',
+          interpolation: {
+            startDelimiter: '{$',
+            endDelimiter: '$}',
+          },
+          // safeMode: true
         }
       },
         // connect: {
