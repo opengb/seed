@@ -158,7 +158,6 @@ angular.module('BE.seed.service.user', []).factory('user_service', [
           prefers_metric: user.prefers_metric,
           lang_code: user.language_preference
         };
-        console.debug(payload);
         var response = $http.put(endpoint, payload);
         return response;
       }

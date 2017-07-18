@@ -32,35 +32,7 @@ from seed.utils.time import convert_datestr
 
 _log = logging.getLogger(__name__)
 
-# import pint
-from quantityfield.fields import QuantityField
-
-# class QuantityField(models.CharField):
-#     """A physical quantity like m**2 or EUI (kWh/m**2/yr)"""
-#     description = "A physical quantity like m**2 or EUI (kWh/m**2/yr)"
-#     def __init__(self, *args, **kwargs):
-#         kwargs['max_length'] = 128
-#         super(QuantityField, self).__init__(*args, **kwargs)
-
-#     def deconstruct(self):
-#         name, path, args, kwargs = super(QuantityField, self).deconstruct()
-#         del kwargs["max_length"]
-#         return name, path, args, kwargs
-
-    # def from_db_value(self, value, expression, connection, context):
-    #     if value is None:
-    #         return value
-    #     return pint.UnitRegistry(value)
-
-    # def to_python(self, value):
-    #     if isinstance(value, Quantity):
-    #         return value
-    #     if value is None:
-    #         return value
-    #     return pint.UnitRegistry(value)
-
-    # def get_prep_value(self, value):
-    #     return str(value)
+from quantityfield.fields import QuantityField  # uses django-pint
 
 # Oops! we override a builtin in some of the models
 property_decorator = property

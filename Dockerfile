@@ -15,8 +15,6 @@ RUN apt-get update && apt-get install -y --no-install-recommends npm \
         python-pip \
         python-dev \
         python-gdbm \
-        python-scipy \
-        python-numpy \
         libpcre3 \
         libpcre3-dev \
     && pip install --upgrade pip \
@@ -62,4 +60,4 @@ COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 COPY ./config/settings/local_untracked_docker.py /seed/config/settings/local_untracked.py
 
-# EXPOSE 8000
+EXPOSE 8000

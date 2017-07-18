@@ -11,6 +11,7 @@ angular.module('BE.seed.angular_dependencies', [
 ]);
 angular.module('BE.seed.vendor_dependencies', [
   'ngTagsInput',
+  'pascalprecht.translate',
   'ui-notification',
   'ui.bootstrap',
   'ui.grid',
@@ -28,8 +29,7 @@ angular.module('BE.seed.vendor_dependencies', [
   'ui.tree',
   'focus-if',
   'xeditable',
-  angularDragula(angular),
-  'pascalprecht.translate'
+  angularDragula(angular)
 ]);
 angular.module('BE.seed.controllers', [
   'BE.seed.controller.about',

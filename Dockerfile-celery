@@ -1,3 +1,0 @@
-FROM ryanmccuaig/seed:nrel-base
-
-CMD ./docker/start_celery_docker.sh

@@ -42,22 +42,31 @@ CACHES = {
 }
 
 LOGGING = {
-        'version': 1,
-        'disable_existing_loggers': False,
-        'handlers': {
-            'file': {
-                'level': 'DEBUG',
-                'class': 'logging.FileHandler',
-                'filename': 'debug.log',
-                },
-            },
-        'loggers': {
-            'django': {
-                'handlers': ['file'],
-                'level': 'DEBUG',
-                'propagate': True,
-                },
-            },
+    'version': 1,
+    'disable_existing_loggers': False,
+    'formatters': {
+        'plain': {
+            'format': '%(message)s'
+        },
+        'file_line_number': {
+            'format': "%(pathname)s:%(lineno)d - %(message)s"
+        }
+    },
+    # set up some log message handlers to choose from
+    'handlers': {
+        'console': {
+            'level': 'DEBUG',
+            'class': 'logging.StreamHandler',
+            'formatter': 'file_line_number',
+        }
+    },
+    'loggers': {
+        # the name of the logger, if empty, then this is the default logger
+        '': {
+            'level': 'DEBUG',
+            'handlers': ['console'],
+        }
+    },
 }
 
 # CELERY_BROKER_URL with AWS ElastiCache redis looks something like:
@@ -93,9 +102,7 @@ if 'local_untracked_exists' in locals():
 else:
     print >> sys.stderr, "Unable to find the local_untracked module in config/settings/local_untracked.py"
 
-LANGUAGE_CODE = 'fr_CA'
-# LANGUAGE_CODE = 'en_US'
-LOCALE_PATHS = ('/vagrant/repo/locale', )
-
 USE_I18N = True
 USE_L10N = True
+LANGUAGE_CODE = 'fr_CA'
+LOCALE_PATHS = ('/vagrant/repo/locale', )

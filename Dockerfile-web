@@ -1,4 +1,0 @@
-FROM ryanmccuaig/seed:nrel-base
-
-EXPOSE 8000
-CMD ./docker/start_uwsgi_docker.sh

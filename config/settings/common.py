@@ -33,7 +33,7 @@ TIME_ZONE = 'America/Los_Angeles'
 USE_TZ = True
 LANGUAGE_CODE = 'en-us'
 SITE_ID = 1
-USE_I18N = False
+USE_I18N = True
 
 SECRET_KEY = os.environ.get(
     'SECRET_KEY',
