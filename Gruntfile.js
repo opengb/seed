@@ -2,6 +2,12 @@
 var tmp = require('tmp');
 module.exports = function(grunt) {
     grunt.initConfig({
+      po2json_angular_translate: {
+        options: { pretty: false, upperCaseId : false },
+        files: {
+          'seed/static/seeds/langs/': ['locales/**/*.po'],
+        }
+      },
       i18nextract: {
         default_options: {
           default_lang: 'en_US',
@@ -125,6 +131,7 @@ module.exports = function(grunt) {
     // grunt.loadNpmTasks('grunt-istanbul');
     // grunt.loadNpmTasks('grunt-coveralls');
   grunt.loadNpmTasks('grunt-angular-translate');
+  grunt.loadNpmTasks('grunt-po2json-angular-translate');
 
     // Whenever the "test" task is run, first clean the "tmp" dir, then run this
     // plugin's task(s), then test the result.
