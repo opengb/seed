@@ -20,7 +20,7 @@ flake8==3.3.0
 
 # documentation and spelling
 Sphinx==1.6.2
-# sphinxcontrib-spelling==2.3.0
+sphinxcontrib-spelling==2.3.0
 sphinx_rtd_theme==0.2.5b1
 
 # For running the server
