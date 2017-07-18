@@ -29,6 +29,7 @@
         - curl
         - g++
         - gfortran
+        - gettext # for i18n dev
         - git
         - libatlas-base-dev
         - libpq-dev
