@@ -9,11 +9,10 @@ from __future__ import absolute_import
 
 import collections
 import copy
+import datetime
 import hashlib
 import operator
-import time
 import traceback
-import datetime
 from _csv import Error
 from collections import namedtuple
 from functools import reduce
@@ -23,6 +22,7 @@ from random import randint
 from celery import chord
 from celery import shared_task
 from celery.utils.log import get_task_logger
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
 from django.db.models import Q
 from django.utils import timezone
@@ -184,10 +184,10 @@ def finish_mapping(import_file_id, mark_as_done):
     set_cache(prog_key, result['status'], result)
 
     property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
-                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                               .values_list('id', flat=True))
     taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
-                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                             .values_list('id', flat=True))
 
     # now call data_quality
@@ -311,14 +311,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
 
     # yes, there are three cascading for loops here. sorry :(
     md = MappingData()
-    for table, mappings in table_mappings.iteritems():
+
+    for table, mappings in table_mappings.items():
         if not table:
             continue
 
         # This may be historic, but we need to pull out the extra_data_fields here to pass into
         # mapper.map_row. apply_columns are extra_data columns (the raw column names)
         extra_data_fields = []
-        for k, v in mappings.iteritems():
+        for k, v in mappings.items():
             if not md.find_column(v[0], v[1]):
                 extra_data_fields.append(k)
         _log.debug("extra data fields: {}".format(extra_data_fields))
@@ -336,13 +337,13 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
             # expand the row into multiple rows if needed with the delimited_field replaced with a
             # single value. This minimizes the need to rewrite the downstream code.
             expand_row = False
-            for k, d in delimited_fields.iteritems():
+            for k, d in delimited_fields.items():
                 if d['to_table'] == table:
                     expand_row = True
             # _log.debug("Expand row is set to {}".format(expand_row))
 
             delimited_field_list = []
-            for _, v in delimited_fields.iteritems():
+            for _, v in delimited_fields.items():
                 delimited_field_list.append(v['from_field'])
 
             # _log.debug("delimited_field_list is set to {}".format(delimited_field_list))
@@ -367,8 +368,6 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 map_model_obj.organization = import_file.import_record.super_organization
                 if hasattr(map_model_obj, 'data_state'):
                     map_model_obj.data_state = DATA_STATE_MAPPING
-                if hasattr(map_model_obj, 'organization'):
-                    map_model_obj.organization = import_file.import_record.super_organization
                 if hasattr(map_model_obj, 'clean'):
                     map_model_obj.clean()
 
@@ -377,9 +376,12 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                 # sure that the object hasn't already been created.
                 # For example, in the test data the tax lot id is the same for many rows. Make sure
                 # to only create/save the object if it hasn't been created before.
-                if hash_state_object(map_model_obj, include_extra_data=False) == hash_state_object(
-                        STR_TO_CLASS[table](organization=map_model_obj.organization),
-                        include_extra_data=False):
+                if hash_state_object(
+                    map_model_obj,
+                    include_extra_data=False) == hash_state_object(
+                    STR_TO_CLASS[table](organization=map_model_obj.organization),
+                    include_extra_data=False
+                ):
                     # Skip this object as it has no data...
                     continue
 
@@ -398,10 +400,11 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
                                                  import_filename=import_file,
                                                  record_type=AUDIT_IMPORT)
 
-                except Exception as e:
+                except ValidationError as e:
                     # Could not save the record for some reason, raise an exception
                     raise Exception(
-                        "Unable to save row the model with row {}:{}".format(type(e), e.message))
+                        "Unable to save row the model with row {}:{}".format(type(e),
+                                                                             e.message))
 
         # Make sure that we've saved all of the extra_data column names from the first item in list
         if map_model_obj:
@@ -693,7 +696,7 @@ def _save_raw_data(file_pk, *args, **kwargs):
     _log.debug("Current cache state")
     current_cache = get_cache(prog_key)
     _log.debug(current_cache)
-    time.sleep(2)  # NL: yuck
+    # time.sleep(2)  # NL: yuck
     result = current_cache
 
     try:
@@ -824,21 +827,24 @@ def match_buildings(file_pk):
     }
 
 
-def _finish_matching(import_file, progress_key):
+def _finish_matching(import_file, progress_key, data):
     import_file.matching_done = True
     import_file.mapping_completion = 100
     import_file.save()
 
+    data['import_file_records'] = import_file.num_rows
+
     result = {
         'status': 'success',
         'progress': 100,
-        'progress_key': progress_key
+        'progress_key': progress_key,
+        'data': data
     }
     property_state_ids = list(PropertyState.objects.filter(import_file=import_file)
-                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                              .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                               .only('id').values_list('id', flat=True))
     taxlot_state_ids = list(TaxLotState.objects.filter(import_file=import_file)
-                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT])
+                            .exclude(data_state__in=[DATA_STATE_UNKNOWN, DATA_STATE_IMPORT, DATA_STATE_DELETE])
                             .only('id').values_list('id', flat=True))
     _data_quality_check(property_state_ids, taxlot_state_ids, import_file.id)
     set_cache(progress_key, result['status'], result)
@@ -860,6 +866,12 @@ def _find_matches(un_m_address, canonical_buildings_addresses):
 # TODO: CLEANUP - What are we doing here?
 md = MappingData()
 ALL_COMPARISON_FIELDS = sorted(list(set([field['name'] for field in md.data])))
+# Make sure that the import_file isn't part of the hash, as the import_file filename always has random characters
+# appended to it in the uploads directory
+try:
+    ALL_COMPARISON_FIELDS.remove('import_file')
+except ValueError:
+    pass
 
 
 def hash_state_object(obj, include_extra_data=True):
@@ -915,7 +927,7 @@ def filter_duplicated_states(unmatched_states):
 
     canonical_states = [unmatched_states[equality_list[0]] for equality_list in
                         equality_classes.values()]
-    canonical_state_ids = set([s.pk for s in unmatched_states])
+    canonical_state_ids = set([s.pk for s in canonical_states])
     noncanonical_states = [u for u in unmatched_states if u.pk not in canonical_state_ids]
 
     return canonical_states, noncanonical_states
@@ -1005,7 +1017,7 @@ class EquivalencePartitioner(object):
     def make_taxlotstate_equivalence(kls):
         """Return default EquivalencePartitioner for TaxLotStates
 
-        Two tax lot states are indentical if:
+        Two tax lot states are identical if:
 
         - Their jurisdiction_tax_lot_ids are the same, which can be
           found in jurisdiction_tax_lot_ids or custom_id_1
@@ -1212,52 +1224,62 @@ def merge_unmatched_into_views(unmatched_states, partitioner, org, import_file):
         state__organization=org,
         cycle_id=current_match_cycle).select_related('state')
     existing_view_states = collections.defaultdict(dict)
+    existing_view_state_hashes = set()
     for view in class_views:
         equivalence_can_key = partitioner.calculate_canonical_key(view.state)
         existing_view_states[equivalence_can_key][view.cycle] = view
+        existing_view_state_hashes.add(hash_state_object(view.state))
 
     matched_views = []
 
     for unmatched in unmatched_states:
-        # Look to see if there is a match among the property states of the object.
 
-        # equiv_key = False
-        # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
-        equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
+        unmatched_state_hash = hash_state_object(unmatched)
+        if unmatched_state_hash in existing_view_state_hashes:
+            # If an exact duplicate exists, delete the unmatched state
+            unmatched.data_state = DATA_STATE_DELETE
+            unmatched.save()
 
-        for key in existing_view_states:
-            if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
-                if current_match_cycle in existing_view_states[key]:
-                    # There is an existing View for the current cycle that matches us.
-                    # Merge the new state in with the existing one and update the view, audit log.
-                    current_view = existing_view_states[key][current_match_cycle]
-                    current_state = current_view.state
-
-                    merged_state, change_ = save_state_match(current_state, unmatched)
-
-                    current_view.state = merged_state
-                    current_view.save()
-                    matched_views.append(current_view)
-                else:
-                    # Grab another view that has the same parent as
-                    # the one we belong to.
-                    cousin_view = existing_view_states[key].values()[0]
-                    view_parent = getattr(cousin_view, ParentAttrName)
-                    new_view = type(cousin_view)()
-                    setattr(new_view, ParentAttrName, view_parent)
-                    new_view.cycle = current_match_cycle
-                    new_view.state = unmatched
-                    try:
-                        new_view.save()
-                        matched_views.append(new_view)
-                    except IntegrityError:
-                        _log.warn("Unable to save the new view as it already exists in the db")
-
-                break
         else:
-            # Create a new object/view for the current object.
-            created_view = unmatched.promote(current_match_cycle)
-            matched_views.append(created_view)
+            # Look to see if there is a match among the property states of the object.
+
+            # equiv_key = False
+            # equiv_can_key = partitioner.calculate_canonical_key(unmatched)
+            equiv_cmp_key = partitioner.calculate_comparison_key(unmatched)
+
+            for key in existing_view_states:
+                if partitioner.calculate_key_equivalence(key, equiv_cmp_key):
+                    if current_match_cycle in existing_view_states[key]:
+                        # There is an existing View for the current cycle that matches us.
+                        # Merge the new state in with the existing one and update the view, audit log.
+                        current_view = existing_view_states[key][current_match_cycle]
+                        current_state = current_view.state
+
+                        merged_state, change_ = save_state_match(current_state, unmatched)
+
+                        current_view.state = merged_state
+                        current_view.save()
+                        matched_views.append(current_view)
+                    else:
+                        # Grab another view that has the same parent as
+                        # the one we belong to.
+                        cousin_view = existing_view_states[key].values()[0]
+                        view_parent = getattr(cousin_view, ParentAttrName)
+                        new_view = type(cousin_view)()
+                        setattr(new_view, ParentAttrName, view_parent)
+                        new_view.cycle = current_match_cycle
+                        new_view.state = unmatched
+                        try:
+                            new_view.save()
+                            matched_views.append(new_view)
+                        except IntegrityError:
+                            _log.warn("Unable to save the new view as it already exists in the db")
+
+                    break
+            else:
+                # Create a new object/view for the current object.
+                created_view = unmatched.promote(current_match_cycle)
+                matched_views.append(created_view)
 
     return list(set(matched_views))
 
@@ -1281,16 +1303,17 @@ def _match_properties_and_taxlots(file_pk):
     all_unmatched_properties = import_file.find_unmatched_property_states()
     unmatched_properties = []
     unmatched_tax_lots = []
+    duplicates_of_existing_property_states = []
+    duplicates_of_existing_taxlot_states = []
     if all_unmatched_properties:
-        # Filter out the duplicates.  Do we actually want to delete them
-        # here?  Mark their abandonment in the Audit Logs?
+        # Filter out the duplicates within the import file.
         unmatched_properties, duplicate_property_states = filter_duplicated_states(
             all_unmatched_properties)
 
         property_partitioner = EquivalencePartitioner.make_default_state_equivalence(PropertyState)
 
         # Merge everything together based on the notion of equivalence
-        # provided by the partitioner.
+        # provided by the partitioner, while ignoring duplicates.
         unmatched_properties, property_equivalence_keys = match_and_merge_unmatched_objects(
             unmatched_properties,
             property_partitioner)
@@ -1302,6 +1325,12 @@ def _match_properties_and_taxlots(file_pk):
             property_partitioner,
             org,
             import_file)
+
+        # Filter out the exact duplicates found in the previous step
+        duplicates_of_existing_property_states = [state for state in unmatched_properties
+                                                  if state.data_state == DATA_STATE_DELETE]
+        unmatched_properties = [state for state in unmatched_properties
+                                if state not in duplicates_of_existing_property_states]
     else:
         duplicate_property_states = []
         merged_property_views = []
@@ -1330,6 +1359,12 @@ def _match_properties_and_taxlots(file_pk):
             taxlot_partitioner,
             org,
             import_file)
+
+        # Filter out the exact duplicates found in the previous step
+        duplicates_of_existing_taxlot_states = [state for state in unmatched_tax_lots
+                                                if state.data_state == DATA_STATE_DELETE]
+        unmatched_tax_lots = [state for state in unmatched_tax_lots
+                              if state not in duplicates_of_existing_taxlot_states]
     else:
         duplicate_tax_lot_states = []
         merged_taxlot_views = []
@@ -1351,17 +1386,23 @@ def _match_properties_and_taxlots(file_pk):
             state.merge_state = MERGE_STATE_NEW
         state.save()
 
-    # I don't think we arrive at this code ... ever.
     for state in chain(duplicate_property_states, duplicate_tax_lot_states):
         state.data_state = DATA_STATE_DELETE
         # state.merge_state = MERGE_STATE_DUPLICATE
         state.save()
 
-    # This is a kind of vestigial code that I do not particularly understand.
-    import_file.mapping_completion = 0
-    import_file.save()
+    data = {
+        'all_unmatched_properties': len(all_unmatched_properties),
+        'all_unmatched_tax_lots': len(all_unmatched_tax_lots),
+        'unmatched_properties': len(unmatched_properties),
+        'unmatched_tax_lots': len(unmatched_tax_lots),
+        'duplicate_property_states': len(duplicate_property_states),
+        'duplicate_tax_lot_states': len(duplicate_tax_lot_states),
+        'duplicates_of_existing_property_states': len(duplicates_of_existing_property_states),
+        'duplicates_of_existing_taxlot_states': len(duplicates_of_existing_taxlot_states)
+    }
 
-    return _finish_matching(import_file, prog_key)
+    return _finish_matching(import_file, prog_key, data)
 
 
 def list_canonical_property_states(org_id):
