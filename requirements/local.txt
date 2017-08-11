@@ -3,7 +3,7 @@
 django-debug-toolbar==1.8
 
 # required for migration scripts (for new data model) at the moment
-IPython
+IPython==5.4
 scipy
 numpy
 

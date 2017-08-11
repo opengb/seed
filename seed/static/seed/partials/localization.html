@@ -1,0 +1,56 @@
+<div class="page_header_container">
+  <div class="page_header">
+    <div class="left page_action_container">
+    </div>
+    <div class="page_title">
+      <h1>{$ username $}</h1>
+    </div>
+    <div class="right page_action_container">
+    </div>
+  </div>
+</div>
+<div class="section_nav_container">
+  <div class="section_nav" ng-include="urls.static_url + 'seed/partials/profile_nav.html'"></div>
+</div>
+<div class="section">
+  <div class="section_header_container">
+    <div class="section_header">
+      <h2 translate><i class="fa fa-globe"></i> Localization Preferences</h2>
+    </div>
+  </div>
+  <div class="section_content_container">
+    <div class="section_content with_padding container-fluid">
+      <div class="row">
+        <div class="section_form_container col-sm-3">
+          <form
+             name="localization_form"
+             role="form"
+             ng-submit="submit_form(localization_form.$valid)"
+             novalidate
+             >
+             <div class="form-group">
+               <label class="control-label" for="prefers_metric" translate>Prefer Metric</label>
+               <div>
+                 <input type="checkbox" class="form-control" name="prefer_metric" ng-model="user.prefers_metric">
+               </div>
+             </div>
+
+             <div class="form-group">
+               <label class="control-label" for="language_preference" translate>User Interface Language</label>
+               <div>
+                 <select name="language_preference" ng-model="user.language_preference">
+                   <option value="en_US" translate>English (US)</option>
+                   <option value="fr_CA" translate>French (Canada)</option>
+                 </select>
+               </div>
+             </div>
+
+             <button id="update_profile" type="submit" class="btn btn-primary" ng-disabled="profile_form.$invalid" translate>Save Changes <i class="fa fa-check" ng-show="user_updated"></i></button>
+             <button type="button" class="btn btn-default" ng-click="reset_form()" translate>Cancel</button>
+
+          </form>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

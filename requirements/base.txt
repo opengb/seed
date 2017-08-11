@@ -2,6 +2,7 @@
 django==1.9.13
 dj-database-url==0.4.2
 django-autoslug==1.9.3
+django-pint==0.2.0
 django-storages==1.5.2
 modeltranslation==0.25
 -e git+https://github.com/revsys/django-tos.git#egg=django_tos-master

@@ -11,6 +11,7 @@ angular.module('BE.seed.angular_dependencies', [
 ]);
 angular.module('BE.seed.vendor_dependencies', [
   'ngTagsInput',
+  'pascalprecht.translate',
   'ui-notification',
   'ui.bootstrap',
   'ui.grid',
@@ -56,6 +57,7 @@ angular.module('BE.seed.controllers', [
   'BE.seed.controller.inventory_reports',
   'BE.seed.controller.inventory_settings',
   'BE.seed.controller.label_admin',
+  'BE.seed.controller.localization',
   'BE.seed.controller.mapping',
   'BE.seed.controller.matching_list',
   'BE.seed.controller.matching_detail',
@@ -178,6 +180,21 @@ SEED_app.config(['stateHelperProvider', '$urlRouterProvider', '$locationProvider
         url: '/profile',
         templateUrl: static_url + 'seed/partials/profile.html',
         controller: 'profile_controller',
+        resolve: {
+          auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
+            var organization_id = user_service.get_organization().id;
+            return auth_service.is_authorized(organization_id, ['requires_superuser']);
+          }],
+          user_profile_payload: ['user_service', function (user_service) {
+            return user_service.get_user_profile();
+          }]
+        }
+      })
+      .state({
+        name: 'localization',
+        url: '/profile/localization',
+        templateUrl: static_url + 'seed/partials/localization.html',
+        controller: 'localization_controller',
         resolve: {
           auth_payload: ['auth_service', '$q', 'user_service', function (auth_service, $q, user_service) {
             var organization_id = user_service.get_organization().id;
@@ -1099,6 +1116,14 @@ SEED_app.config([
 SEED_app.config(['$httpProvider', function ($httpProvider) {
   $httpProvider.defaults.headers.common['X-Requested-With'] = 'XMLHttpRequest';
   $httpProvider.defaults.paramSerializer = 'httpParamSerializerSeed';
+}]);
+
+SEED_app.config(['$translateProvider', function ($translateProvider) {
+  $translateProvider.useStaticFilesLoader({
+    prefix: "/static/seed/lang/",
+    suffix: ".json"
+  });
+  $translateProvider.preferredLanguage('fr_CA');
 }]);
 
 /**

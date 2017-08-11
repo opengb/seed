@@ -69,7 +69,7 @@ MIDDLEWARE_CLASSES = (
     'django.middleware.gzip.GZipMiddleware',
     'django.middleware.common.CommonMiddleware',
     'django.contrib.sessions.middleware.SessionMiddleware',
-    'django.middleware.locale.LocaleMiddleware',
+    # 'django.middleware.locale.LocaleMiddleware',
     'django.middleware.common.BrokenLinkEmailsMiddleware',
     'seed.utils.api.APIBypassCSRFMiddleware',
     'django.middleware.csrf.CsrfViewMiddleware',

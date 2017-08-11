@@ -11,6 +11,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ObjectDoesNotExist
 from django.core.exceptions import ValidationError
 from django.http import JsonResponse
+from django.utils.translation import ugettext as _
+
 from rest_framework import viewsets, status, serializers
 from rest_framework.authentication import SessionAuthentication
 from rest_framework.decorators import list_route, detail_route
@@ -280,6 +282,26 @@ class UserViewSet(viewsets.ViewSet):
     @ajax_request_class
     @has_perm_class('requires_owner')
     @detail_route(methods=['PUT'])
+    def update_localization_prefs(self, request, pk=None):
+        ok, user_or_err = self.validate_request_user(pk, request)
+        if ok:
+            user = user_or_err
+        else:
+            return user_or_err
+        json_prefs = request.data
+        user.prefers_metric = json_prefs.get('prefers_metric')
+        user.language_preference = json_prefs.get('lang_code')
+        user.save()
+        return JsonResponse({
+            'status': 'success',
+            'prefers_metric': user.prefers_metric,
+            'language_preference': user.language_preference
+        });
+
+    @api_endpoint_class
+    @ajax_request_class
+    @has_perm_class('requires_owner')
+    @detail_route(methods=['PUT'])
     def update_role(self, request, pk=None):
         """
         Updates a user's role within an organization.
@@ -391,6 +413,8 @@ class UserViewSet(viewsets.ViewSet):
             'first_name': user.first_name,
             'last_name': user.last_name,
             'email': user.email,
+            'prefers_metric': user.prefers_metric,
+            'language_preference': user.language_preference,
             'api_key': user.api_key,
         })
 
@@ -536,7 +560,7 @@ class UserViewSet(viewsets.ViewSet):
         p1 = body.get('password_1')
         p2 = body.get('password_2')
         if not user.check_password(current_password):
-            return JsonResponse({'status': 'error', 'message': 'current password is not valid'},
+            return JsonResponse({'status': 'error', 'message': _('current password is not valid')},
                                 status=status.HTTP_400_BAD_REQUEST)
         if p1 is None or p1 != p2:
             return JsonResponse({'status': 'error', 'message': 'entered password do not match'},
