@@ -58,8 +58,25 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     }, {
       id: 'year',
       label: 'Year'
+    }, {
+      id: 'eui',
+      label: 'EUI'
+    }, {
+      id: 'area',
+      label: 'Area'
+    }, {
+      id: 'currency',
+      label: 'Currency'
     }];
-    $scope.units = ['', 'square feet', 'kBtu/sq. ft./year'];
+    $scope.units = [
+      '',
+      'square feet',
+      'square metres',
+      'kBtu/sq. ft./year',
+      'GJ/sq. m./year',
+      'MJ/sq. m./year',
+      'kWh/sq. m./year'
+    ];
 
     $scope.columns = columns;
     $scope.all_labels = labels_payload;
