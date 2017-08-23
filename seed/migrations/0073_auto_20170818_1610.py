@@ -3,59 +3,47 @@
 from __future__ import unicode_literals
 
 from django.db import migrations
-from quantityfield import UnitRegistry
 
-ureg = UnitRegistry()
-Quantity = ureg.Quantity
-
-def as_area(n):
-    if n != None:
-        return Quantity(n * ureg('ft**2')).to('m**2').magnitude
-
-def as_eui(n):
-    if n != None:
-        return Quantity(n * ureg('kBtu/ft**2/year')).to('GJ/m**2/year').magnitude
-
-def populate_si_fields(apps, schema_editor):
+def populate_pint_fields(apps, schema_editor):
     """
-    Populates the new SI fields for area ande EUI on any existing properties
-    with the converted value of the US customary units fields (which are
-    simply floats, implicitly ft**2 and kBtu/ft**2/annum).
+    Populates the new Pint fields for area and EUI on any existing properties.
+    This is a straight-up copy since Imperial units are canonical and so the
+    floats are the same; it's just interpreted at the Python layer.
     """
     PropertyState = apps.get_model("seed", "PropertyState")
     for ps in PropertyState.objects.all():
         # rely on pint quantity field settings in the model to serialize
         # correctly to metric
-        ps.gross_floor_area_si              = as_area(ps.gross_floor_area)
-        ps.conditioned_floor_area_si        = as_area(ps.conditioned_floor_area)
-        ps.occupied_floor_area              = as_area(ps.occupied_floor_area_si)
-        ps.site_eui_si                      = as_eui(ps.site_eui)
-        ps.source_eui_weather_normalized_si = as_eui(ps.source_eui_weather_normalized)
-        ps.site_eui_weather_normalized_si   = as_eui(ps.site_eui_weather_normalized)
-        ps.source_eui_si                    = as_eui(ps.source_eui)
+        ps.gross_floor_area_pint              = ps.gross_floor_area
+        ps.conditioned_floor_area_pint        = ps.conditioned_floor_area
+        ps.occupied_floor_area_pint           = ps.occupied_floor_area
+        ps.site_eui_pint                      = ps.site_eui
+        ps.source_eui_weather_normalized_pint = ps.source_eui_weather_normalized
+        ps.site_eui_weather_normalized_pint   = ps.site_eui_weather_normalized
+        ps.source_eui_pint                    = ps.source_eui
         ps.save()
 
-def clear_si_fields(apps, schema_editor):
+def clear_pint_fields(apps, schema_editor):
     """
-    Clears new SI fields
+    Clears new Pint fields
     """
     PropertyState = apps.get_model("seed", "PropertyState")
     for ps in PropertyState.objects.all():
-        ps.gross_floor_area_si              = None
-        ps.conditioned_floor_area_si        = None
-        ps.occupied_floor_area              = None
-        ps.site_eui_si                      = None
-        ps.source_eui_weather_normalized_si = None
-        ps.site_eui_weather_normalized_si   = None
-        ps.source_eui_si                    = None
+        ps.gross_floor_area_pint              = None
+        ps.conditioned_floor_area_pint        = None
+        ps.occupied_floor_area_pint           = None
+        ps.site_eui_pint                      = None
+        ps.source_eui_weather_normalized_pint = None
+        ps.site_eui_weather_normalized_pint   = None
+        ps.source_eui_pint                    = None
         ps.save()
 
 class Migration(migrations.Migration):
 
     dependencies = [
-        ('seed', '0072_auto_20170818_1602'),
+        ('seed', '0072_auto_20170823_1013'),
     ]
 
     operations = [
-        migrations.RunPython(populate_si_fields, clear_si_fields),
+        migrations.RunPython(populate_pint_fields, clear_pint_fields),
     ]
