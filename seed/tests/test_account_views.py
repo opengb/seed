@@ -17,7 +17,8 @@ from seed.lib.superperms.orgs.models import (
     ROLE_MEMBER,
     ROLE_VIEWER,
     OrganizationUser,
-    Organization
+    Organization,
+    MEASUREMENT_US,
 )
 from seed.models.cycles import Cycle
 from seed.models.properties import PropertyState
@@ -65,7 +66,8 @@ class AccountsViewTests(TestCase):
                 'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
-            'measurement_system': MEASUREMENT_US,
+            'measurement_system_import': MEASUREMENT_US,
+            'measurement_system_display': MEASUREMENT_US,
             'user_role': 'owner',
             'is_parent': True,
             'parent_id': self.org.pk,
@@ -126,7 +128,8 @@ class AccountsViewTests(TestCase):
                     'id': self.user.pk}],
                 'number_of_users': 1,
                 'name': 'sub',
-                'measurement_system': MEASUREMENT_US,
+                'measurement_system_import': MEASUREMENT_US,
+                'measurement_system_display': MEASUREMENT_US,
                 'user_role': 'owner',
                 'is_parent': False,
                 'parent_id': self.org.pk,
@@ -148,7 +151,8 @@ class AccountsViewTests(TestCase):
                 'id': self.user.pk}],
             'number_of_users': 1,
             'name': 'my org',
-            'measurement_system': MEASUREMENT_US,
+            'measurement_system_import': MEASUREMENT_US,
+            'measurement_system_display': MEASUREMENT_US,
             'user_role': 'owner',
             'is_parent': True,
             'parent_id': self.org.pk,
