@@ -816,5 +816,47 @@ VIEW_COLUMNS_PROPERTY = [
         'displayName': 'District',
         'dataType': 'string',
         'dbField': True,
-    }
+    }, {
+        'name': 'gross_floor_area_pint',
+        'table': 'PropertyState',
+        'displayName': 'Gross Floor Area*',
+        'dataType': 'pint',
+        'dbField': True,
+    }, {
+        'name': 'conditioned_floor_area_pint',
+        'table': 'PropertyState',
+        'displayName': 'Conditioned Floor Area*',
+        'dataType': 'pint',
+        'dbField': True,
+    }, {
+        'name': 'occupied_floor_area_pint',
+        'table': 'PropertyState',
+        'displayName': 'Occupied Floor Area*',
+        'dataType': 'pint',
+        'dbField': True,
+    }, {
+        'name': 'site_eui_pint',
+        'table': 'PropertyState',
+        'displayName': 'Site EUI*',
+        'dataType': 'pint',
+        'dbField': True,
+    }, {
+        'name': 'source_eui_weather_normalized_pint',
+        'table': 'PropertyState',
+        'displayName': 'Source EUI Weather Normalized*',
+        'dataType': 'pint',
+        'dbField': True,
+    }, {
+        'name': 'site_eui_weather_normalized_pint',
+        'table': 'PropertyState',
+        'displayName': 'Site EUI Weather Normalized*',
+        'dataType': 'pint',
+        'dbField': True,
+    }, {
+        'name': 'source_eui_pint',
+        'table': 'PropertyState',
+        'displayName': 'Source EUI*',
+        'dataType': 'pint',
+        'dbField': True,
+    },
 ]
