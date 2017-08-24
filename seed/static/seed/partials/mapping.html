@@ -186,13 +186,13 @@
                                 </select>
                             </td>
                             <td>
-                              <select>
-                                <option value=""></option>
-                                <option value="">kBtu/ft2</option>
-                                <option value="">ft2</option>
-                                <option value="">m2</option>
-                                <option value="">GJ/m2</option>
-                                <option value="">kWh/m2</option>
+                              <select ng-model="tcm.import_units">
+                                <option value="" selected></option>
+                                <option value="ft**2">ft2</option>
+                                <option value="m**2">m2</option>
+                                <option value="kBtu/ft**2/year">kBtu/ft2/a</option>
+                                <option value="GJ/m**2/year">GJ/m2/a</option>
+                                <option value="kWh/m**2/year">kWh/m2/a</option>
                               </select>
                             </td>
                             <td ng-repeat="cell_value in ::tcm.raw_data track by $index" ng-class="{'danger': set_td_class(tcm, cell_value) == 'danger', 'warning': set_td_class(tcm, cell_value) == 'warning'}">

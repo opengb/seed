@@ -426,6 +426,7 @@ angular.module('BE.seed.controller.mapping', [])
           var tcm = $scope.raw_columns[i];
           var header = tcm.name;
           var suggestion;
+          var import_units;
           // We're not mapping columns that are getting concatenated.
           if (tcm.is_a_concat_parameter) {
             continue;
@@ -437,10 +438,12 @@ angular.module('BE.seed.controller.mapping', [])
           }
           // don't map ignored rows
           suggestion = tcm.mapped_row ? tcm.suggestion : '';
+          import_units = tcm.import_units;
           mappings.push({
             from_field: header,
             to_field: suggestion,
-            to_table_name: tcm.suggestion_table_name
+            to_table_name: tcm.suggestion_table_name,
+            units: import_units
           });
         }
         return mappings;
