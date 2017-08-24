@@ -14,6 +14,8 @@ from django.utils import timezone
 
 from seed.lib.mcm.matchers import fuzzy_in_set
 
+from quantityfield import ureg
+
 NONE_SYNONYMS = (
     (u'_', u'not available'),
     (u'_', u'not applicable'),
@@ -62,6 +64,28 @@ def float_cleaner(value, *args):
         value = None
     except TypeError:
         message = 'float_cleaner cannot convert {} to float'.format(type(value))
+        raise TypeError(message)
+
+    return value
+
+def pint_cleaner(value, units, *args):
+    """Try to convert value to a meaningful (magnitude, unit) object.
+
+    HOW CAN CLEANER KNOW ABOUT THIS?? ... goes into the ontology I guess?
+    """
+    # API breakage if None does not return None
+    if value is None:
+        return None
+
+    if isinstance(value, (str, unicode)):
+        value = PUNCT_REGEX.sub('', value)
+
+    try:
+        value = float(value) * ureg('m**2')
+    except ValueError:
+        value = None
+    except TypeError:
+        message = 'pint_cleaner cannot convert {} to pint'.format(type(value))
         raise TypeError(message)
 
     return value
@@ -141,6 +165,9 @@ class Cleaner(object):
         self.int_columns = filter(
             lambda x: self.schema[x] == u'integer', self.schema
         )
+        self.pint_columns = filter(
+            lambda x: self.schema[x] == u'pint', self.schema
+        )
 
     def clean_value(self, value, column_name):
         """Clean the value, based on characteristics of its column_name."""
@@ -157,5 +184,8 @@ class Cleaner(object):
 
             if column_name in self.int_columns:
                 return int_cleaner(value)
+
+            if column_name in self.pint_columns:
+                return pint_cleaner(value, 'm**2')
 
         return value
