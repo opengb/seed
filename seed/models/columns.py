@@ -545,7 +545,7 @@ class Column(models.Model):
             'datetime': 'datetime',
             'date': 'date',
             'boolean': 'boolean',
-            'pint': 'pint',
+            'pint_object': 'pint_object',
         }
 
         types = OrderedDict()
