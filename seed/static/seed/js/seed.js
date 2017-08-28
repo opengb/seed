@@ -75,6 +75,7 @@ angular.module('BE.seed.controllers', [
 angular.module('BE.seed.filters', [
   'district',
   'fromNow',
+  'fromPint',
   'ignoremap',
   'startFrom',
   'stripImportPrefix',
