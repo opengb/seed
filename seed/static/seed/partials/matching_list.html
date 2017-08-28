@@ -124,7 +124,7 @@
                         <tr ng-repeat="i in (filtered = (inventory | filter:(selectedFilter == SHOW_ALL) ? undefined : {matched: selectedFilter == SHOW_MATCHED} | filter: allSearch)) | orderBy : sortColumn : reverseSort : naturalSortComparator | startFrom : current_page * number_per_page | limitTo : number_per_page">
                             <td class="matching-link"><a ui-sref="matching_detail(::{importfile_id: import_file.id, inventory_type: inventory_type, state_id: i.id})"><i class="ui-grid-icon-info-circled"></i></a></td>
                             <td ng-repeat="col in ::columns">
-                                <span>{$:: col.extraData ? i.extra_data[col.name] : i[col.name] $}</span>
+                                <span>{$:: (col.extraData ? i.extra_data[col.name] : i[col.name]) | fromPint $}</span>
                             </td>
                             <td class="is_aligned_center has_no_padding filter-unmatched-hide">
                                 <label class="checkbox_fill_area">
