@@ -68,20 +68,18 @@ def float_cleaner(value, *args):
 
     return value
 
-def pint_cleaner(value, units, *args):
-    """Try to convert value to a meaningful (magnitude, unit) object.
 
-    HOW CAN CLEANER KNOW ABOUT THIS?? ... goes into the ontology I guess?
+def pint_cleaner(value, units, *args):
     """
+    Try to convert value to a meaningful (magnitude, unit) object.
+    """
+    value = float_cleaner(value)
     # API breakage if None does not return None
     if value is None:
         return None
 
-    if isinstance(value, (str, unicode)):
-        value = PUNCT_REGEX.sub('', value)
-
     try:
-        value = float(value) * ureg('m**2')
+        value = value * ureg(units)
     except ValueError:
         value = None
     except TypeError:
@@ -146,6 +144,31 @@ def int_cleaner(value, *args):
     return value
 
 
+def build_pint_column_map(schema):
+    """
+    The schema contains { raw_column_name: ('pint_object', UNIT_STRING) }
+    tuples to define a pint mapping.
+    Returns a dict { raw_column_name: UNIT_STRING) } to make it simple to check
+    if it's a pint column (checking against `keys()`) and to get the units for
+    use with `pint_cleaner(value, UNIT_STRING)`
+
+    example input: {
+        u'pm_parent_property_id': 'string',
+        u'Weather Normalized Site EUI (GJ/m2)': ('pint_object', u'GJ/m**2/year')
+    }
+
+    example output: {
+        u'Weather Normalized Site EUI (GJ/m2)': u'GJ/m**2/year'
+    }
+    """
+    pint_column_map = {raw_col: pint_spec[1]
+                       for (raw_col, pint_spec) in schema.iteritems()
+                       if isinstance(pint_spec, tuple)
+                       and pint_spec[0] == 'pint_object'}
+
+    return pint_column_map
+
+
 class Cleaner(object):
     """Cleans values for a given ontology."""
 
@@ -165,9 +188,8 @@ class Cleaner(object):
         self.int_columns = filter(
             lambda x: self.schema[x] == u'integer', self.schema
         )
-        self.pint_columns = filter(
-            lambda x: self.schema[x] == u'pint', self.schema
-        )
+
+        self.pint_column_map = build_pint_column_map(self.schema)
 
     def clean_value(self, value, column_name):
         """Clean the value, based on characteristics of its column_name."""
@@ -185,7 +207,8 @@ class Cleaner(object):
             if column_name in self.int_columns:
                 return int_cleaner(value)
 
-            if column_name in self.pint_columns:
-                return pint_cleaner(value, 'm**2')
+            if column_name in self.pint_column_map.keys():
+                units = self.pint_column_map[column_name]
+                return pint_cleaner(value, units)
 
         return value
