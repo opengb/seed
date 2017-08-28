@@ -255,7 +255,7 @@ class Column(models.Model):
                      mapping['to_column_object']]
 
                 column_mapping.user = user
-                column_mapping.units = mapping.get('units') # will use with pint
+                column_mapping.units = mapping.get('units')  # will use with pint
                 column_mapping.save()
 
                 cache_column_mapping.append(
@@ -687,7 +687,7 @@ class ColumnMapping(models.Model):
                                            blank=True, null=True, related_name='column_mappings')
     column_raw = models.ManyToManyField('Column', related_name='raw_mappings', blank=True, )
     column_mapped = models.ManyToManyField('Column', related_name='mapped_mappings', blank=True, )
-    units = models.CharField(max_length=32, blank=True, null=True, ) # pint units string for now
+    units = models.CharField(max_length=32, blank=True, null=True, )  # pint units string for now
 
     def is_direct(self):
         """
