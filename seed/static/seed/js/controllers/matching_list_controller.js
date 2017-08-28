@@ -41,12 +41,44 @@ angular.module('BE.seed.controller.matching_list', [])
       $scope.import_file = import_file_payload.import_file;
       $scope.inventory_type = $stateParams.inventory_type;
 
+      $scope.pint_units_to_strings = function (inventory) {
+        var pint_to_string = function (sig_figs, pint_obj) {
+          var get_display_units = function (pint_format_string) {
+            return {
+              'foot ** 2': 'sq. ft',
+              'kilobtu / foot ** 2 / year': 'kBtu/sq. ft./year'
+            }[pint_format_string] || 'unknown_unit';
+          };
+          return pint_obj.magnitude.toFixed(sig_figs)
+            + ' ' + get_display_units(pint_obj.units);
+        };
+
+        var make_converter = function (converter, field) {
+          return function (obj) {
+            if (_.has(obj, field)) {
+              obj[field] = converter(obj[field]);
+            }
+            return obj;
+          };
+        };
+
+        var convert_all = _.flow([
+          make_converter(_.partial(pint_to_string, 0), 'gross_floor_area_pint'),
+          make_converter(_.partial(pint_to_string, 0), 'site_eui_pint'),
+          make_converter(_.partial(pint_to_string, 0), 'source_eui_pint')
+        ]);
+
+        var transformed_inventory = _.map(inventory, convert_all);
+        return transformed_inventory;
+      };
+
       var validCycles = _.uniq(_.map(import_file_payload.import_file.dataset.importfiles, 'cycle'));
       $scope.cycles = _.filter(cycles.cycles, function (cycle) {
         return _.includes(validCycles, cycle.id);
       });
       $scope.selectedCycle = _.find($scope.cycles, {id: $scope.import_file.cycle});
       $scope.inventory = $scope.inventory_type === 'properties' ? inventory_payload.properties : inventory_payload.tax_lots;
+      $scope.inventory = $scope.pint_units_to_strings($scope.inventory);
       $scope.filtered = [];
       $scope.number_per_page_options = [5, 10, 25, 50, 100];
       $scope.number_per_page = inventory_service.loadMatchesPerPage();
