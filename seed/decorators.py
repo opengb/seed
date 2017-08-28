@@ -19,6 +19,7 @@ SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
 
+
 # convert Pint objects to richer objects than just a straight-up float, so that
 # Angular (or whatever is talking to the API) can do with it as it will.
 class PintEncoder(DjangoJSONEncoder):
