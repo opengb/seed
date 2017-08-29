@@ -38,11 +38,13 @@ TYPE_NUMBER = 0
 TYPE_STRING = 1
 TYPE_DATE = 2
 TYPE_YEAR = 3
+TYPE_MEASURE = 4
 DATA_TYPES = [
-    (TYPE_NUMBER, 'number'),
+    (TYPE_NUMBER, 'raw number'),
     (TYPE_STRING, 'string'),
     (TYPE_DATE, 'date'),
-    (TYPE_YEAR, 'year')
+    (TYPE_YEAR, 'year'),
+    (TYPE_MEASURE, 'physical quantity')
 ]
 
 SEVERITY_ERROR = 0
@@ -128,21 +130,23 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'gross_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_MEASURE,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
         'units': 'square feet',
+        'pint_units': 'foot ** 2',
     }, {
         'table_name': 'PropertyState',
         'field': 'occupied_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_MEASURE,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
         'units': 'square feet',
+        'pint_units': 'foot ** 2',
     }, {
         'table_name': 'PropertyState',
         'field': 'recent_sale_date',
@@ -168,49 +172,55 @@ DEFAULT_RULES = [
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_MEASURE,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_MEASURE,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_MEASURE,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_MEASURE,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_MEASURE,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'year_built',
@@ -256,6 +266,7 @@ class Rule(models.Model):
     text_match = models.CharField(max_length=200, null=True)
     severity = models.IntegerField(choices=SEVERITY, default=SEVERITY_ERROR)
     units = models.CharField(max_length=100, blank=True)
+    pint_units = models.CharField(max_length=100, blank=True)
 
     def __unicode__(self):
         return json.dumps(obj_to_dict(self))
