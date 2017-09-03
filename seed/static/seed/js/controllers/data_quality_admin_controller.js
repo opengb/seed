@@ -64,9 +64,6 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     }, {
       id: 'area',
       label: 'Area'
-    }, {
-      id: 'currency',
-      label: 'Currency'
     }];
     $scope.units = [
       '',
