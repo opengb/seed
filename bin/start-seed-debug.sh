@@ -27,7 +27,7 @@ fi
 running celery
 if [ $? -eq 0 ]; then
     printf "Starting Celery\n"
-    celery -A seed worker -l info -c 4 --maxtasksperchild 1000 --events > /tmp/celeryd.log 2>&1 &
+    celery -A seed worker -l debug -c 1 --maxtasksperchild 1000 --events > /tmp/celeryd.log 2>&1 &
 else
     printf "Celery is already running\n"
 fi
