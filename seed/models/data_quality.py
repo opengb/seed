@@ -25,6 +25,8 @@ from seed.utils.cache import (
 )
 from seed.utils.time import convert_datestr
 
+from quantityfield import ureg
+
 _log = logging.getLogger(__name__)
 
 RULE_TYPE_DEFAULT = 0
@@ -247,6 +249,29 @@ class ComparisonError(Exception):
     pass
 
 
+def format_pint_violation(rule, value):
+    """
+    Format a pint min, max violation for human readability.
+
+    :param rule
+    :param value : Quantity - value to format into range
+    :return (formatted_value, formatted_min, formatted_max) : (String, String, String)
+    """
+    formatted_min = formatted_max = None
+    incoming_data_units = value.units
+    rule_units = ureg(rule.units)
+    # TODO figure out pint pretty-printing to clip to 1 decimal place
+    if incoming_data_units != rule_units:
+        formatted_value = u"{:~P} ({:~P})".format(value, value.to(rule_units))
+    else:
+        formatted_value = u"{:~P}".format(value)
+    if rule.min is not None:
+        formatted_min = u"{:~P}".format(rule.min * rule_units)
+    if rule.max is not None:
+        formatted_max = u"{:~P}".format(rule.max * rule_units)
+    return (formatted_value, formatted_min, formatted_max)
+
+
 class Rule(models.Model):
     """
     Rules for DataQualityCheck
@@ -310,6 +335,8 @@ class Rule(models.Model):
                 rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
             elif isinstance(value, int):
                 rule_min = int(rule_min)
+            elif isinstance(value, ureg.Quantity):
+                rule_min = rule_min * ureg(self.units)
             elif not isinstance(value, (str, unicode)):
                 # must be a float...
                 value = float(value)
@@ -343,6 +370,8 @@ class Rule(models.Model):
                 rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
             elif isinstance(value, int):
                 rule_max = int(rule_max)
+            elif isinstance(value, ureg.Quantity):
+                rule_max = rule_max * ureg(self.units)
             elif not isinstance(value, (str, unicode)):
                 # must be a float...
                 value = float(value)
@@ -424,6 +453,8 @@ class Rule(models.Model):
                 f_min = str(self.min)
             if self.max is not None:
                 f_max = str(self.max)
+        elif isinstance(value, ureg.Quantity):
+            f_value, f_min, f_max = format_pint_violation(self, value)
         elif isinstance(value, (str, unicode)):
             f_value = str(value)
             f_min = str(self.min)
