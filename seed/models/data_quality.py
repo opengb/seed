@@ -38,13 +38,15 @@ TYPE_NUMBER = 0
 TYPE_STRING = 1
 TYPE_DATE = 2
 TYPE_YEAR = 3
-TYPE_MEASURE = 4
+TYPE_EUI = 4
+TYPE_AREA = 5
 DATA_TYPES = [
-    (TYPE_NUMBER, 'raw number'),
+    (TYPE_NUMBER, 'number'),
     (TYPE_STRING, 'string'),
     (TYPE_DATE, 'date'),
     (TYPE_YEAR, 'year'),
-    (TYPE_MEASURE, 'physical quantity')
+    (TYPE_EUI, 'eui'),
+    (TYPE_AREA, 'area'),
 ]
 
 SEVERITY_ERROR = 0
@@ -90,7 +92,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 7000000,
@@ -99,7 +101,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'severity': SEVERITY_WARNING,
@@ -130,7 +132,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'gross_floor_area',
-        'data_type': TYPE_MEASURE,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
@@ -140,7 +142,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'occupied_floor_area',
-        'data_type': TYPE_MEASURE,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
@@ -166,7 +168,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
@@ -176,7 +178,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_MEASURE,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
@@ -185,7 +187,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui_weather_normalized',
-        'data_type': TYPE_MEASURE,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
@@ -195,7 +197,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_MEASURE,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
@@ -205,7 +207,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_MEASURE,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
@@ -214,7 +216,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui_weather_normalized',
-        'data_type': TYPE_MEASURE,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'max': 1000,
