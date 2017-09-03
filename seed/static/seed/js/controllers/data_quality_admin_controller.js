@@ -66,13 +66,15 @@ angular.module('BE.seed.controller.data_quality_admin', [])
       label: 'Area'
     }];
     $scope.units = [
-      '',
-      'square feet',
-      'square metres',
-      'kBtu/sq. ft./year',
-      'GJ/sq. m./year',
-      'MJ/sq. m./year',
-      'kWh/sq. m./year'
+      {label: '', id: ''},
+      // {label: 'square feet', id: 'ft**2'},
+      {label: 'square feet', id: 'square feet'}, // leave alone so old rules work
+      {label: 'square metres', id: 'm**2'},
+      {label: 'kBtu/sq. ft./year', id: 'kBtu/sq. ft./year'}, // leave alone so old rules work
+      // {label: 'kBtu/sq. ft./year', id: 'kBtu/ft**2/year'},
+      {label: 'GJ/sq. m./year', id: 'GJ/m**2/year'},
+      {label: 'MJ/sq. m./year', id: 'MJ/m**2/year'},
+      {label: 'kWh/sq. m./year', id: 'kWh/m**2/year'}
     ];
 
     $scope.columns = columns;

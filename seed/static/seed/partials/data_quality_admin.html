@@ -94,7 +94,7 @@
                                 <input class="form-control input-sm" type="date" ng-model="rule.max" ng-change="rule.rule_type = 1" ng-if="rule.data_type == 'date'">
                             </td>
                             <td>
-                                <select class="form-control input-sm" ng-options="u for u in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
+                                <select class="form-control input-sm" ng-options="u.id as u.label for u in units" ng-model="rule.units" ng-change="rule.rule_type = 1"></select>
                             </td>
                             <td>
                                 <select class="form-control input-sm" ng-model="rule.severity" ng-change="rule.rule_type = 1" ng-class="{'error-bg': rule.severity=='error', 'warning-bg': rule.severity=='warning'}">
