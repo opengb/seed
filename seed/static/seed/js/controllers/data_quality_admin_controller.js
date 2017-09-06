@@ -20,6 +20,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
   '$uibModal',
   'urls',
   'naturalSort',
+  'flippers',
   function ($scope,
             $q,
             $state,
@@ -35,7 +36,8 @@ angular.module('BE.seed.controller.data_quality_admin', [])
             spinner_utility,
             $uibModal,
             urls,
-            naturalSort) {
+            naturalSort,
+            flippers) {
     $scope.inventory_type = $stateParams.inventory_type;
     $scope.org = organization_payload.organization;
     $scope.auth = auth_payload.auth;
@@ -58,24 +60,32 @@ angular.module('BE.seed.controller.data_quality_admin', [])
     }, {
       id: 'year',
       label: 'Year'
-    }, {
-      id: 'eui',
-      label: 'EUI'
-    }, {
-      id: 'area',
-      label: 'Area'
     }];
+
+    if (flippers.is_active('release:use_pint')) {
+      $scope.data_types.push({id: 'eui', label: 'EUI'});
+      $scope.data_types.push({id: 'area', label: 'Area'});
+    }
+
     $scope.units = [
       {label: '', id: ''},
-      // {label: 'square feet', id: 'ft**2'},
-      {label: 'square feet', id: 'square feet'}, // leave alone so old rules work
-      {label: 'square metres', id: 'm**2'},
-      {label: 'kBtu/sq. ft./year', id: 'kBtu/sq. ft./year'}, // leave alone so old rules work
-      // {label: 'kBtu/sq. ft./year', id: 'kBtu/ft**2/year'},
-      {label: 'GJ/sq. m./year', id: 'GJ/m**2/year'},
-      {label: 'MJ/sq. m./year', id: 'MJ/m**2/year'},
-      {label: 'kWh/sq. m./year', id: 'kWh/m**2/year'}
+      {label: 'square feet', id: 'square feet'},
+      {label: 'kBtu/sq. ft./year', id: 'kBtu/sq. ft./year'}
     ];
+
+    if (flippers.is_active('release:use_pint')) {
+
+      $scope.units = [
+        {label: '', id: ''},
+        {label: 'square feet', id: 'ft**2'},
+        {label: 'square metres', id: 'm**2'},
+        {label: 'kBtu/sq. ft./year', id: 'kBtu/ft**2/year'},
+        {label: 'GJ/sq. m./year', id: 'GJ/m**2/year'},
+        {label: 'MJ/sq. m./year', id: 'MJ/m**2/year'},
+        {label: 'kWh/sq. m./year', id: 'kWh/m**2/year'}
+      ];
+
+    }
 
     $scope.columns = columns;
     $scope.all_labels = labels_payload;
