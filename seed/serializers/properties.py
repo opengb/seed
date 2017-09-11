@@ -178,7 +178,7 @@ class PropertyStateWritableSerializer(serializers.ModelSerializer):
 class PropertyViewSerializer(serializers.ModelSerializer):
     class Meta:
         model = PropertyView
-        depth = 1
+        depth = 0
         fields = ('id', 'state', 'cycle', 'property')
 
 
