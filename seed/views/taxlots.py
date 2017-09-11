@@ -540,6 +540,12 @@ class TaxLotViewSet(GenericViewSet):
         ).select_related('cycle', 'state')
         properties = []
         for property_view in property_views:
+
+            # gross, don't do this
+            property_view.state.site_eui_pint = property_view.state.site_eui_pint.magnitude
+            property_view.state.source_eui_pint = property_view.state.source_eui_pint.magnitude
+            property_view.state.gross_floor_area_pint = property_view.state.gross_floor_area_pint.magnitude
+
             properties.append(PropertyViewSerializer(property_view).data)
         return properties
 

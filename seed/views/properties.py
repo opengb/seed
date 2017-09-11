@@ -589,6 +589,12 @@ class PropertyViewSet(GenericViewSet):
                 match = pattern.match(name)
                 if match:
                     filename = match.groups()[0] + ext
+
+            # gross, don't do this
+            log.state.site_eui_pint = log.state.site_eui_pint.magnitude
+            log.state.source_eui_pint = log.state.source_eui_pint.magnitude
+            log.state.gross_floor_area_pint = log.state.gross_floor_area_pint.magnitude
+
             return {
                 'state': PropertyStateSerializer(log.state).data,
                 'date_edited': convert_to_js_timestamp(log.created),
@@ -600,6 +606,12 @@ class PropertyViewSet(GenericViewSet):
         log = PropertyAuditLog.objects.select_related('state', 'parent1', 'parent2').filter(
             state_id=property_view.state_id
         ).order_by('-id').first()
+
+        # gross, don't do this
+        log.state.site_eui_pint = log.state.site_eui_pint.magnitude
+        log.state.source_eui_pint = log.state.source_eui_pint.magnitude
+        log.state.gross_floor_area_pint = log.state.gross_floor_area_pint.magnitude
+
         master = {
             'state': PropertyStateSerializer(log.state).data,
             'date_edited': convert_to_js_timestamp(log.created),
@@ -677,6 +689,14 @@ class PropertyViewSet(GenericViewSet):
         result = self._get_property_view(pk, cycle_pk)
         if result.get('status', None) != 'error':
             property_view = result.pop('property_view')
+            # import pdb
+            # pdb.set_trace()
+
+            # # gross, don't do this
+            property_view.state.site_eui_pint = property_view.state.site_eui_pint.magnitude
+            property_view.state.source_eui_pint = property_view.state.source_eui_pint.magnitude
+            property_view.state.gross_floor_area_pint = property_view.state.gross_floor_area_pint.magnitude
+
             result.update(PropertyViewSerializer(property_view).data)
             # remove PropertyView id from result
             result.pop('id')
