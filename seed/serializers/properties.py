@@ -29,6 +29,7 @@ from seed.models import (
 from seed.serializers.certification import (
     GreenAssessmentPropertyReadOnlySerializer
 )
+from seed.serializers.pint import PintFieldSerializer
 from seed.serializers.taxlots import TaxLotViewSerializer
 
 # expose internal model
@@ -133,6 +134,14 @@ class PropertyMinimalSerializer(serializers.ModelSerializer):
 
 class PropertyStateSerializer(serializers.ModelSerializer):
     extra_data = serializers.JSONField(required=False)
+
+    gross_floor_area_pint = PintFieldSerializer(allow_null=True, required=False)
+    conditioned_floor_area_pint = PintFieldSerializer(allow_null=True, required=False)
+    occupied_floor_area_pint = PintFieldSerializer(allow_null=True, required=False)
+    site_eui_pint = PintFieldSerializer(allow_null=True, required=False)
+    source_eui_weather_normalized_pint = PintFieldSerializer(allow_null=True, required=False)
+    site_eui_weather_normalized_pint = PintFieldSerializer(allow_null=True, required=False)
+    source_eui_pint = PintFieldSerializer(allow_null=True, required=False)
 
     class Meta:
         model = PropertyState
