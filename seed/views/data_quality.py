@@ -76,7 +76,7 @@ def _get_js_rule_severity(severity):
 def _get_rule_type_from_js(data_type):
     """return the Rules TYPE from the JS friendly data type
 
-    :param data_type: 'string', 'number', 'date', or 'year'
+    :param data_type: 'string', 'number', 'date', 'year', 'eui', or 'area'
     :returns: int data type as defined in data_quality.models
     """
     d = {v: k for k, v in dict(DATA_QUALITY_DATA_TYPES).items()}

@@ -65,3 +65,6 @@ protractorReports/
 protractorInstrumented/
 protractorSaved/
 protractorCoverage/
+
+# ctags
+tags

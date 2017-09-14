@@ -201,6 +201,34 @@ def _translate_unit_to_type(unit):
     return unit.lower()
 
 
+def _gather_columns_for_org(organization):
+    qs = Column.objects                                           \
+        .filter(mapped_mappings__super_organization=organization) \
+        .select_related('unit')
+    return qs
+
+
+def _build_types_from_column_qs(column_qs):
+    types = {}
+
+    for column in column_qs:
+        column_type = 'string'
+        if column.pint_unit:
+            # here using a tuple as a sort of parameterized type like
+            # `Pint(SquareMetres)` ... just `Pint` doesn't tell the whole story
+            # of the type ...  eg. the "type" is ('pint_object', 'm**2') and
+            # the cleaner can dispatch sensibly on this.
+            column_type = ('pint_object', column.pint_unit)
+        if column.unit:
+            # when does this even happen? Ever?
+            column_type = _translate_unit_to_type(
+                column.unit.get_unit_type_display()
+            )
+        types[column.column_name] = column_type
+
+    return types
+
+
 def _build_cleaner(org):
     """Return a cleaner instance that knows about a mapping's unit types.
 
@@ -210,20 +238,17 @@ def _build_cleaner(org):
     :param org: organization instance.
     :returns: dict of dicts. {'types': {'col_name': 'type'},}
     """
-    units = {'types': {}}
-    for column in Column.objects.filter(mapped_mappings__super_organization=org).select_related(
-            'unit'):
-        column_type = 'string'
-        if column.unit:
-            column_type = _translate_unit_to_type(
-                column.unit.get_unit_type_display()
-            )
-        units['types'][column.column_name] = column_type
+    cols = _gather_columns_for_org(org)
+    ontology = {'types': _build_types_from_column_qs(cols)}
 
-    # Update with our predefined types for our database column types.
-    units['types'].update(Column.retrieve_db_types()['types'])
+    # Update our database column types with the predefined types in constants
+    # ignoring our pint types so we don't clobber the parameterized types
+    # we built above with _build_types_from_column_qs
+    default_types = Column.retrieve_db_types()['types']
+    filtered_types = {k: v for k, v in default_types.items() if v != 'pint_object'}
+    ontology['types'].update(filtered_types)
 
-    return cleaners.Cleaner(units)
+    return cleaners.Cleaner(ontology)
 
 
 @shared_task
@@ -253,15 +278,15 @@ def map_row_chunk(ids, file_pk, source_type, prog_key, increment, **kwargs):
     # Ideally the table_mapping method would be attached to the import_file_id, someday...
     list_of_raw_columns = import_file.first_row_columns
     if list_of_raw_columns:
-        for k, v in table_mappings.items():
-            for key2 in v.keys():
-                if key2 not in list_of_raw_columns:
-                    del table_mappings[k][key2]
+        for table, mappings in table_mappings.items():
+            for raw_column_name in mappings.keys():
+                if raw_column_name not in list_of_raw_columns:
+                    del table_mappings[table][raw_column_name]
 
         # check that the dictionaries are not empty, if empty, then delete.
-        for k in table_mappings.keys():
-            if not table_mappings[k]:
-                del table_mappings[k]
+        for table in table_mappings.keys():
+            if not table_mappings[table]:
+                del table_mappings[table]
 
     # TODO: **START TOTAL TERRIBLE HACK**
     # For some reason the mappings that got created previously don't

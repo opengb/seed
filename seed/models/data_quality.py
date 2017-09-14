@@ -25,6 +25,8 @@ from seed.utils.cache import (
 )
 from seed.utils.time import convert_datestr
 
+from quantityfield import ureg
+
 _log = logging.getLogger(__name__)
 
 RULE_TYPE_DEFAULT = 0
@@ -38,11 +40,15 @@ TYPE_NUMBER = 0
 TYPE_STRING = 1
 TYPE_DATE = 2
 TYPE_YEAR = 3
+TYPE_EUI = 4
+TYPE_AREA = 5
 DATA_TYPES = [
     (TYPE_NUMBER, 'number'),
     (TYPE_STRING, 'string'),
     (TYPE_DATE, 'date'),
-    (TYPE_YEAR, 'year')
+    (TYPE_YEAR, 'year'),
+    (TYPE_EUI, 'eui'),
+    (TYPE_AREA, 'area'),
 ]
 
 SEVERITY_ERROR = 0
@@ -88,7 +94,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 7000000,
@@ -97,7 +103,7 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'conditioned_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'severity': SEVERITY_WARNING,
@@ -128,21 +134,23 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'gross_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
         'units': 'square feet',
+        'pint_units': 'foot ** 2',
     }, {
         'table_name': 'PropertyState',
         'field': 'occupied_floor_area',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_AREA,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 100,
         'max': 7000000,
         'severity': SEVERITY_ERROR,
         'units': 'square feet',
+        'pint_units': 'foot ** 2',
     }, {
         'table_name': 'PropertyState',
         'field': 'recent_sale_date',
@@ -162,55 +170,61 @@ DEFAULT_RULES = [
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'site_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 0,
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'severity': SEVERITY_WARNING,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'source_eui_weather_normalized',
-        'data_type': TYPE_NUMBER,
+        'data_type': TYPE_EUI,
         'rule_type': RULE_TYPE_DEFAULT,
         'min': 10,
         'max': 1000,
         'severity': SEVERITY_ERROR,
         'units': 'kBtu/sq. ft./year',
+        'pint_units': 'kBtu/ft**2/year',
     }, {
         'table_name': 'PropertyState',
         'field': 'year_built',
@@ -235,6 +249,29 @@ class ComparisonError(Exception):
     pass
 
 
+def format_pint_violation(rule, value):
+    """
+    Format a pint min, max violation for human readability.
+
+    :param rule
+    :param value : Quantity - value to format into range
+    :return (formatted_value, formatted_min, formatted_max) : (String, String, String)
+    """
+    formatted_min = formatted_max = None
+    incoming_data_units = value.units
+    rule_units = ureg(rule.units)
+    # TODO figure out pint pretty-printing to clip to 1 decimal place
+    if incoming_data_units != rule_units:
+        formatted_value = u"{:~P} ({:~P})".format(value, value.to(rule_units))
+    else:
+        formatted_value = u"{:~P}".format(value)
+    if rule.min is not None:
+        formatted_min = u"{:~P}".format(rule.min * rule_units)
+    if rule.max is not None:
+        formatted_max = u"{:~P}".format(rule.max * rule_units)
+    return (formatted_value, formatted_min, formatted_max)
+
+
 class Rule(models.Model):
     """
     Rules for DataQualityCheck
@@ -256,6 +293,7 @@ class Rule(models.Model):
     text_match = models.CharField(max_length=200, null=True)
     severity = models.IntegerField(choices=SEVERITY, default=SEVERITY_ERROR)
     units = models.CharField(max_length=100, blank=True)
+    pint_units = models.CharField(max_length=100, blank=True)
 
     def __unicode__(self):
         return json.dumps(obj_to_dict(self))
@@ -297,6 +335,8 @@ class Rule(models.Model):
                 rule_min = datetime.strptime(str(int(rule_min)), '%Y%m%d').date()
             elif isinstance(value, int):
                 rule_min = int(rule_min)
+            elif isinstance(value, ureg.Quantity):
+                rule_min = rule_min * ureg(self.units)
             elif not isinstance(value, (str, unicode)):
                 # must be a float...
                 value = float(value)
@@ -330,6 +370,8 @@ class Rule(models.Model):
                 rule_max = datetime.strptime(str(int(rule_max)), '%Y%m%d').date()
             elif isinstance(value, int):
                 rule_max = int(rule_max)
+            elif isinstance(value, ureg.Quantity):
+                rule_max = rule_max * ureg(self.units)
             elif not isinstance(value, (str, unicode)):
                 # must be a float...
                 value = float(value)
@@ -411,6 +453,8 @@ class Rule(models.Model):
                 f_min = str(self.min)
             if self.max is not None:
                 f_max = str(self.max)
+        elif isinstance(value, ureg.Quantity):
+            f_value, f_min, f_max = format_pint_violation(self, value)
         elif isinstance(value, (str, unicode)):
             f_value = str(value)
             f_min = str(self.min)

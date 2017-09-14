@@ -23,6 +23,7 @@ angular.module('BE.seed.controller.mapping', [])
     '$filter',
     'data_quality_service',
     'inventory_service',
+    'flippers',
     function ($scope,
               $log,
               $q,
@@ -41,7 +42,8 @@ angular.module('BE.seed.controller.mapping', [])
               $http,
               $filter,
               data_quality_service,
-              inventory_service) {
+              inventory_service,
+              flippers) {
       var db_field_columns = suggested_mappings_payload.column_names;
       var columns = suggested_mappings_payload.columns;
       var extra_data_columns = _.filter(columns, 'extra_data');
@@ -49,6 +51,7 @@ angular.module('BE.seed.controller.mapping', [])
         return n.name;
       });
       // var original_columns = angular.copy(db_field_columns.concat(extra_data_columns));
+      $scope.flippers = flippers; // make available in partials/ng-if
 
       // Readability for db columns.
       for (var i = 0; i < db_field_columns.length; i++) {
@@ -426,6 +429,7 @@ angular.module('BE.seed.controller.mapping', [])
           var tcm = $scope.raw_columns[i];
           var header = tcm.name;
           var suggestion;
+          var import_units;
           // We're not mapping columns that are getting concatenated.
           if (tcm.is_a_concat_parameter) {
             continue;
@@ -437,10 +441,12 @@ angular.module('BE.seed.controller.mapping', [])
           }
           // don't map ignored rows
           suggestion = tcm.mapped_row ? tcm.suggestion : '';
+          import_units = tcm.import_units;
           mappings.push({
             from_field: header,
             to_field: suggestion,
-            to_table_name: tcm.suggestion_table_name
+            to_table_name: tcm.suggestion_table_name,
+            units: import_units
           });
         }
         return mappings;

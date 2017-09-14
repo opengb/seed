@@ -13,13 +13,25 @@ from django.http import HttpResponse, HttpResponseForbidden, HttpResponseBadRequ
 from seed.lib.superperms.orgs.models import OrganizationUser
 from seed.utils.cache import make_key, lock_cache, unlock_cache, get_lock
 
+from quantityfield import ureg
+
 SEED_CACHE_PREFIX = 'SEED:{0}'
 LOCK_CACHE_PREFIX = SEED_CACHE_PREFIX + ':LOCK'
 PROGRESS_CACHE_PREFIX = SEED_CACHE_PREFIX + ':PROG'
 
+
+# convert Pint objects to richer objects than just a straight-up float, so that
+# Angular (or whatever is talking to the API) can do with it as it will.
+class PintEncoder(DjangoJSONEncoder):
+    def default(self, obj):
+        if isinstance(obj, ureg.Quantity):
+            return {'magnitude': obj.magnitude, 'units': str(obj.units)}
+        return super(PintEncoder, self).default(obj)
+
+
 FORMAT_TYPES = {
-    'application/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
-    'text/json': lambda response: json.dumps(response, cls=DjangoJSONEncoder),
+    'application/json': lambda response: json.dumps(response, cls=PintEncoder),
+    'text/json': lambda response: json.dumps(response, cls=PintEncoder),
 }
 
 

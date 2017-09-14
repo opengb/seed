@@ -75,6 +75,7 @@ angular.module('BE.seed.controllers', [
 angular.module('BE.seed.filters', [
   'district',
   'fromNow',
+  'fromPint',
   'ignoremap',
   'startFrom',
   'stripImportPrefix',
@@ -97,6 +98,7 @@ angular.module('BE.seed.services', [
   'BE.seed.service.column_mappings',
   'BE.seed.service.cycle',
   'BE.seed.service.dataset',
+  'BE.seed.service.flippers',
   'BE.seed.service.httpParamSerializerSeed',
   'BE.seed.service.inventory',
   'BE.seed.service.inventory_reports',
@@ -153,6 +155,17 @@ SEED_app.run([
 
     // Use lodash in views
     $rootScope._ = window._;
+  }
+]);
+
+// /**
+//  * Initialize release flippers
+//  */
+SEED_app.run([
+  'flippers',
+  function (flippers) {
+    var make = _.partial(flippers.make_flipper, 'ryan@ryanmccuaig.net', '2018-01-01T00:00:00Z');
+    make('release:use_pint', 'boolean', false);
   }
 ]);
 
