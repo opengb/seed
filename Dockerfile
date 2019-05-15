@@ -11,6 +11,7 @@ RUN apk add --no-cache python \
         alpine-sdk \
         pcre \
         pcre-dev \
+        libxml2-dev \
         libxslt-dev \
         linux-headers \
         libffi-dev \
@@ -41,11 +42,7 @@ RUN apk add --no-cache python \
 ##   - install supervisor that works with Python3.
 ##   - enchant, python-gdbm, libssl-dev, libxml2-dev are no longer explicitly installed
 
-### Install python requirements
 WORKDIR /seed
-COPY ./requirements.txt /seed/requirements.txt
-COPY ./requirements/*.txt /seed/requirements/
-RUN pip install -r requirements/aws.txt
 
 ### Install JavaScript requirements - do this first because they take awhile
 ### and the dependencies will probably change slower than python packages.
@@ -55,6 +52,12 @@ COPY ./vendors/package.json /seed/vendors/package.json
 COPY ./README.md /seed/README.md
 # unsafe-perm allows the package.json postinstall script to run with the elevated permissions
 RUN npm install --unsafe-perm
+
+### Install python requirements
+COPY ./requirements.txt /seed/requirements.txt
+COPY ./requirements/*.txt /seed/requirements/
+RUN pip install -r requirements/aws.txt
+RUN pip install lxml
 
 ### Copy over the remaining part of the SEED application and some helpers
 WORKDIR /seed
