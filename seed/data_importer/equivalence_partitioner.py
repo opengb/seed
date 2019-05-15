@@ -95,7 +95,7 @@ class EquivalencePartitioner(object):
             ("custom_id_1",),
             ("normalized_address",)
         ]
-        property_noequivalence_fields = ["pm_property_id"]
+        property_noequivalence_fields = ["pm_property_id", "custom_id_1"]
 
         return kls(property_equivalence_fields, property_noequivalence_fields)
 
