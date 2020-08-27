@@ -17,7 +17,7 @@
 <p>
 {% trans "Please go to the following page and setup your account:" %}
 {% block reset_link %}
-{{ protocol }}://{{ domain }}{{signup_url}}
+<a href="{{ protocol }}://{{ domain }}{{signup_url}}">{{ protocol }}://{{ domain }}{{signup_url}}</a>
 {% endblock %}
 </p>
 
