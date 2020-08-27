@@ -57,7 +57,7 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
 
     subject = 'New SEED account'
     email_body = loader.render_to_string(
-        'seed/account_create_email.html',
+        'seed/account_create_email.txt',
         context
     )
     send_mail(subject, email_body, settings.SERVER_EMAIL, [email_address])
@@ -92,7 +92,7 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
 
     subject = 'Your SEED account has been added to an organization'
     email_body = loader.render_to_string(
-        'seed/account_org_added.html',
+        'seed/account_org_added.txt',
         context
     )
     send_mail(subject, email_body, settings.SERVER_EMAIL, [new_user.email])

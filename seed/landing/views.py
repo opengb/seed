@@ -95,7 +95,7 @@ def password_reset(request):
     return auth.views.password_reset(
         request, template_name='landing/password_reset.html',
         subject_template_name='landing/password_reset_subject.txt',
-        email_template_name='landing/password_reset_email.html',
+        email_template_name='landing/password_reset_email.txt',
         post_reset_redirect=reverse('landing:password_reset_done'),
         from_email=settings.PASSWORD_RESET_EMAIL,
         extra_email_context=extra_context
