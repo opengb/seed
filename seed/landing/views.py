@@ -88,12 +88,17 @@ def password_set(request, uidb64=None, token=None):
 
 
 def password_reset(request):
+    extra_context = {
+        'domain': request.get_host(),
+        'protocol': 'https'
+    }
     return auth.views.password_reset(
         request, template_name='landing/password_reset.html',
         subject_template_name='landing/password_reset_subject.txt',
         email_template_name='landing/password_reset_email.html',
         post_reset_redirect=reverse('landing:password_reset_done'),
         from_email=settings.PASSWORD_RESET_EMAIL,
+        extra_email_context=extra_context
     )
 
 
