@@ -1,0 +1,32 @@
+{% load i18n %}{% autoescape off %}
+
+<img src="{{ protocol }}://{{ domain }}{{STATIC_URL}}seed/images/seed_logo.png"/>
+
+<p>
+{% blocktrans %}Hello {{ first_name }}, {% endblocktrans %}
+</p>
+
+<p>
+{% blocktrans %}You are receiving this e-mail because you have been added to the '{{ new_org }}' organization by '<a href="mailto:{{ requested_by }}">{{ requested_by }}</a>'. Please disregard this message if you are not expecting access to SEED.{% endblocktrans %}
+</p>
+
+<p>
+{% blocktrans %}You can view your new organization by logging into the SEED instance here:{%  endblocktrans %}
+{{ protocol }}://{{ domain }}
+</p>
+
+<p>
+{% blocktrans %}If you need any additional support, let us know!{% endblocktrans %}
+</p>
+
+<p>
+{% blocktrans %}The GRID support team{% endblocktrans %}
+</p>
+
+<p>
+{% blocktrans %}OPEN Technologies{% endblocktrans %}
+</p>
+
+<img src="{{ protocol }}://{{ domain }}{{STATIC_URL}}seed/images/grid_logo.png"/>
+
+{% endautoescape %}
