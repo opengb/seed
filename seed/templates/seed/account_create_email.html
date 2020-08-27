@@ -3,13 +3,18 @@
 
 {% trans "You're receiving this e-mail because you've been registered for a SEED account." %}
 
-{% blocktrans %}SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.{% endblocktrans %}
+{% trans "This version of SEED is hosted by OPEN Technologies. When choosing to use software hosted by OPEN Technologies, you are responsible for ensuring the owner of any data stored in said software is aware of the Terms and Conditions under which their data is stored. Our Terms & Conditions are available here" %} - <a href="https://opentech.eco/grid-terms-conditions/">https://opentech.eco/grid-terms-conditions/</a>
+{% trans "and our Privacy Policy is available here" %} - <a href="https://opentech.eco/grid-privacy-policy/">https://opentech.eco/grid-privacy-policy/</a>.
 
 {% trans "Please go to the following page and setup your account:" %}
 {% block reset_link %}
 {{ protocol }}://{{ domain }}{{signup_url}}
 {% endblock %}
 
-{% blocktrans %}The SEED Team{% endblocktrans %}
+{% blocktrans %}If you need any additional support, let us know!{% endblocktrans %}
+
+{% blocktrans %}The GRID support team{% endblocktrans %}
+
+{% blocktrans %}OPEN Technologies{% endblocktrans %}
 
 {% endautoescape %}
