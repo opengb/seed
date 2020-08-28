@@ -16,7 +16,8 @@ OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGI
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
                      'REDIS_PASSWORD', 'POSTGRES_HOST', 'DJANGO_EMAIL_BACKEND',
                      'EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
-                     'EMAIL_HOST_PASSWORD', 'EMAIL_USE_TLS', 'EMAIL_USE_SSL']
+                     'EMAIL_HOST_PASSWORD', 'EMAIL_USE_TLS', 'EMAIL_USE_SSL',
+                     'PASSWORD_RESET_EMAIL']
 
 for loc in ENV_VARS + OPTIONAL_ENV_VARS:
     locals()[loc] = os.environ.get(loc)
