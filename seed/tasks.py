@@ -52,7 +52,8 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
         'domain': domain,
         'protocol': settings.PROTOCOL,
         'first_name': first_name,
-        'signup_url': signup_url
+        'signup_url': signup_url,
+        'STATIC_URL': settings.STATIC_URL
     }
 
     subject = 'New SEED account'
@@ -92,6 +93,7 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
         'protocol': settings.PROTOCOL,
         'new_org': new_org,
         'requested_by': requested_by,
+        'STATIC_URL': settings.STATIC_URL
     }
 
     subject = 'Your SEED account has been added to an organization'
