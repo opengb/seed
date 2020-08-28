@@ -90,7 +90,7 @@ def password_set(request, uidb64=None, token=None):
 def password_reset(request):
     extra_context = {
         'domain': request.get_host(),
-        'protocol': 'https',
+        'protocol': settings.PROTOCOL,
         'STATIC_URL': settings.STATIC_URL
     }
     return auth.views.password_reset(

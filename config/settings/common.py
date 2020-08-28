@@ -18,6 +18,8 @@ from django.utils.translation import ugettext_lazy as _
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+PROTOCOL = os.environ.get('PROTOCOL','https')
+
 SESSION_COOKIE_DOMAIN = None
 SESSION_EXPIRE_AT_BROWSER_CLOSE = True
 DATA_UPLOAD_MAX_MEMORY_SIZE = None
