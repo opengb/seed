@@ -1,0 +1,19 @@
+{% load compress %}
+{% load i18n %}
+<!DOCTYPE html>
+<html>
+    <!-- :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved. -->
+    <head>
+      <link rel="stylesheet"
+          href="https://fonts.googleapis.com/css?family=Sintony">
+      <style>
+        body {
+          font-family: 'Sintony', serif;
+        }
+      </style>
+    </head>
+    <body>
+      {% block email_body %}
+      {% endblock %}
+    </body>
+</html>

@@ -1,4 +1,7 @@
-{% load i18n %}{% autoescape off %}
+{% extends "seed/email_base.html" %}
+{% load i18n %}
+{% block email_body %}
+{% autoescape off %}
 
 <img src="{{ protocol }}://{{ domain }}{{STATIC_URL}}seed/images/seed_logo.png"/>
 
@@ -36,3 +39,4 @@
 <img src="{{ protocol }}://{{ domain }}{{STATIC_URL}}seed/images/grid_logo.png"/>
 
 {% endautoescape %}
+{% endblock %}
