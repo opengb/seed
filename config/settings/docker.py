@@ -14,7 +14,7 @@ ENV_VARS = ['POSTGRES_DB', 'POSTGRES_PORT', 'POSTGRES_USER', 'POSTGRES_PASSWORD'
 # The optional vars will set the SERVER_EMAIL information as needed
 OPTIONAL_ENV_VARS = ['AWS_ACCESS_KEY_ID', 'AWS_SECRET_ACCESS_KEY', 'AWS_SES_REGION_NAME',
                      'AWS_SES_REGION_ENDPOINT', 'SERVER_EMAIL', 'SENTRY_JS_DSN', 'SENTRY_RAVEN_DSN',
-                     'REDIS_PASSWORD', 'POSTGRES_HOST', 'DJANGO_EMAIL_BACKEND',
+                     'REDIS_PASSWORD', 'DJANGO_EMAIL_BACKEND',
                      'EMAIL_HOST', 'EMAIL_PORT', 'EMAIL_HOST_USER',
                      'EMAIL_HOST_PASSWORD', 'EMAIL_USE_TLS', 'EMAIL_USE_SSL',
                      'PASSWORD_RESET_EMAIL']
@@ -49,7 +49,7 @@ DATABASES = {
         'NAME': POSTGRES_DB,
         'USER': POSTGRES_USER,
         'PASSWORD': POSTGRES_PASSWORD,
-        'HOST': (POSTGRES_HOST if 'POSTGRES_HOST' in os.environ else "db-postgres"),
+        'HOST': "db-postgres",
         'PORT': POSTGRES_PORT,
     }
 }
