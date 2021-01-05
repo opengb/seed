@@ -8,15 +8,16 @@ All rights reserved.  # NOQA
 :author
 """
 
+import json
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ViewSet
 
 from seed.utils.match import match_merge_link
-from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import (
@@ -29,8 +30,8 @@ from seed.models import (
     MERGE_STATE_MERGED,
     MERGE_STATE_DELETE,
     Column,
-    ColumnListSetting,
-    ColumnListSettingColumn,
+    ColumnListProfile,
+    ColumnListProfileColumn,
     Cycle,
     Note,
     PropertyView,
@@ -69,7 +70,7 @@ DISPLAY_RAW_EXTRADATA = True
 DISPLAY_RAW_EXTRADATA_TIME = True
 
 
-class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
+class TaxLotViewSet(ViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = TaxLotSerializer
 
@@ -140,16 +141,16 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
             ).values_list('id', flat=True))
         else:
             try:
-                profile = ColumnListSetting.objects.get(
+                profile = ColumnListProfile.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=VIEW_LIST,
+                    profile_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_TAXLOT
                 )
-                show_columns = list(ColumnListSettingColumn.objects.filter(
-                    column_list_setting_id=profile.id
+                show_columns = list(ColumnListProfileColumn.objects.filter(
+                    column_list_profile_id=profile.id
                 ).values_list('column_id', flat=True))
-            except ColumnListSetting.DoesNotExist:
+            except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
         related_results = TaxLotProperty.get_related(taxlot_views, show_columns,
@@ -207,7 +208,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def cycles(self, request):
         """
         List all the taxlots with all columns
@@ -243,7 +244,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def filter(self, request):
         """
         List all the properties
@@ -282,7 +283,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def merge(self, request):
         """
         Merge multiple tax lot records into a single new record, and run this
@@ -309,14 +310,6 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Make sure the state isn't already matched
-        for state_id in state_ids:
-            if ImportFileViewSet.has_coparent(state_id, 'properties'):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Source state [' + state_id + '] is already matched'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
         merged_state = merge_taxlots(state_ids, organization_id, 'Manual Match')
 
         merge_count, link_count, view_id = match_merge_link(merged_state.taxlotview_set.first().id, 'TaxLotState')
@@ -335,7 +328,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def unmerge(self, request, pk=None):
         """
         Unmerge a taxlot view into two taxlot views
@@ -487,7 +480,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def links(self, request, pk=None):
         """
         Get taxlot details for each linked taxlot across org cycles
@@ -533,7 +526,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
         Runs match merge link for an individual taxlot.
@@ -554,7 +547,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
         Pair a property to this taxlot
@@ -583,7 +576,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
         Unpair a property from this taxlot
@@ -614,7 +607,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def columns(self, request):
         """
         List all tax lot columns
@@ -633,7 +626,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
         organization_id = int(request.query_params.get('organization_id'))
         organization = Organization.objects.get(pk=organization_id)
 
-        only_used = request.query_params.get('only_used', False)
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
         columns = Column.retrieve_all(organization_id, 'taxlot', only_used)
         unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
 
@@ -642,7 +635,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def mappable_columns(self, request):
         """
         List only taxlot columns that are mappable
@@ -660,7 +653,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['DELETE'])
+    @action(detail=False, methods=['DELETE'])
     def batch_delete(self, request):
         """
         Batch delete several tax lots
@@ -730,7 +723,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def properties(self, pk):
         """
         Get related properties for this tax lot
@@ -796,7 +789,7 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 if val == '':
                     new_taxlot_state_data[key] = None
 
-            changed_fields = get_changed_fields(taxlot_state_data, new_taxlot_state_data)
+            changed_fields, previous_data = get_changed_fields(taxlot_state_data, new_taxlot_state_data)
             if not changed_fields:
                 result.update(
                     {'status': 'success', 'message': 'Records are identical'}
@@ -856,8 +849,13 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
                 taxlot_state_data = TaxLotStateSerializer(taxlot_view.state).data
 
                 if 'extra_data' in new_taxlot_state_data:
-                    taxlot_state_data['extra_data'].update(new_taxlot_state_data.pop('extra_data'))
-                taxlot_state_data.update(new_taxlot_state_data)
+                    taxlot_state_data['extra_data'].update(
+                        new_taxlot_state_data['extra_data']
+                    )
+
+                taxlot_state_data.update(
+                    {k: v for k, v in new_taxlot_state_data.items() if k != 'extra_data'}
+                )
 
                 log = TaxLotAuditLog.objects.select_related().filter(
                     state=taxlot_view.state
@@ -884,6 +882,8 @@ class TaxLotViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         taxlot_view.save()
+
+                        Note.create_from_edit(request.user.id, taxlot_view, new_taxlot_state_data, previous_data)
 
                         merge_count, link_count, view_id = match_merge_link(taxlot_view.id, 'TaxLotState')
 

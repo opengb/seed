@@ -24,7 +24,6 @@ describe('controller: inventory_detail_controller', function () {
       ngUrls = urls;
       mock_uib_modal = $uibModal;
       mock_label_service = label_service;
-      mock_label_service = label_service;
 
       inventory_detail_controller_scope = $rootScope.$new();
 
@@ -249,8 +248,11 @@ describe('controller: inventory_detail_controller', function () {
       },
       profiles: [],
       current_profile: undefined,
-      labels_payload: mock_label_payload
-
+      labels_payload: mock_label_payload,
+      organization_payload: {
+        id: 1,
+        display_significant_figures: 2,
+      }
     });
   }
 

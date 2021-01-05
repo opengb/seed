@@ -44,14 +44,14 @@ angular.module('BE.seed.service.inventory_reports',
     function get_report_data (xVar, yVar, start, end) {
 
       // Error checks
-      if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+      if (_.some([xVar, yVar, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
 
-      return $http.get(window.BE.urls.get_inventory_report_data, {
+      const organization_id = user_service.get_organization().id
+      return $http.get('/api/v3/organizations/' + organization_id + '/report/', {
         params: {
-          organization_id: user_service.get_organization().id,
           x_var: xVar,
           y_var: yVar,
           start: start,
@@ -97,14 +97,14 @@ angular.module('BE.seed.service.inventory_reports',
     function get_aggregated_report_data (xVar, yVar, start, end) {
 
       // Error checks
-      if (_.isNil(xVar) || _.isNil(yVar) || _.isNil(start) || _.isNil(end)) {
+      if (_.some([xVar, yVar, start, end], _.isNil)) {
         $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
         throw new Error('Invalid Parameter');
       }
 
-      return $http.get(window.BE.urls.get_aggregated_inventory_report_data, {
+      const organization_id = user_service.get_organization().id
+      return $http.get('/api/v3/organizations/' + organization_id + '/report_aggregated/', {
         params: {
-          organization_id: user_service.get_organization().id,
           x_var: xVar,
           y_var: yVar,
           start: start,
@@ -115,6 +115,33 @@ angular.module('BE.seed.service.inventory_reports',
         return response.data;
       }).catch(function () {
         building_reports_factory.aggregated_reports_data = [];
+      });
+    }
+
+    function export_reports_data (axes_data, start, end) {
+      var xVar = axes_data.xVar;
+      var xLabel = axes_data.xLabel;
+      var yVar = axes_data.yVar;
+      var yLabel = axes_data.yLabel;
+      // Error checks
+      if (_.some([xVar, xLabel, yVar, yLabel, start, end], _.isNil)) {
+        $log.error('#inventory_reports_service.get_aggregated_report_data(): null parameter');
+        throw new Error('Invalid Parameter');
+      }
+
+      const organization_id = user_service.get_organization().id
+      return $http.get('/api/v3/organizations/' + organization_id + '/report_export/', {
+        params: {
+          x_var: xVar,
+          x_label: xLabel,
+          y_var: yVar,
+          y_label: yLabel,
+          start: start,
+          end: end
+        },
+        responseType: 'arraybuffer'
+      }).then(function (response) {
+        return response;
       });
     }
 
@@ -130,7 +157,8 @@ angular.module('BE.seed.service.inventory_reports',
       //functions
       //get_summary_data : get_summary_data,
       get_report_data: get_report_data,
-      get_aggregated_report_data: get_aggregated_report_data
+      get_aggregated_report_data: get_aggregated_report_data,
+      export_reports_data: export_reports_data
 
     };
 

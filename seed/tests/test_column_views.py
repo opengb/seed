@@ -94,7 +94,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         # self.assertEqual(data['columns'], columns)
 
         # get show_shared_buildings
-        url = reverse_lazy('api:v2:users-shared-buildings', args=[self.user.pk])
+        url = reverse_lazy('api:v3:user-shared-buildings', args=[self.user.pk])
         response = self.client.get(url)
         data = response.json()
         self.assertEqual(data['show_shared_buildings'], True)
@@ -120,7 +120,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_get_all_columns(self):
         # test building list columns
-        response = self.client.get(reverse('api:v2:columns-list'), {
+        response = self.client.get(reverse('api:v3:columns-list'), {
             'organization_id': self.org.id
         })
         data = json.loads(response.content)['columns']
@@ -145,10 +145,28 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             'unit_name': None,
             'unit_type': None,
             'is_matching_criteria': True,
+            'recognize_empty': False,
+            'comstock_mapping': None,
         }
 
         # randomly check a column
         self.assertIn(expected, data)
+
+    def test_column_units_added(self):
+
+        responseWithoutUnits = self.client.get(reverse('api:v3:columns-list'), {
+            'organization_id': self.org.id,
+            'display_units': 'false'
+        })
+        columnWithoutUnits = next((x for x in json.loads(responseWithoutUnits.content)['columns'] if x['column_name'] == 'source_eui_modeled'), None)
+        self.assertEqual(columnWithoutUnits['display_name'], 'Source EUI Modeled')
+
+        responseWithUnits = self.client.get(reverse('api:v3:columns-list'), {
+            'organization_id': self.org.id,
+            'display_units': 'true'
+        })
+        columnWithUnits = next((x for x in json.loads(responseWithUnits.content)['columns'] if x['id'] == columnWithoutUnits['id']), None)
+        self.assertEqual(columnWithUnits['display_name'], 'Source EUI Modeled (kBtu/ft²/year)')
 
     def test_rename_column_property(self):
         column = Column.objects.filter(
@@ -169,7 +187,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         # test building list columns
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
@@ -201,7 +219,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
                               "na": None}]
 
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
@@ -213,7 +231,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         self.assertFalse(result['success'])
 
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
@@ -250,7 +268,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
         # test building list columns
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[column.pk]),
+            reverse('api:v3:columns-rename', args=[column.pk]),
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
@@ -270,7 +288,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
 
     def test_rename_column_wrong_org(self):
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[self.cross_org_column.pk]),
+            reverse('api:v3:columns-rename', args=[self.cross_org_column.pk]),
             content_type='application/json',
         )
         result = response.json()
@@ -283,7 +301,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
     def test_rename_column_dne(self):
         # test building list columns
         response = self.client.post(
-            reverse('api:v2:columns-rename', args=[-999]),
+            reverse('api:v3:columns-rename', args=[-999]),
             content_type='application/json',
         )
         self.assertEqual(response.status_code, 404)

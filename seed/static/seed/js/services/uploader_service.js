@@ -28,7 +28,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      */
     uploader_factory.create_dataset = function (dataset_name) {
       // timeout here for testing
-      return $http.post('/api/v2/datasets/', {
+      return $http.post('/api/v3/datasets/', {
         name: dataset_name
       }, {
         params: {
@@ -40,15 +40,37 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
     };
 
     /**
+     * validate_use_cases
+     * This service call will simply call a view on the backend to validate
+     * BuildingSync files with use cases
+     * @param file_id: the pk of a ImportFile object we're going to save raw.
+     */
+    uploader_factory.validate_use_cases = function (file_id) {
+      var org_id = user_service.get_organization().id;
+      return $http.post('/api/v3/import_files/' + file_id + '/validate_use_cases/?organization_id=' + org_id.toString())
+        .then(function (response) {
+          return response.data;
+        })
+        .catch(function (err) {
+          if (err.data.status === 'error') {
+            return err.data;
+          }
+          // something unexpected happened... throw it
+          throw err;
+        });
+    };
+
+    /**
      * save_raw_data
      * This service call will simply call a view on the backend to save raw
      * data into BuildingSnapshot instances.
      * @param file_id: the pk of a ImportFile object we're going to save raw.
      */
     uploader_factory.save_raw_data = function (file_id, cycle_id) {
-      return $http.post('/api/v2/import_files/' + file_id + '/save_raw_data/', {
+      return $http.post('/api/v3/import_files/' + file_id + '/start_save_data/', {
         cycle_id: cycle_id,
-        organization_id: user_service.get_organization().id
+      }, {
+        params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {
         return response.data;
       });
@@ -59,7 +81,7 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
      * @param progress_key: progress_key to grab the progress
      */
     uploader_factory.check_progress = function (progress_key) {
-      return $http.get('/api/v2/progress/' + progress_key + '/').then(function (response) {
+      return $http.get('/api/v3/progress/' + progress_key + '/').then(function (response) {
         if (response.data.status === 'error') return $q.reject(response);
         else return response.data;
       });
@@ -88,6 +110,24 @@ angular.module('BE.seed.service.uploader', []).factory('uploader_service', [
           }
         }, 750);
       }, failure_fn);
+    };
+
+    uploader_factory.pm_meters_preview = function (file_id, org_id) {
+      return $http.get(
+        '/api/v3/import_files/' + file_id + '/pm_meters_preview/',
+        { params: { organization_id: org_id } }
+      ).then(function (response) {
+        return response.data;
+      });
+    };
+
+    uploader_factory.greenbutton_meters_preview = function (file_id, org_id, view_id) {
+      return $http.get(
+        '/api/v3/import_files/' + file_id + '/greenbutton_meters_preview/',
+        { params: { organization_id: org_id, view_id } }
+      ).then(function (response) {
+        return response.data;
+      });
     };
 
     return uploader_factory;

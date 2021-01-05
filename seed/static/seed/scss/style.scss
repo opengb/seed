@@ -79,6 +79,10 @@ $pairingCellWidth: 200px;
   color: $red;
 }
 
+.border-red {
+  border-color: $red;
+}
+
 .green {
   color: $green;
 }
@@ -1979,6 +1983,110 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
   }
 }
 
+.table-xscroll-unfrozen{
+
+  overflow: auto;
+  height: 600px;
+  margin: 20px 5px;
+  border: 1px solid #F1F1F1;
+
+  table {
+    table-layout: fixed;
+    margin-bottom: 0px;
+  }
+
+  th, td {
+    width: 225px;
+  }
+
+  thead th {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    top: 0;
+    background-color: white;
+  }
+
+  thead th:first-child {
+    left: 0px;
+    z-index: 1;
+    background-color: white;
+  }
+
+  tbody td:first-child {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    left: 0px;
+    z-index: 0;
+    background-color:#F9F9F9
+  }
+
+  .table_item_detail {
+    border: 0px;
+    margin: 0px;
+  }
+
+}
+
+.table-xscroll-frozen {
+
+  overflow: auto;
+  height: 600px;
+  margin: 20px 5px;
+  border: 1px solid #F1F1F1;
+
+  table {
+    table-layout: fixed;
+    margin-bottom: 0px;
+  }
+
+  thead th, tbody td {
+    width: 225px;
+  }
+
+  thead th {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    top: 0;
+    background-color: white;
+  }
+
+
+  tbody td:nth-child(2) {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    left: 223px;
+    z-index: 0;
+    background-color: #F9F9F9;
+
+  }
+
+  thead th:nth-child(2) {
+    left: 223px;
+    z-index: 1;
+    background-color: white;
+  }
+
+  thead th:first-child {
+    left: 0px;
+    z-index: 1;
+    background-color: white;
+  }
+
+  tbody td:first-child {
+    position: -webkit-sticky; /* for Safari */
+    position: sticky;
+    left: 0px;
+    z-index: 0;
+    background-color: #F9F9F9;
+  }
+
+  .table_item_detail {
+    border: 0px;
+    margin: 0px;
+  }
+
+}
+
 .tbody-striped > tbody:nth-child(odd) td, .tbody-striped > tbody:nth-child(odd) > th {
   background-color: #F9F9F9
 }
@@ -1989,6 +2097,12 @@ div[sd-uploader][disabled], button[sd-uploader][disabled] {
 
 .data-quality-warning td:last-child {
   background-color: #FDF4BF !important;
+}
+
+td {
+  &.error-bg {
+    background-color: #FFB7B7;
+  }
 }
 
 select {
@@ -2255,6 +2369,15 @@ select {
   background-color: #F1F1F1;
 }
 
+/* Holds inline form for creating new labels */
+.newAnalysisInput {
+  margin: 20px;
+  border: 1px solid #EEE;
+  padding: 10px 10px 5px 10px;
+  border-radius: 5px;
+  background-color: #F1F1F1;
+}
+
 #label_admin {
   .sectionLabel {
     font-family: "PT Sans Narrow", "Helvetica Neue", Helvetica, Arial, sans-serif;
@@ -2505,6 +2628,27 @@ gs-input .tags .tag-item .remove-button {
   color: #FFF;
 }
 
+/* ANALYSIS STATUS COLORS */
+
+.analysis-status {
+
+  &.creating, &.warning {
+    background: $warningBackground !important;
+  }
+
+  &.stopped, &.failed, &.error {
+    background: $errorBackground !important;
+  }
+
+  &.ready, &.completed, &.success {
+    background: $successBackground !important;
+  }
+
+  &.queued, &.running, &.info {
+    background: $infoBackground !important;
+  }
+}
+
 /* NOTIFICATIONS */
 
 .ui-notification {
@@ -2602,7 +2746,7 @@ gs-input .tags .tag-item .remove-button {
 
   .nav-tabs {
     position: relative;
-    margin-bottom: -2px;
+    margin-bottom: 2px;
     z-index: 99;
 
     > li {
@@ -2628,6 +2772,14 @@ gs-input .tags .tag-item .remove-button {
     font-weight: bold;
     color: #000;
     border-bottom: 1px solid #F1F1F1;
+  }
+
+  .label-tabs {
+    padding-top: 4px;
+    padding-bottom: 2px;
+    margin-left: -10px;
+    margin-bottom: -2px;
+    background-color: #F1F1F1;
   }
 }
 
@@ -2707,7 +2859,7 @@ gs-input .tags .tag-item .remove-button {
   background-color: $highlighter;
 }
 
-#swagger-frame {
+#swagger-ui {
   height: calc(100vh - 60px);
   width: 100%;
 }
@@ -3496,6 +3648,10 @@ $pairedCellWidth: 60px;
   padding-left: 20px;
 }
 
+.pad-left-5 {
+  padding-left: 5px;
+}
+
 .matching-column-header .ui-grid-header-cell-label {
   font-weight: bolder;
 }
@@ -3504,4 +3660,31 @@ $pairedCellWidth: 60px;
   display: flex !important;
   justify-content: center;
   align-items: center;
+}
+.column-settings-instructions {
+  td:first-child {
+    font-weight: bold;
+    vertical-align: top;
+    min-width: 110px;
+  }
+  td:last-child {
+    padding-bottom: 5px;
+  }
+}
+.lock:hover .glyphicon-pushpin {
+  Display: inline;
+}
+
+.readonly-grid {
+  cursor: default;
+  opacity: 0.5;
+
+  .ui-grid-canvas, .ui-grid-selection-row-header-buttons {
+    pointer-events: none;
+  }
+}
+
+.glyphicon[disabled] {
+  pointer-events: none;
+  opacity: 0.3;
 }

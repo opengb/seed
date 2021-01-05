@@ -6,19 +6,21 @@
 angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
   '$http',
   '$log',
+  '$q',
   'urls',
   'user_service',
   'cycle_service',
   'spinner_utility',
   'naturalSort',
-  function ($http, $log, urls, user_service, cycle_service, spinner_utility, naturalSort) {
+  'Notification',
+  function ($http, $log, $q, urls, user_service, cycle_service, spinner_utility, naturalSort, Notification) {
 
     var inventory_service = {
       total_properties_for_user: 0,
       total_taxlots_for_user: 0
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, inventory_ids) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, property_view_ids) {
 
       var params = {
         organization_id: user_service.get_organization().id,
@@ -37,9 +39,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        return $http.post('/api/v2/properties/filter/', {
+        return $http.post('/api/v3/properties/filter/', {
           // Pass the specific ids if they exist
-          inventory_ids: inventory_ids,
+          property_view_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
           profile_id: profile_id
         }, {
@@ -51,10 +53,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.properties_cycle = function (profile_id, cycle_ids) {
-      return $http.post('/api/v2/properties/cycles/', {
+      return $http.post('/api/v3/properties/filter_by_cycle/', {
         organization_id: user_service.get_organization().id,
         profile_id: profile_id,
-        cycle_ids: cycle_ids,
+        cycle_ids: cycle_ids
       }).then(function (response) {
         return response.data;
       });
@@ -127,9 +129,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
      *
      */
 
-    inventory_service.properties_meters_exist = function (inventory_ids) {
-      return $http.post('/api/v2/properties/meters_exist/', {
-        inventory_ids: inventory_ids
+    inventory_service.properties_meters_exist = function (property_view_ids) {
+      return $http.post('/api/v3/properties/meters_exist/', {
+        property_view_ids
+      }, {
+        params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {
         return response.data;
       });
@@ -143,7 +147,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.get('/api/v2/properties/' + view_id + '/', {
+      return $http.get('/api/v3/properties/' + view_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -162,8 +166,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.post('/api/v2/properties/' + view_id + '/links/', {
-        organization_id: user_service.get_organization().id,
+      return $http.get('/api/v3/properties/' + view_id + '/links/', {
+        params: { organization_id: user_service.get_organization().id }
       }).then(function (response) {
         return response.data;
       }).finally(function () {
@@ -179,7 +183,9 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.post('/api/v2/properties/' + view_id + '/match_merge_link/').then(function (response) {
+      return $http.post('/api/v3/properties/' + view_id + '/match_merge_link/', {}, {
+        params: { organization_id: user_service.get_organization().id }
+      }).then(function (response) {
         return response.data;
       }).finally(function () {
         spinner_utility.hide();
@@ -207,13 +213,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
       spinner_utility.show();
 
-      // Remove files, measures, scenarios from the update of the property.
-      // These relationships will be dropped on the new state.
-      state = _.omit(state, 'files');
-      state = _.omit(state, 'measures');
-      state = _.omit(state, 'scenarios');
-
-      return $http.put('/api/v2/properties/' + view_id + '/', {
+      return $http.put('/api/v3/properties/' + view_id + '/', {
         state: state
       }, {
         params: {
@@ -227,28 +227,24 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.delete_property_states = function (ids) {
-      return $http.delete('/api/v2/properties/batch_delete/', {
+    inventory_service.delete_property_states = function (property_view_ids) {
+      return $http.delete('/api/v3/properties/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
-        data: {
-          organization_id: user_service.get_organization().id,
-          selected: ids
-        }
+        data: { property_view_ids },
+        params: { organization_id: user_service.get_organization().id },
       });
     };
 
 
-    inventory_service.delete_taxlot_states = function (ids) {
-      return $http.delete('/api/v2/taxlots/batch_delete/', {
+    inventory_service.delete_taxlot_states = function (taxlot_view_ids) {
+      return $http.delete('/api/v3/taxlots/batch_delete/', {
         headers: {
           'Content-Type': 'application/json;charset=utf-8'
         },
-        data: {
-          organization_id: user_service.get_organization().id,
-          selected: ids
-        }
+        data: { taxlot_view_ids },
+        params: { organization_id: user_service.get_organization().id }
       });
     };
 
@@ -271,7 +267,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
           params.cycle = lastCycleId;
         }
 
-        return $http.post('/api/v2/taxlots/filter/', {
+        return $http.post('/api/v3/taxlots/filter/', {
           // Pass the specific ids if they exist
           inventory_ids: inventory_ids,
           // Pass the current profile (if one exists) to limit the column data that is returned
@@ -285,10 +281,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.taxlots_cycle = function (profile_id, cycle_ids) {
-      return $http.post('/api/v2/taxlots/cycles/', {
+      return $http.post('/api/v3/taxlots/filter_by_cycle/', {
         organization_id: user_service.get_organization().id,
         profile_id: profile_id,
-        cycle_ids: cycle_ids,
+        cycle_ids: cycle_ids
       }).then(function (response) {
         return response.data;
       });
@@ -372,7 +368,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.get('/api/v2/taxlots/' + view_id + '/', {
+      return $http.get('/api/v3/taxlots/' + view_id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -391,8 +387,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.post('/api/v2/taxlots/' + view_id + '/links/', {
-        organization_id: user_service.get_organization().id,
+      return $http.get('/api/v3/taxlots/' + view_id + '/links/', {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
       }).then(function (response) {
         return response.data;
       }).finally(function () {
@@ -408,7 +406,11 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.post('/api/v2/taxlots/' + view_id + '/match_merge_link/').then(function (response) {
+      return $http.post('/api/v3/taxlots/' + view_id + '/match_merge_link/', {}, {
+        params: {
+          organization_id: user_service.get_organization().id
+        }
+      }).then(function (response) {
         return response.data;
       }).finally(function () {
         spinner_utility.hide();
@@ -435,7 +437,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       spinner_utility.show();
-      return $http.put('/api/v2/taxlots/' + view_id + '/', {
+      return $http.put('/api/v3/taxlots/' + view_id + '/', {
         state: state
       }, {
         params: {
@@ -501,10 +503,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return inventory_service.get_property_columns_for_org(user_service.get_organization().id);
     };
 
-    inventory_service.get_property_columns_for_org = function (org_id) {
-      return $http.get('/api/v2/properties/columns/', {
+    inventory_service.get_property_columns_for_org = function (org_id, only_used, display_units = true) {
+      if (only_used === undefined) only_used = false;
+      return $http.get('/api/v3/columns/', {
         params: {
-          organization_id: org_id
+          inventory_type: 'property',
+          organization_id: org_id,
+          only_used: only_used,
+          display_units: display_units
         }
       }).then(function (response) {
         // Remove empty columns
@@ -539,9 +545,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_mappable_property_columns = function () {
-      return $http.get('/api/v2/properties/mappable_columns/', {
+      return $http.get('/api/v3/columns/mappable/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: user_service.get_organization().id,
+          inventory_type: 'property',
         }
       }).then(function (response) {
         // Remove empty columns
@@ -579,10 +586,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       return inventory_service.get_taxlot_columns_for_org(user_service.get_organization().id);
     };
 
-    inventory_service.get_taxlot_columns_for_org = function (org_id) {
-      return $http.get('/api/v2/taxlots/columns/', {
+    inventory_service.get_taxlot_columns_for_org = function (org_id, only_used, display_units = true) {
+      if (only_used === undefined) only_used = false;
+      return $http.get('/api/v3/columns/', {
         params: {
-          organization_id: org_id
+          inventory_type: 'taxlot',
+          organization_id: org_id,
+          only_used: only_used,
+          display_units: display_units
         }
       }).then(function (response) {
         // Remove empty columns
@@ -617,9 +628,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_mappable_taxlot_columns = function () {
-      return $http.get('/api/v2/taxlots/mappable_columns/', {
+      return $http.get('/api/v3/columns/mappable/', {
         params: {
-          organization_id: user_service.get_organization().id
+          organization_id: user_service.get_organization().id,
+          inventory_type: 'taxlot',
         }
       }).then(function (response) {
         // Remove empty columns
@@ -654,11 +666,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     // https://regexr.com/3j1tq
-    var combinedRegex = /^(!?)=\s*(-?\d+)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+)$/;
+    var combinedRegex = /^(!?)=\s*(-?\d+(?:\\\.\d+)?)$|^(!?)=?\s*"((?:[^"]|\\")*)"$|^(<=?|>=?)\s*(-?\d+(?:\\\.\d+)?)$/;
     inventory_service.combinedFilter = function () {
       return {
         condition: function (searchTerm, cellValue) {
+          // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
+          // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
           if (_.isNil(cellValue)) cellValue = '';
+          if (_.isString(cellValue)) cellValue = _.trim(cellValue);
           var match = true;
           var searchTerms = _.map(_.split(searchTerm, ','), _.trim);
           // Loop over multiple comma-separated filters
@@ -669,7 +684,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
               if (!_.isUndefined(filterData[2])) {
                 // Numeric Equality
                 operator = filterData[1];
-                value = filterData[2];
+                value = Number(filterData[2].replace('\\.', '.'));
                 if (operator === '!') {
                   // Not equal
                   match = cellValue != value;
@@ -698,7 +713,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                   return match;
                 }
                 operator = filterData[5];
-                value = Number(filterData[6]);
+                value = Number(filterData[6].replace('\\.', '.'));
                 switch (operator) {
                   case '<':
                     match = cellValue < value;
@@ -727,19 +742,25 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       };
     };
 
-    var dateRegex = /^(=|!=)?\s*(null|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
+    // https://regexr.com/50ok6
+    var dateRegex = /^(!?=?)\s*(""|\d{4}(?:-\d{2}(?:-\d{2})?)?)$|^(<=?|>=?)\s*(\d{4}(?:-\d{2}(?:-\d{2})?)?)$/;
     inventory_service.dateFilter = function () {
       return {
         condition: function (searchTerm, cellValue) {
+          // console.log('searchTerm:', typeof searchTerm, `|${searchTerm}|`);
+          // console.log('cellValue:', typeof cellValue, `|${cellValue}|`);
+          if (_.isNil(cellValue)) cellValue = '';
+          if (_.isString(cellValue)) cellValue = _.trim(cellValue);
           var match = true;
-          var cellDate = Date.parse(cellValue);
-          var d = new Date(cellValue);
+          var d = moment.utc(cellValue);
+          var cellDate = d.valueOf();
           var cellYMD = {
-            y: d.getFullYear(),
-            m: d.getMonth() + 1,
-            d: d.getDate()
+            y: d.year(),
+            m: d.month() + 1,
+            d: d.date()
           };
           var searchTerms = _.map(_.split(_.replace(searchTerm, /\\-/g, '-'), ','), _.trim);
+          // Loop over multiple comma-separated filters
           _.forEach(searchTerms, function (search) {
             var filterData = search.match(dateRegex);
             if (filterData) {
@@ -748,23 +769,25 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                 // Equality condition
                 operator = filterData[1];
                 value = filterData[2];
+
+                if (value === '""') {
+                  match = _.startsWith(operator, '!') ? !_.isEmpty(cellValue) : _.isEmpty(cellValue);
+                  return match;
+                }
+
                 v = value.match(/^(\d{4})(?:-(\d{2})(?:-(\d{2}))?)?$/);
                 ymd = {
                   y: _.parseInt(v[1]),
                   m: _.parseInt(v[2]),
                   d: _.parseInt(v[3])
                 };
-                if (_.isUndefined(operator) || _.startsWith(operator, '=')) {
-                  // Equal
-                  match = (value === 'null') ? (_.isNil(cellValue)) : (
-                    cellYMD.y === ymd.y && (_.isNaN(ymd.m) || cellYMD.m === ymd.m) && (_.isNaN(ymd.d) || cellYMD.d === ymd.d)
-                  );
+                if (_.startsWith(operator, '!')) {
+                  // Not equal
+                  match = cellYMD.y !== ymd.y || (!_.isNaN(ymd.m) && cellYMD.y === ymd.y && cellYMD.m !== ymd.m) || (!_.isNaN(ymd.m) && !_.isNaN(ymd.d) && cellYMD.y === ymd.y && cellYMD.m === ymd.m && cellYMD.d !== ymd.d);
                   return match;
                 } else {
-                  // Not equal
-                  match = (value === 'null') ? (!_.isNil(cellValue)) : (
-                    cellYMD.y !== ymd.y || (!_.isNaN(ymd.m) && cellYMD.y === ymd.y && cellYMD.m !== ymd.m) || (!_.isNaN(ymd.m) && !_.isNaN(ymd.d) && cellYMD.y === ymd.y && cellYMD.m === ymd.m && cellYMD.d !== ymd.d)
-                  );
+                  // Equal
+                  match = cellYMD.y === ymd.y && (_.isNaN(ymd.m) || cellYMD.m === ymd.m) && (_.isNaN(ymd.d) || cellYMD.d === ymd.d);
                   return match;
                 }
               } else {
@@ -777,7 +800,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                 operator = filterData[3];
                 switch (operator) {
                   case '<':
-                    value = Date.parse(filterData[4] + 'T00:00:00');
+                    value = Date.parse(filterData[4] + ' 00:00:00 GMT');
                     match = cellDate < value;
                     return match;
                   case '<=':
@@ -792,7 +815,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
                     if (filterData[4].length === 10) {
                       // Add a day, subtract a millisecond
-                      value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
+                      value = Date.parse(filterData[4] + ' 00:00:00 GMT') + 86399999;
                     } else if (filterData[4].length === 7) {
                       // Add a month, subtract a millisecond
                       if (ymd.m === 12) {
@@ -800,10 +823,10 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                       } else {
                         d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
                       }
-                      value = Date.parse(d + 'T00:00:00') - 1;
+                      value = Date.parse(d + ' 00:00:00 GMT') - 1;
                     } else if (filterData[4].length === 4) {
                       // Add a year, subtract a millisecond
-                      value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
+                      value = Date.parse((ymd.y + 1) + ' 00:00:00 GMT') - 1;
                     }
 
                     match = cellDate <= value;
@@ -819,7 +842,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
 
                     if (filterData[4].length === 10) {
                       // Add a day, subtract a millisecond
-                      value = Date.parse(filterData[4] + 'T00:00:00') + 86399999;
+                      value = Date.parse(filterData[4] + ' 00:00:00 GMT') + 86399999;
                     } else if (filterData[4].length === 7) {
                       // Add a month, subtract a millisecond
                       if (ymd.m === 12) {
@@ -827,16 +850,16 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
                       } else {
                         d = ymd.y + '-' + _.padStart(ymd.m + 1, 2, '0');
                       }
-                      value = Date.parse(d + 'T00:00:00') - 1;
+                      value = Date.parse(d + ' 00:00:00 GMT') - 1;
                     } else if (filterData[4].length === 4) {
                       // Add a year, subtract a millisecond
-                      value = Date.parse((ymd.y + 1) + 'T00:00:00') - 1;
+                      value = Date.parse((ymd.y + 1) + ' 00:00:00 GMT') - 1;
                     }
 
                     match = cellDate > value;
                     return match;
                   case '>=':
-                    value = Date.parse(filterData[4] + 'T00:00:00');
+                    value = Date.parse(filterData[4] + ' 00:00:00 GMT');
                     match = cellDate >= value;
                     return match;
                 }
@@ -925,7 +948,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.search_matching_inventory = function (import_file_id) {
-      return $http.post('/api/v2/import_files/' + import_file_id + '/filtered_mapping_results/', undefined, {
+      return $http.post('/api/v3/import_files/' + import_file_id + '/mapping_results/', undefined, {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -935,7 +958,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_used_columns = function (org_id) {
-      return $http.get('/api/v2/columns/', {
+      return $http.get('/api/v3/columns/', {
         params: {
           organization_id: org_id,
           only_used: true
@@ -946,7 +969,7 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
     inventory_service.get_matching_and_geocoding_results = function (import_file_id) {
-      return $http.get('/api/v2/import_files/' + import_file_id + '/matching_and_geocoding_results/', {
+      return $http.get('/api/v3/import_files/' + import_file_id + '/matching_and_geocoding_results/', {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -955,12 +978,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.get_settings_profiles = function (settings_location, inventory_type) {
-      return $http.get('/api/v2/column_list_settings/', {
+    inventory_service.get_column_list_profiles = function (profile_location, inventory_type) {
+      return $http.get('/api/v3/column_list_profiles/', {
         params: {
           organization_id: user_service.get_organization().id,
           inventory_type: inventory_type,
-          settings_location: settings_location
+          profile_location: profile_location
         }
       }).then(function (response) {
         var profiles = response.data.data.sort(function (a, b) {
@@ -978,8 +1001,8 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.new_settings_profile = function (data) {
-      return $http.post('/api/v2/column_list_settings/', data, {
+    inventory_service.new_column_list_profile = function (data) {
+      return $http.post('/api/v3/column_list_profiles/', data, {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -988,8 +1011,12 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.update_settings_profile = function (id, data) {
-      return $http.put('/api/v2/column_list_settings/' + id + '/', data, {
+    inventory_service.update_column_list_profile = function (id, data) {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
+      return $http.put('/api/v3/column_list_profiles/' + id + '/', data, {
         params: {
           organization_id: user_service.get_organization().id
         }
@@ -998,24 +1025,15 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       });
     };
 
-    inventory_service.remove_settings_profile = function (id) {
-      return $http.delete('/api/v2/column_list_settings/' + id + '/', {
+    inventory_service.remove_column_list_profile = function (id) {
+      if (id === null) {
+        Notification.error('This settings profile is protected from modifications');
+        return $q.reject();
+      }
+      return $http.delete('/api/v3/column_list_profiles/' + id + '/', {
         params: {
           organization_id: user_service.get_organization().id
         }
-      });
-    };
-
-    inventory_service.upload_building_sync = function (view_id, data) {
-      return $http.put('/api/v2.1/properties/' + view_id + '/update_with_building_sync/', data, {
-        headers: {
-          'Content-Type': 'multipart/form-data'
-        },
-        params: {
-          organization_id: user_service.get_organization().id
-        }
-      }).then(function (response) {
-        return response.data.data;
       });
     };
 

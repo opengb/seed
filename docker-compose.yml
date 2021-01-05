@@ -1,11 +1,9 @@
 # Docker Compose creates multiple containers on a single machine.
 # run `docker-compose up` to create and run/link the containers
-version: '3'
+version: '3.4'
 services:
   db-postgres:
-    image: seedplatform/postgres-seed:11.2
-    build:
-      context: ./docker/postgres
+    image: timescale/timescaledb-postgis:latest-pg12
     environment:
       - POSTGRES_DB=seed
       - POSTGRES_USER=seed
@@ -28,6 +26,8 @@ services:
       - AWS_SECRET_ACCESS_KEY
       - AWS_SES_REGION_NAME
       - AWS_SES_REGION_ENDPOINT
+      - BSYNCR_SERVER_HOST
+      - BSYNCR_SERVER_PORT
       - SERVER_EMAIL
       - POSTGRES_DB=seed
       - POSTGRES_PORT=5432
@@ -55,6 +55,8 @@ services:
     build: .
     command: /seed/docker/start_celery_docker.sh
     environment:
+      - BSYNCR_SERVER_HOST
+      - BSYNCR_SERVER_PORT
       - POSTGRES_DB=seed
       - POSTGRES_PORT=5432
       - POSTGRES_USER=seed
@@ -75,7 +77,7 @@ services:
         max-file: '5'
   #oep-city-1:
     # This is a placeholder. If needed, follow the instructions to enable: https://cloud.docker.com/u/seedplatform/repository/docker/seedplatform/oep
-  #  image: seedplatform/oep:1.4
+  #  image: seedplatform/oep:1.6
   #  depends_on:
   #    - web
   #  environment:

@@ -53,10 +53,8 @@ class Column(models.Model):
     # Do not return these columns to the front end -- when using the tax_lot_properties
     # get_related method.
     EXCLUDED_COLUMN_RETURN_FIELDS = [
-        'created',
         'hash_object',
         'normalized_address',
-        'updated',
         # Records below are old and should not be used
         'source_eui_modeled_orig',
         'site_eui_orig',
@@ -167,6 +165,7 @@ class Column(models.Model):
         'BooleanField': 'boolean',
         'JSONField': 'string',
         'PolygonField': 'geometry',
+        'PointField': 'geometry',
     }
 
     # These are the default columns (also known as the fields in the database)
@@ -332,28 +331,28 @@ class Column(models.Model):
             # 'type': 'boolean',
         }, {
             'column_name': 'updated',
-            'table_name': 'Property',
+            'table_name': 'PropertyState',
             'display_name': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'created',
-            'table_name': 'Property',
+            'table_name': 'PropertyState',
             'display_name': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'updated',
-            'table_name': 'TaxLot',
+            'table_name': 'TaxLotState',
             'display_name': 'Updated',
             'data_type': 'datetime',
             # 'type': 'date',
             # 'cellFilter': 'date:\'yyyy-MM-dd h:mm a\'',
         }, {
             'column_name': 'created',
-            'table_name': 'TaxLot',
+            'table_name': 'TaxLotState',
             'display_name': 'Created',
             'data_type': 'datetime',
             # 'type': 'date',
@@ -592,6 +591,15 @@ class Column(models.Model):
     # data, however, the user can override this on a column-by-column basis.
     merge_protection = models.IntegerField(choices=COLUMN_MERGE_PROTECTION,
                                            default=COLUMN_MERGE_FAVOR_NEW)
+
+    recognize_empty = models.BooleanField(default=False)
+
+    comstock_mapping = models.CharField(max_length=64, null=True, blank=True, default=None)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(fields=['organization', 'comstock_mapping'], name='unique_comstock_mapping'),
+        ]
 
     def __str__(self):
         return '{} - {}:{}'.format(self.pk, self.table_name, self.column_name)
@@ -977,26 +985,38 @@ class Column(models.Model):
             try:
                 # the from column is the field in the import file, thus the table_name needs to be
                 # blank. Eventually need to handle passing in import_file_id
-                from_org_col, _ = Column.objects.get_or_create(
+                from_org_col, _ = Column.objects.update_or_create(
                     organization=organization,
-                    table_name__in=[None, ''],
+                    table_name='',
                     column_name=field['from_field'],
-                    units_pint=field.get('from_units'),  # might be None
-                    is_extra_data=False  # data from header rows in the files are NEVER extra data
+                    is_extra_data=False,  # Column objects representing raw/header rows are NEVER extra data
+                    defaults={'units_pint': field.get('from_units', None)}
                 )
             except Column.MultipleObjectsReturned:
+                # We want to avoid the ambiguity of having multiple Column objects for a specific raw column.
+                # To do that, delete all multiples along with any associated ColumnMapping objects.
                 _log.debug(
                     "More than one from_column found for {}.{}".format(field['to_table_name'],
                                                                        field['to_field']))
 
-                # TODO: write something to remove the duplicate columns
-                from_org_col = Column.objects.filter(organization=organization,
-                                                     table_name__in=[None, ''],
-                                                     column_name=field['from_field'],
-                                                     units_pint=field.get('from_units'),
-                                                     # might be None
-                                                     is_extra_data=is_extra_data).first()
-                _log.debug("Grabbing the first from_column")
+                all_from_cols = Column.objects.filter(
+                    organization=organization,
+                    table_name='',
+                    column_name=field['from_field'],
+                    is_extra_data=False
+                )
+
+                ColumnMapping.objects.filter(column_raw__id__in=models.Subquery(all_from_cols.values('id'))).delete()
+                all_from_cols.delete()
+
+                from_org_col = Column.objects.create(
+                    organization=organization,
+                    table_name='',
+                    units_pint=field.get('from_units', None),
+                    column_name=field['from_field'],
+                    is_extra_data=False  # Column objects representing raw/header rows are NEVER extra data
+                )
+                _log.debug("Creating a new from_column")
 
             new_field['to_column_object'] = select_col_obj(field['to_field'],
                                                            field['to_table_name'], to_org_col)

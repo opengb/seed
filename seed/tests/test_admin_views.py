@@ -35,8 +35,8 @@ class AdminViewsTest(TestCase):
                         'password': 'user_passS1'}
         self.user = User.objects.create_user(**user_details)
 
-        self.add_org_url = reverse_lazy('api:v2:organizations-list')
-        self.add_user_url = reverse_lazy('api:v2:users-list')
+        self.add_org_url = reverse_lazy('api:v3:organizations-list')
+        self.add_user_url = reverse_lazy('api:v3:user-list')
 
     def _post_json(self, url, data):
         """
@@ -101,15 +101,13 @@ class AdminViewsTest(TestCase):
             self.admin_user, name='Existing Org'
         )
         data = {
-            'organization_id': org.pk,
             'first_name': 'New',
             'last_name': 'User',
             'email': 'new_user@testserver',
             'role_level': 'ROLE_MEMBER'
         }
 
-        res = self._post_json(self.add_user_url, data)
-
+        res = self._post_json(self.add_user_url + f'?organization_id={org.pk}', data)
         self.assertEqual(res.body['status'], 'success')
         user = User.objects.get(username=data['email'])
         self.assertEqual(user.email, data['email'])
@@ -175,7 +173,7 @@ class AdminViewsTest(TestCase):
 
         token = default_token_generator.make_token(user)
         signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
             "token": token
         })
 
@@ -188,13 +186,17 @@ class AdminViewsTest(TestCase):
 
         # actually go to that url to make sure it works
         res = self.client.get(signup_url)
-        self.assertEqual(res.status_code, 200)
+        self.assertEqual(res.status_code, 302)
 
         # post the new password
         password_post = {'new_password1': 'newpassS2',
                          'new_password2': 'newpassS2'}
 
-        res = self.client.post(signup_url, data=password_post)
+        set_password_url = reverse("landing:signup", kwargs={
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": 'set-password'
+        })
+        res = self.client.post(set_password_url, data=password_post)
 
         # reload the user
         user = User.objects.get(pk=user.pk)
@@ -221,7 +223,7 @@ class AdminViewsTest(TestCase):
 
         token = default_token_generator.make_token(user)
         signup_url = reverse("landing:signup", kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)).decode(),
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
             "token": token
         })
 
@@ -232,15 +234,19 @@ class AdminViewsTest(TestCase):
         self.assertTrue(signup_url in msg.body)
         self.assertTrue(data['email'] in msg.to)
 
-        # actually go to that url to make sure it works
-        res = self.client.get(signup_url)
-        self.assertEqual(res.status_code, 200)
+        # Follow link to be redirected to new password page
+        res = self.client.get(signup_url, data)
+        self.assertEqual(res.status_code, 302)
 
         # post the new password
         password_post = {'new_password1': 'newpassS3',
                          'new_password2': 'newpassS3'}
 
-        res = self.client.post(signup_url, data=password_post)
+        set_password_url = reverse("landing:signup", kwargs={
+            'uidb64': urlsafe_base64_encode(force_bytes(user.pk)),
+            "token": 'set-password'
+        })
+        res = self.client.post(set_password_url, data=password_post)
 
         # reload the user
         user = User.objects.get(pk=user.pk)
