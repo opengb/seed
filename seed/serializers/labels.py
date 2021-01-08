@@ -47,9 +47,19 @@ class LabelSerializer(serializers.ModelSerializer):
         }
         model = Label
 
+    def to_representation(self, instance):
+        ret = super().to_representation(instance)
+
+        # Avoid the impression that no records "is_applied" if inventory isn't provided and a search never occurred
+        if not self.inventory:
+            del ret['is_applied']
+
+        return ret
+
     def get_is_applied(self, obj):
         filtered_result = []
         if self.inventory:
+            # TODO: This needs to be updated to support labels being moved to Views. This breaks OEP.
             filtered_result = self.inventory.prefetch_related('labels').filter(labels__in=[obj]).values_list('id', flat=True)
 
         return filtered_result

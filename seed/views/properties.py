@@ -8,15 +8,16 @@ All rights reserved.  # NOQA
 :author
 """
 
+import json
+
 from django.core.paginator import EmptyPage, PageNotAnInteger, Paginator
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import detail_route, list_route
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
-from rest_framework.viewsets import GenericViewSet
+from rest_framework.viewsets import ViewSet
 
 from seed.utils.match import match_merge_link
-from seed.data_importer.views import ImportFileViewSet
 from seed.decorators import ajax_request_class
 from seed.filtersets import PropertyViewFilterSet, PropertyStateFilterSet
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -26,8 +27,8 @@ from seed.lib.superperms.orgs.models import (
 from seed.models import (
     AUDIT_USER_EDIT,
     Column,
-    ColumnListSetting,
-    ColumnListSettingColumn,
+    ColumnListProfile,
+    ColumnListProfileColumn,
     Cycle,
     DATA_STATE_MATCHING,
     MERGE_STATE_DELETE,
@@ -200,10 +201,10 @@ class PropertyViewViewSet(SEEDOrgModelViewSet):
     filter_class = PropertyViewFilterSet
     orgfilter = 'property__organization_id'
     data_name = "property_views"
-    queryset = PropertyView.objects.all().select_related('state')
+    queryset = PropertyView.objects.all()
 
 
-class PropertyViewSet(GenericViewSet, ProfileIdMixin):
+class PropertyViewSet(ViewSet, ProfileIdMixin):
     renderer_classes = (JSONRenderer,)
     serializer_class = PropertySerializer
 
@@ -266,7 +267,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
         columns_from_database = Column.retrieve_all(org_id, 'property', False)
 
         # This uses an old method of returning the show_columns. There is a new method that
-        # is prefered in v2.1 API with the ProfileIdMixin.
+        # is preferred in v2.1 API with the ProfileIdMixin.
         if profile_id is None:
             show_columns = None
         elif profile_id == -1:
@@ -275,16 +276,16 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
             ).values_list('id', flat=True))
         else:
             try:
-                profile = ColumnListSetting.objects.get(
+                profile = ColumnListProfile.objects.get(
                     organization=org,
                     id=profile_id,
-                    settings_location=VIEW_LIST,
+                    profile_location=VIEW_LIST,
                     inventory_type=VIEW_LIST_PROPERTY
                 )
-                show_columns = list(ColumnListSettingColumn.objects.filter(
-                    column_list_setting_id=profile.id
+                show_columns = list(ColumnListProfileColumn.objects.filter(
+                    column_list_profile_id=profile.id
                 ).values_list('column_id', flat=True))
-            except ColumnListSetting.DoesNotExist:
+            except ColumnListProfile.DoesNotExist:
                 show_columns = None
 
         related_results = TaxLotProperty.get_related(property_views, show_columns,
@@ -369,7 +370,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def cycles(self, request):
         """
         List all the properties	with all columns
@@ -403,7 +404,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def filter(self, request):
         """
         List all the properties
@@ -447,7 +448,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def meters_exist(self, request):
         """
         Check to see if the given Properties (given by ID) have Meters.
@@ -465,7 +466,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def merge(self, request):
         """
         Merge multiple property records into a single new record, and run this
@@ -492,14 +493,6 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 'message': 'At least two ids are necessary to merge'
             }, status=status.HTTP_400_BAD_REQUEST)
 
-        # Make sure the state isn't already matched
-        for state_id in state_ids:
-            if ImportFileViewSet.has_coparent(state_id, 'properties'):
-                return JsonResponse({
-                    'status': 'error',
-                    'message': 'Source state [' + state_id + '] is already matched'
-                }, status=status.HTTP_400_BAD_REQUEST)
-
         merged_state = merge_properties(state_ids, organization_id, 'Manual Match')
 
         merge_count, link_count, view_id = match_merge_link(merged_state.propertyview_set.first().id, 'PropertyState')
@@ -518,7 +511,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def unmerge(self, request, pk=None):
         """
         Unmerge a property view into two property views
@@ -672,7 +665,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def links(self, request, pk=None):
         """
         Get property details for each linked property across org cycles
@@ -728,7 +721,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def match_merge_link(self, request, pk=None):
         """
         Runs match merge link for an individual property.
@@ -749,7 +742,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def pair(self, request, pk=None):
         """
         Pair a taxlot to this property
@@ -778,7 +771,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'])
+    @action(detail=True, methods=['PUT'])
     def unpair(self, request, pk=None):
         """
         Unpair a taxlot from this property
@@ -807,7 +800,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def columns(self, request):
         """
         List all property columns
@@ -822,18 +815,32 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
               required: false
               paramType: query
         """
-        organization_id = int(request.query_params.get('organization_id'))
-        only_used = request.query_params.get('only_used', False)
-        columns = Column.retrieve_all(organization_id, 'property', only_used)
-        organization = Organization.objects.get(pk=organization_id)
-        unitted_columns = [add_pint_unit_suffix(organization, x) for x in columns]
+        org_id = request.query_params.get('organization_id', None)
+        if not org_id:
+            return JsonResponse(
+                {'status': 'error', 'message': 'Need to pass organization_id as query parameter'},
+                status=status.HTTP_400_BAD_REQUEST)
+        org_id = int(org_id)
 
-        return JsonResponse({'status': 'success', 'columns': unitted_columns})
+        try:
+            Organization.objects.get(pk=org_id)
+        except Organization.DoesNotExist:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'organization with id %s does not exist' % org_id
+            }, status=status.HTTP_404_NOT_FOUND)
+
+        only_used = json.loads(request.query_params.get('only_used', 'false'))
+        columns = Column.retrieve_all(org_id, 'property', only_used)
+        organization = Organization.objects.get(pk=org_id)
+        columns_with_units = [add_pint_unit_suffix(organization, x) for x in columns]
+
+        return JsonResponse({'status': 'success', 'columns': columns_with_units})
 
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_viewer')
-    @list_route(methods=['GET'])
+    @action(detail=False, methods=['GET'])
     def mappable_columns(self, request):
         """
         List only property columns that are mappable
@@ -851,7 +858,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['DELETE'])
+    @action(detail=True, methods=['DELETE'])
     def delete(self, request, pk=None):
         """
         Delete a single property state from a property_viewID. Not sure why we
@@ -876,7 +883,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['DELETE'])
+    @action(detail=False, methods=['DELETE'])
     def batch_delete(self, request):
         """
         Batch delete several properties
@@ -932,7 +939,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @api_endpoint_class
     @ajax_request_class
-    @detail_route(methods=['GET'])
+    @action(detail=True, methods=['GET'])
     def taxlots(self, pk):
         """
         Get related TaxLots for this property
@@ -1041,7 +1048,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
                 if val == '':
                     new_property_state_data[key] = None
 
-            changed_fields = get_changed_fields(property_state_data, new_property_state_data)
+            changed_fields, previous_data = get_changed_fields(property_state_data, new_property_state_data)
             if not changed_fields:
                 result.update(
                     {'status': 'success', 'message': 'Records are identical'}
@@ -1108,8 +1115,12 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                 if 'extra_data' in new_property_state_data:
                     property_state_data['extra_data'].update(
-                        new_property_state_data.pop('extra_data'))
-                property_state_data.update(new_property_state_data)
+                        new_property_state_data['extra_data']
+                    )
+
+                property_state_data.update(
+                    {k: v for k, v in new_property_state_data.items() if k != 'extra_data'}
+                )
 
                 log = PropertyAuditLog.objects.select_related().filter(
                     state=property_view.state
@@ -1136,6 +1147,8 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
                         # save the property view so that the datetime gets updated on the property.
                         property_view.save()
+
+                        Note.create_from_edit(request.user.id, property_view, new_property_state_data, previous_data)
 
                         merge_count, link_count, view_id = match_merge_link(property_view.id, 'PropertyState')
 
@@ -1166,7 +1179,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['PUT'], url_path='update_measures')
+    @action(detail=True, methods=['PUT'], url_path='update_measures')
     def add_measures(self, request, pk=None):
         """
         Update the measures applied to the building. There are two options, one for adding
@@ -1281,7 +1294,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['DELETE'], url_path='delete_measures')
+    @action(detail=True, methods=['DELETE'], url_path='delete_measures')
     def delete_measures(self, request, pk=None):
         """
         Delete measures. Allow the user to define which implementation type to delete
@@ -1343,7 +1356,7 @@ class PropertyViewSet(GenericViewSet, ProfileIdMixin):
     # TODO: fix the url_path to be nested. I want the url_path to be measures and have get,post,put
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['GET'], url_path='measures')
+    @action(detail=True, methods=['GET'], url_path='measures')
     def get_measures(self, request, pk=None):
         """
         Get the list of measures for a property and the given cycle

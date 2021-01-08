@@ -15,7 +15,7 @@ from collections import OrderedDict
 import xlsxwriter
 from django.http import JsonResponse, HttpResponse
 from quantityfield import ureg
-from rest_framework.decorators import list_route
+from rest_framework.decorators import action
 from rest_framework.renderers import JSONRenderer
 from rest_framework.viewsets import GenericViewSet
 
@@ -25,7 +25,7 @@ from seed.models import (
     PropertyView,
     TaxLotProperty,
     TaxLotView,
-    ColumnListSetting,
+    ColumnListProfile,
 )
 from seed.models.meters import (
     Meter,
@@ -57,7 +57,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
     @api_endpoint_class
     @ajax_request_class
     @has_perm_class('requires_member')
-    @list_route(methods=['POST'])
+    @action(detail=False, methods=['POST'])
     def export(self, request):
         """
         Download a csv of the TaxLot and Properties
@@ -115,7 +115,7 @@ class TaxLotPropertyViewSet(GenericViewSet):
 
         # Set the first column to be the ID
         column_name_mappings = OrderedDict([('id', 'ID')])
-        column_ids, add_column_name_mappings, columns_from_database = ColumnListSetting.return_columns(
+        column_ids, add_column_name_mappings, columns_from_database = ColumnListProfile.return_columns(
             org_id,
             profile_id,
             view_klass_str)

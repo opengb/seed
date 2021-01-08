@@ -669,6 +669,7 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     cached_mapped_columns = models.TextField(blank=True, null=True)
     cached_second_to_fifth_row = models.TextField(blank=True, null=True)
     has_header_row = models.BooleanField(default=True)
+    has_generated_headers = models.BooleanField(default=False)
     mapping_completion = models.IntegerField(blank=True, null=True)
     mapping_done = models.BooleanField(default=False)
     mapping_error_messages = models.TextField(blank=True, null=True)
@@ -692,6 +693,8 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     source_program = models.CharField(blank=True, max_length=80)  # don't think that this is used
     # program version is in format 'x.y[.z]'
     source_program_version = models.CharField(blank=True, max_length=40)  # don't think this is used
+    # Used by the BuildingSync import flow to link property states to file names (necessary for zip files)
+    raw_property_state_to_filename = JSONField(default=dict, blank=True)
 
     def __str__(self):
         return '%s' % self.file.name
@@ -708,6 +711,11 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
     @property
     def from_portfolio_manager(self):
         return self._strcmp(self.source_program, 'PortfolioManager')
+
+    @property
+    def from_buildingsync(self):
+        source_type = self.source_type if self.source_type else ''
+        return 'buildingsync' in source_type.lower()
 
     def _strcmp(self, a, b, ignore_ws=True, ignore_case=True):
         """Easily controlled loose string-matching."""
@@ -736,7 +744,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
         """Iterable of rows, made of iterable of column values of the raw data"""
         csv_reader = csv.reader(self.local_file)
         for row in csv_reader:
-            yield row
+            try:
+                yield row
+            except StopIteration:
+                return
 
     @property
     def cleaned_data_rows(self):
@@ -755,7 +766,10 @@ class ImportFile(NotDeletableModel, TimeStampedModel):
                     _log.error('problem with val: {}'.format(val))
                     from traceback import print_exc
                     print_exc()
-            yield cleaned_row
+            try:
+                yield cleaned_row
+            except StopIteration:
+                return
 
     def cache_first_rows(self):
         self.file.seek(0)

@@ -1,6 +1,6 @@
 <div class="modal-header" ng-switch on="step.number">
     <h4 class="modal-title" ng-switch-when="1" translate>Create a New Data Set.</h4>
-    <h4 class="modal-title" ng-switch-when="2" translate>Upload your data.</h4>
+    <h4 class="modal-title" ng-switch-when="2" translate>Uploading your data.</h4>
     <h4 class="modal-title" ng-switch-when="3" translate>Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="4" translate>Upload your energy data.</h4>
     <h4 class="modal-title" ng-switch-when="5" translate>Successful upload!</h4>
@@ -8,11 +8,10 @@
     <h4 class="modal-title" ng-switch-when="7" translate>Finding inventory matches.</h4>
     <h4 class="modal-title" ng-switch-when="8" translate="MATCHING_RESULTS_FOR_FILE" translate-values="{dataset_filename: dataset.filename}"></h4>
     <h4 class="modal-title" ng-switch-when="9" translate="ADD_FILES_TO" translate-values="{dataset_name: dataset.name}"></h4>
-    <h4 class="modal-title" ng-switch-when="10">{$:: 'UPLOAD_COMPLETE_TITLE' | translate $} - {$ dataset.filename $}</h4>
+    <h4 class="modal-title" ng-switch-when="10">{$:: step_10_mapquest_api_error ? 'UPLOAD_INCOMPLETE_TITLE' : 'UPLOAD_COMPLETE_TITLE' | translate $} - {$ dataset.filename $}</h4>
     <h4 class="modal-title" ng-switch-when="11" translate>Confirm Save Mappings?</h4>
     <h4 class="modal-title" ng-switch-when="12" translate>Error Processing Data</h4>
     <h4 class="modal-title" ng-switch-when="13" translate>Portfolio Manager Import</h4>
-    <h4 class="modal-title" ng-switch-when="14" translate>Successful upload!</h4>
     <h4 class="modal-title" ng-switch-when="15" translate>UPLOAD_PM_READINGS_MODAL_TITLE</h4>
     <h4 class="modal-title" ng-switch-when="16" translate>PM_METER_IMPORT_RESULTS</h4>
 
@@ -52,17 +51,17 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-top: 20px; padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload a Spreadsheet' | translate $}</div>
+                <div class="btn btn-primary upload-btn" sd-uploader organization-id="organization.org_id" sourcetype="Assessed Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload a Spreadsheet' | translate $}</div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="GeoJSON" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload a GeoJSON File</div>
+                <div class="btn btn-primary upload-btn" sd-uploader organization-id="organization.org_id" sourcetype="GeoJSON" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">Upload a GeoJSON File</div>
             </div>
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
+                <div class="btn btn-primary upload-btn" sd-uploader organization-id="organization.org_id" sourcetype="PM Meter Usage" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle"><span translate>PM_METER_IMPORT_BUTTON</span></div>
             </div>
         </div>
         <div class="row">
@@ -72,7 +71,7 @@
         </div>
         <div class="row">
             <div class="col-sm-8 col-sm-offset-2" style="padding-bottom: 10px;" ng-disabled="!selectedCycle" ng-hide="uploader.in_progress">
-                <div class="btn btn-primary upload-btn" sd-uploader sourcetype="BuildingSync" sourceprog="" sourcever="" importrecord="dataset.id" organization-id="organization.id" cycle-id="selectedCycle.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress">{$:: 'Upload BuildingSync Data' | translate $}</div>
+                <div class="btn btn-primary upload-btn" sd-uploader  organization-id="organization.org_id" sourcetype="BuildingSync Raw" sourceprog="" sourcever="" importrecord="dataset.id" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress" ng-disabled="!selectedCycle">{$:: 'Upload BuildingSync Data' | translate $}</div>
             </div>
         </div>
         <!--<div class="row">
@@ -81,7 +80,7 @@
         <div class="progress_bar_container" ng-show="uploader.in_progress">
             <div class="progress_bar_copy_top"
                  translate="UPLOADING_PROGRESS"
-                 translate-values="{ dataset_filename: dataset.filename }"></div>
+                 translate-values="{ dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
 
             <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
             <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
@@ -98,7 +97,19 @@
         <div class="row">
             <div class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
+        </div>
+        <div class="row" ng-if="buildingsync_issues != null && buildingsync_issues.length > 0">
+            <div class="col-sm-12">
+                <p>There were one or more warnings for the file(s) uploaded.</p>
+                <div ng-repeat="file_issues in buildingsync_issues">
+                    <em>{$ file_issues.file $}</em>
+                    <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0" style="word-wrap: break-word;">
+                        <h5>Use Case Warnings</h5>
+                        <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
+                    </div>
+                </div>
+            </div>
         </div>
     </div>
     <!-- Step 4: load Portfolio Manager report data -->
@@ -106,12 +117,11 @@
         <div class="row">
             <div class="alert alert-danger" ng-show="uploader.invalid_extension_alert" translate="INVALID_EXTENSION_ALERT"></div>
             <div class="form-group col-sm-12">
-                <div sd-uploader sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="{$:: 'Upload your energy data file(s)' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
+                <div sd-uploader organization-id="organization.org_id" sourcetype="Portfolio Raw" importrecord="dataset.id" buttontext="{$:: 'Upload your energy data file(s)' | translate $}" eventfunc="uploaderfunc(message, file, progress)" ng-hide="uploader.in_progress"></div>
                 <div class="progress_bar_container" ng-show="uploader.in_progress">
                     <div class="progress_bar_copy_top"
                          translate="UPLOADING_PROGRESS"
-                         translate-values="{ dataset_filename: dataset.filename }"></div>
-
+                         translate-values="{ dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
                     <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
                     <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
                 </div>
@@ -123,7 +133,7 @@
         <div class="row">
             <div class="alert alert-success"
             translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename }"></div>
+            translate-values="{ dataset_name: dataset.name , dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
         </div>
     </div>
     <!-- Step 6 -->
@@ -153,6 +163,7 @@
         <div class="row">
             <div class="alert alert-success">
                 <ul>
+                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
@@ -197,8 +208,9 @@
     <!-- Step 10: No matches -->
     <div class="data_upload_steps" ng-switch-when="10">
         <div class="row">
-            <div class="alert alert-success">
+            <div class="alert alert-success" ng-hide="step_10_error_message">
                 <ul>
+                    <li>{$:: 'Current cycle' | translate $}: {$ selectedCycle.name $}</li>
                     <li>{$:: 'Total rows in the import file' | translate $}: {$ import_file_records|number:0 $}</li>
                     <li ng-if="property_new">{$:: 'New properties' | translate $}: {$ property_new|number:0 $}</li>
                     <li ng-if="tax_lot_new">{$:: 'New tax lots' | translate $}: {$ tax_lot_new|number:0 $}</li>
@@ -232,7 +244,8 @@
             </div>
             <div class="alert alert-{$ step_10_style $}">
                 <span ng-show="step_10_error_message">{$ step_10_error_message | translate $}</span>
-                <span ng-hide="step_10_error_message" translate="IMPORT_ANOTHER_QUESTION"></span>
+                <span ng-show="step_10_file_message"><pre>{$ step_10_file_message $}</pre></span>
+                <span ng-hide="step_10_error_message || step_10_file_message" translate="IMPORT_ANOTHER_QUESTION"></span>
             </div>
             <div class="form-group col-sm-12"></div>
         </div>
@@ -249,10 +262,26 @@
             <div class="col-sm-12">
                 <div>
 
-                    <p ng-if="!building_sync_files" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
-                    <p ng-if="building_sync_files && bulk_upload" translate>Error(s) occurred while processing the BuildingSync data bulk upload, potentially resulting in a partial import.  Fix the errors and re-upload the corrected files.</p>
-                    <p ng-if="building_sync_files && !bulk_upload" translate>An error occurred while processing the BuildingSync xml file. Please ensure that your file meets the required specifications.</p>
-                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message">{$ step_12_error_message | json $}</pre>
+                    <p ng-if="!step_12_buildingsync_validation_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</p>
+                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_12_error_message.length >= 300}" ng-show="step_12_error_message && !step_12_buildingsync_validation_error">{$ step_12_error_message | json $}</pre>
+                    <span ng-if="step_12_buildingsync_validation_error">
+                        <p>BuildingSync file(s) failed to validate. No files were imported. Please fix the errors and re-upload the corrected file(s).</p>
+                        <div ng-repeat="file_issues in buildingsync_issues">
+                            <em>{$ file_issues.file $}</em>
+                            <div class="alert alert-danger" ng-if="file_issues.schema_errors.length > 0" style="word-wrap: break-word;">
+                                <h5>Schema Errors</h5>
+                                <div ng-repeat="err in file_issues.schema_errors">{$ err.path $}: {$ err.message $}</div>
+                            </div>
+                            <div class="alert alert-danger" ng-if="file_issues.use_case_errors.length > 0" style="word-wrap: break-word;">
+                                <h5>Use Case Errors</h5>
+                                <div ng-repeat="err in file_issues.use_case_errors">{$ err $}</div>
+                            </div>
+                            <div class="alert alert-warning" ng-if="file_issues.use_case_warnings.length > 0" style="word-wrap: break-word;">
+                                <h5>Use Case Warnings</h5>
+                                <div ng-repeat="warn in file_issues.use_case_warnings">{$ warn $}</div>
+                            </div>
+                        </div>
+                    </span>
                 </div>
             </div>
         </div>
@@ -269,7 +298,7 @@
         <div class="row" style="padding-bottom:10px">
             <label class="control-label col-lg-4 col-sm-4" for="inputPMPassword">Portfolio Manager Password</label>
             <div class="col-lg-8 col-sm-8">
-                <input type="password" class="form-control" id="inputPMPassword" name="password" ng-model="pm_password" ng-disabled="!pm_buttons_enabled" required>
+                <input type="password" class="form-control" id="inputPMPassword" name="password" ng-model="pm_password" ng-disabled="!pm_buttons_enabled" required autocomplete="off">
             </div>
         </div>
         <div class="row" style="padding-bottom:10px">
@@ -291,21 +320,6 @@
             </div>
         </div>
     </div>
-    <!-- Step 14: Successful BuildingSync upload -->
-    <div class="data_upload_steps" ng-switch-when="14">
-        <div class="row">
-            <div class="alert alert-success"
-            translate="DATASET_FILENAME_UPLOADED_TO"
-            translate-values="{ dataset_name: dataset.name, dataset_filename: dataset.filename }"></div>
-             <div class="col-sm-12">
-                <div ng-if="step_14_message.length > 0">
-                    <p translate>Warnings:</p>
-                    <pre class="text-wrap" ng-class="{'pre-scrollable': step_14_message.length >= 300}" ng-show="step_14_message">{$ step_14_message | json $}</pre>
-                </div>
-            </div>
-
-        </div>
-    </div>
     <!-- Step 15:  Upload PM Meter Readings -->
     <div class="data_upload_steps" ng-switch-when="15">
         <div class="alert alert-danger" ng-show="pm_meter_import_error" translate>An error occurred while processing the file. Please ensure that your file meets the required specifications.</div>
@@ -313,7 +327,7 @@
         <div class="progress_bar_container" ng-show="uploader.in_progress">
             <div class="progress_bar_copy_top"
                  translate="UPLOADING_PROGRESS"
-                 translate-values="{ dataset_filename: dataset.filename }"></div>
+                 translate-values="{ dataset_filename: dataset.filename , cycle_name: selectedCycle.name }"></div>
 
             <uib-progressbar class="progress-striped active" value="uploader.progress" type="success"></uib-progressbar>
             <div class="progress_bar_copy_bottom">{$ uploader.progress | number:0 $}% {$:: 'Complete' | translate $} {$ uploader.status_message ? ': ' + uploader.status_message : '' $}</div>
@@ -389,24 +403,19 @@
         </div>
     </div>
     <div ng-switch-when="10">
-        <div class="row text-center">
+        <div class="row text-center" ng-hide="step_10_mapquest_api_error">
             <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
         </div>
-        <div class="row text-center">
+        <div class="row text-center" ng-hide="step_10_mapquest_api_error">
             <button id="view-buildings" type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
+        </div>
+        <div class="row text-center" ng-if="step_10_mapquest_api_error">
+            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="reset_mapquest_api_key()" translate>Update MapQuest API key</button>
         </div>
     </div>
     <div ng-switch-when="11">
         <div class="row text-center">
             <button type="button" id="confirm-mapping" class="btn btn-primary col-sm-6 center-block" ng-click="save_mappings()" translate>CONFIRM_AND_START_MATCHING</button>
-        </div>
-    </div>
-    <div ng-switch-when="14">
-        <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="goto_step(2)" translate>Add another file</button>
-        </div>
-        <div class="row text-center">
-            <button type="button" class="btn btn-primary col-sm-6 center-block" ng-click="view_my_properties()" translate>View my properties</button>
         </div>
     </div>
     <div ng-switch-when="15">

@@ -78,7 +78,7 @@ def pretty_units_from_spec(unit_spec):
     return pretty_units(quantity)
 
 
-def add_pint_unit_suffix(organization, column):
+def add_pint_unit_suffix(organization, column, data_key="data_type", display_key="display_name"):
     """
     transforms the displayName coming from `Column.retrieve_all` to add known
     units where applicable,  eg. 'Gross Floor Area' to 'Gross Floor Area (sq.
@@ -93,15 +93,21 @@ def add_pint_unit_suffix(organization, column):
         stripped_name = re.sub(r' \(pint\)$', '', column_name, flags=re.IGNORECASE)
         return stripped_name + ' ({})'.format(display_units)
 
+    if data_key not in column:
+        data_key = "dataType"
+    if display_key not in column:
+        display_key = "displayName"
+
     try:
-        if column['dataType'] == 'area':
-            column['displayName'] = format_column_name(
-                column['displayName'], organization.display_units_area)
-        elif column['dataType'] == 'eui':
-            column['displayName'] = format_column_name(
-                column['displayName'], organization.display_units_eui)
+        if column[data_key] == 'area':
+            column[display_key] = format_column_name(
+                column[display_key], organization.display_units_area)
+        elif column[data_key] == 'eui':
+            column[display_key] = format_column_name(
+                column[display_key], organization.display_units_eui)
     except KeyError:
         pass  # no transform needed if we can't detect dataType, nbd
+
     return column
 
 
@@ -131,7 +137,12 @@ class PintQuantitySerializerField(serializers.Field):
             try:
                 org = state.organization
             except AttributeError:
-                org = state.state.organization
+                try:
+                    # some objects store it under 'state'
+                    org = state.state.organization
+                except AttributeError:
+                    # some objects store it under 'property_state' (like 'AnalysisPropertyView')
+                    org = state.property_state.organization
             value = collapse_unit(org, obj)
             return value
         else:
@@ -142,6 +153,16 @@ class PintQuantitySerializerField(serializers.Field):
         field = self.root.Meta.model._meta.get_field(self.field_name)
 
         try:
+            org = self.root.instance.organization
+
+            if field.base_units == 'kBtu/ft**2/year':
+                data = float(data) * ureg(org.display_units_eui)
+            elif field.base_units == 'ft**2':
+                data = float(data) * ureg(org.display_units_area)
+            else:
+                # This shouldn't happen unless we're supporting a new pints_unit QuantityField.
+                data = float(data) * ureg(field.base_units)
+        except AttributeError:
             data = float(data) * ureg(field.base_units)
         except ValueError:
             data = None

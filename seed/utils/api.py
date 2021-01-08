@@ -26,8 +26,8 @@ from seed.landing.models import SEEDUser as User
 from seed.lib.superperms.orgs.permissions import get_org_id, get_user_org
 from seed.models import (
     Column,
-    ColumnListSetting,
-    ColumnListSettingColumn,
+    ColumnListProfile,
+    ColumnListProfileColumn,
     VIEW_LIST,
     VIEW_LIST_PROPERTY)
 
@@ -85,9 +85,15 @@ def get_all_urls(urllist, prefix=''):
         if hasattr(entry, 'url_patterns'):
             for url in get_all_urls(entry.url_patterns,
                                     prefix + entry.pattern.regex.pattern):
-                yield url
+                try:
+                    yield url
+                except StopIteration:
+                    return
         else:
-            yield (prefix + entry.pattern.regex.pattern, entry.callback)
+            try:
+                yield (prefix + entry.pattern.regex.pattern, entry.callback)
+            except StopIteration:
+                return
 
 
 # pylint: disable=global-variable-not-assigned
@@ -259,10 +265,10 @@ class ProfileIdMixin(object):
             'fields': ['extra_data', 'id'],  # , 'bounding_box', 'long_lat', 'centroid',
             'extra_data': []
         }
-        profile_exists = ColumnListSetting.objects.filter(
+        profile_exists = ColumnListProfile.objects.filter(
             organization_id=org_id,
             id=profile_id,
-            settings_location=VIEW_LIST,
+            profile_location=VIEW_LIST,
             inventory_type=VIEW_LIST_PROPERTY
         ).exists()
         if profile_id is None or profile_id == -1 or not profile_exists:
@@ -275,13 +281,13 @@ class ProfileIdMixin(object):
                 table_name='PropertyState',
                 is_extra_data=True).values_list('column_name', flat=True))
         else:
-            profile = ColumnListSetting.objects.get(
+            profile = ColumnListProfile.objects.get(
                 organization_id=org_id,
                 id=profile_id,
-                settings_location=VIEW_LIST,
+                profile_location=VIEW_LIST,
                 inventory_type=VIEW_LIST_PROPERTY
             )
-            for col in list(ColumnListSettingColumn.objects.filter(column_list_setting_id=profile.id).values(
+            for col in list(ColumnListProfileColumn.objects.filter(column_list_profile_id=profile.id).values(
                     'column__column_name', 'column__is_extra_data')):
                 if col['column__is_extra_data']:
                     show_columns['extra_data'].append(col['column__column_name'])

@@ -4,19 +4,17 @@
 :copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
-
 import logging
 
 import coreapi
 from django.http import JsonResponse
 from rest_framework import status
-from rest_framework.decorators import list_route, detail_route
+from rest_framework.decorators import action
 from rest_framework.exceptions import NotFound, ParseError
 from rest_framework.filters import BaseFilterBackend
 from rest_framework.parsers import JSONParser, FormParser
 from rest_framework.renderers import JSONRenderer
 from rest_framework.response import Response
-
 from seed.decorators import ajax_request_class
 from seed.lib.superperms.orgs.decorators import has_perm_class
 from seed.lib.superperms.orgs.models import Organization
@@ -153,7 +151,21 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @list_route(methods=['POST'])
+    def update(self, request, pk=None):
+        organization_id = request.query_params.get('organization_id', None)
+
+        request.data['shared_field_type'] = request.data['sharedFieldType']
+        del request.data['sharedFieldType']
+
+        # Ensure ComStock uniqueness across properties and taxlots together
+        if request.data['comstock_mapping'] is not None:
+            Column.objects.filter(organization_id=organization_id, comstock_mapping=request.data['comstock_mapping']) \
+                .update(comstock_mapping=None)
+        return super(ColumnViewSet, self).update(request, pk)
+
+    @ajax_request_class
+    @has_perm_class('can_modify_data')
+    @action(detail=False, methods=['POST'])
     def delete_all(self, request):
         """
         Delete all columns for an organization. This method is typically not recommended if there
@@ -198,7 +210,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
                 'message': 'organization with with id {} does not exist'.format(organization_id)
             }, status=status.HTTP_404_NOT_FOUND)
 
-    @list_route(renderer_classes=(SEEDJSONRenderer,))
+    @action(detail=False, renderer_classes=(SEEDJSONRenderer,))
     def add_column_names(self, request):
         """
         Allow columns to be added based on an existing record.
@@ -250,7 +262,7 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgCreateUpdateModelViewSet):
 
     @ajax_request_class
     @has_perm_class('can_modify_data')
-    @detail_route(methods=['POST'])
+    @action(detail=True, methods=['POST'])
     def rename(self, request, pk=None):
         org_id = self.get_organization(request)
         try:

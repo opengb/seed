@@ -98,14 +98,12 @@ urlpatterns = [
     ),
     url(
         r'projects/(?P<pk>\w+)/move/$',
-        ProjectViewSet.as_view({'put': 'transfer'}),
-        {'action': 'move'},
+        ProjectViewSet.as_view({'put': 'move'}),
         name='projects-move'
     ),
     url(
         r'projects/(?P<pk>\w+)/copy/$',
-        ProjectViewSet.as_view({'put': 'transfer'}),
-        {'action': 'copy'},
+        ProjectViewSet.as_view({'put': 'copy'}),
         name='projects-copy'
     ),
     url(
@@ -124,6 +122,11 @@ urlpatterns = [
         r'^test_view_with_arg/([0-9]{1})/$',
         test_view_with_arg,
         name='testviewarg'
+    ),
+    url(
+        r'^export_reports_data/$',
+        Report.as_view({'get': 'export_reports_data'}),
+        name='export_reports_data'
     ),
     url(
         r'^get_property_report_data/$',

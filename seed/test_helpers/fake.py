@@ -25,11 +25,11 @@ from django.utils import timezone
 from faker import Factory
 
 from seed.models import (
-    Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
+    Analysis, AnalysisPropertyView, Cycle, Column, GreenAssessment, GreenAssessmentURL, Measure,
     GreenAssessmentProperty, Property, PropertyAuditLog, PropertyView,
     PropertyState, StatusLabel, TaxLot, TaxLotAuditLog, TaxLotProperty,
-    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListSetting,
-    ColumnListSettingColumn,
+    TaxLotState, TaxLotView, PropertyMeasure, Note, ColumnListProfile,
+    ColumnListProfileColumn,
     VIEW_LIST,
     VIEW_LIST_PROPERTY)
 from seed.models.auditlog import AUDIT_IMPORT, AUDIT_USER_CREATE
@@ -741,9 +741,9 @@ class FakeTaxLotViewFactory(BaseFake):
         return TaxLotView.objects.create(**property_view_details)
 
 
-class FakeColumnListSettingsFactory(BaseFake):
+class FakeColumnListProfileFactory(BaseFake):
     """
-    Factory Class for producing ColumnList Settings
+    Factory Class for producing ColumnList Profiles
 
     * This is faker, its predictable based on seed passed to fake factory.
     """
@@ -752,22 +752,22 @@ class FakeColumnListSettingsFactory(BaseFake):
         super().__init__()
         self.organization = organization
 
-    def get_columnlistsettings(self, organization=None,
-                               inventory_type=VIEW_LIST_PROPERTY,
-                               location=VIEW_LIST,
-                               table_name='PropertyState',
-                               **kw):
-        """Get columnlistsettings instance."""
+    def get_columnlistprofile(self, organization=None,
+                              inventory_type=VIEW_LIST_PROPERTY,
+                              location=VIEW_LIST,
+                              table_name='PropertyState',
+                              **kw):
+        """Get columnlistprofile instance."""
         if not organization:
             organization = self.organization
 
         cls_details = {
             'organization_id': organization.pk,
             'name': 'test column list setting',
-            'settings_location': location,
+            'profile_location': location,
             'inventory_type': inventory_type,
         }
-        cls = ColumnListSetting.objects.create(**cls_details)
+        cls = ColumnListProfile.objects.create(**cls_details)
 
         columns = []
         if 'columns' in kw:
@@ -781,9 +781,65 @@ class FakeColumnListSettingsFactory(BaseFake):
 
         # associate all the columns
         for idx, c in enumerate(columns):
-            ColumnListSettingColumn.objects.create(column=c, column_list_setting=cls, order=idx)
+            ColumnListProfileColumn.objects.create(column=c, column_list_profile=cls, order=idx)
 
         return cls
+
+
+class FakeAnalysisFactory(BaseFake):
+    """
+    Factory Class for producing Analysis instances.
+    """
+    def __init__(self, organization=None, user=None):
+        super().__init__()
+        self.organization = organization
+        self.user = user
+
+    def get_analysis(self, name=None, service=None, start_time=None,
+                     organization=None, user=None, configuration=None):
+
+        config = {
+            'name': name if name is not None else self.fake.text(),
+            'organization': organization if organization is not None else self.organization,
+            'user': user if user is not None else user,
+            'service': service if service is not None else Analysis.BSYNCR,
+            'start_time': datetime.datetime(2015, 1, 1, tzinfo=timezone.get_current_timezone()),
+            'configuration': configuration if configuration is not None else {},
+        }
+
+        return Analysis.objects.create(**config)
+
+
+class FakeAnalysisPropertyViewFactory(BaseFake):
+    """
+    Factory Class for producing AnalysisPropertyView instances.
+    """
+    def __init__(self, organization=None, user=None, analysis=None):
+        super().__init__()
+        self.organization = organization
+        self.user = user
+        self.analysis = analysis
+
+    def get_analysis_property_view(self, analysis=None, property=None, cycle=None,
+                                   property_state=None, organization=None, user=None,
+                                   **kwargs):
+
+        organization = organization if organization is not None else self.organization
+        user = user if user is not None else user
+        if analysis is None:
+            if self.analysis is None:
+                analysis = FakeAnalysisFactory(organization, user).get_analysis(**kwargs)
+            else:
+                analysis = self.analysis
+
+        config = {
+            'analysis': analysis,
+            'property': property if property is not None else FakePropertyFactory(organization).get_property(),
+            'cycle': cycle if cycle is not None else FakeCycleFactory(organization, user).get_cycle(),
+            'property_state': property_state if property_state is not None else FakePropertyStateFactory(organization=organization).get_property_state()
+        }
+
+        return AnalysisPropertyView.objects.create(**config)
 
 
 def mock_file_factory(name, size=None, url=None, path=None):

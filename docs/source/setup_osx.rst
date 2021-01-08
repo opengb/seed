@@ -20,7 +20,7 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 
 * install Postgres 11.1 and redis for cache and message broker
 * install PostGIS 2.5 and enable it on the database using `CREATE EXTENSION postgis;`
-* install TimescaleDB 1.4.1
+* install TimescaleDB 1.5.0
 * use a virtualenv (if desired)
 * `git clone git@github.com:seed-platform/seed.git`
 * create a `local_untracked.py` in the `config/settings` folder and add CACHE and DB config (example `local_untracked.py.dist`)
@@ -28,7 +28,7 @@ ready for general development. If this is not the case, skip to Prerequisites.  
 * `export DJANGO_SETTINGS_MODULE=config.settings.dev` in all terminals used by SEED (celery terminal and runserver terminal)
 * `pip install -r requirements/local.txt`
     * for condas python, you way need to run this command to get pip install to succeed: `conda install -c conda-forge python-crfsuite`
-* bin/install_javascript_dependencies.sh
+* npm install
 * `./manage.py migrate`
 * `./manage.py create_default_user`
 * `./manage.py runserver`
@@ -116,7 +116,7 @@ the seeduser is a SUPERUSER.
     createdb `whoami`
     psql -c 'CREATE DATABASE "seeddb" WITH OWNER = "seeduser";'
     psql -c 'GRANT ALL PRIVILEGES ON DATABASE "seeddb" TO seeduser;'
-    psql -c 'ALTER ROLE seeduser SUPERUSER;
+    psql -c 'ALTER ROLE seeduser SUPERUSER;'
 
 
 
@@ -151,10 +151,10 @@ Now exit any root environments, becoming just yourself (even though it's not
 that easy being green), for the remainder of these instructions.
 
 
-TimescaleDB 1.4.1
+TimescaleDB 1.5.0
 -----------------
 
-Note, as of version 1.4.1, dumping and restoring databases requires that both the source and target
+Note, as of version 1.5.0, dumping and restoring databases requires that both the source and target
 database have the same version of TimescaleDB.
 
 Downloading From Source::
@@ -165,7 +165,7 @@ Downloading From Source::
 
    git clone https://github.com/timescale/timescaledb.git
    cd timescaledb
-   git checkout 1.4.1
+   git checkout 1.5.0
 
    # Bootstrap the build system
    ./bootstrap

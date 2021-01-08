@@ -21,12 +21,12 @@ angular.module('BE.seed.controller.inventory_detail', [])
     'inventory_service',
     'matching_service',
     'pairing_service',
-    'user_service',
     'inventory_payload',
     'columns',
     'profiles',
     'current_profile',
     'labels_payload',
+    'organization_payload',
     function (
       $http,
       $state,
@@ -45,17 +45,17 @@ angular.module('BE.seed.controller.inventory_detail', [])
       inventory_service,
       matching_service,
       pairing_service,
-      user_service,
       inventory_payload,
       columns,
       profiles,
       current_profile,
-      labels_payload
+      labels_payload,
+      organization_payload,
     ) {
       $scope.inventory_type = $stateParams.inventory_type;
-      $scope.organization = user_service.get_organization();
+      $scope.organization = organization_payload.organization;
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
@@ -77,7 +77,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             id: col.id,
             order: index + 1,
             pinned: false,
-            table_name: col.table_name,
+            table_name: col.table_name
           };
         });
       };
@@ -89,7 +89,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
           resolve: {
             action: _.constant('new'),
             data: profile_formatted_columns,
-            settings_location: _.constant('Detail View Settings'),
+            profile_location: _.constant('Detail View Profile'),
             inventory_type: function () {
               return $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
             }
@@ -115,7 +115,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         }
       };
 
-      function populated_columns_modal() {
+      function populated_columns_modal () {
         $uibModal.open({
           backdrop: 'static',
           templateUrl: urls.static_url + 'seed/partials/show_populated_columns_modal.html',
@@ -127,9 +127,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
             currentProfile: function () {
               return $scope.currentProfile;
             },
-            cycle: function () {
-              return null;
-            },
+            cycle: _.constant(null),
             inventory_type: function () {
               return $stateParams.inventory_type;
             },
@@ -141,14 +139,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
                 var item_state_copy = angular.copy(item.state);
                 _.defaults(item_state_copy, item.state.extra_data);
                 provided_inventory.push(item_state_copy);
-              })
+              });
 
               // add "master" copy
-              item_copy = angular.copy($scope.item_state);
+              var item_copy = angular.copy($scope.item_state);
               _.defaults(item_copy, $scope.item_state.extra_data);
 
               return provided_inventory;
-            },
+            }
           }
         });
       }
@@ -186,16 +184,27 @@ angular.module('BE.seed.controller.inventory_detail', [])
         $scope.item_parent = inventory_payload.taxlot;
       }
 
-      // Detail Settings Profile
+      // Detail Column List Profile
       $scope.profiles = profiles;
       $scope.currentProfile = current_profile;
 
       // Flag columns whose values have changed between imports and edits.
       var historical_states = _.map($scope.historical_items, 'state');
 
-      var historical_changes_check = function(column) {
-        var uniq_column_values = _.uniqBy(historical_states.concat($scope.item_state), column.column_name);
-        column['changed'] = uniq_column_values.length > 1;
+      var historical_changes_check = function (column) {
+        var uniq_column_values;
+        var states = historical_states.concat($scope.item_state);
+
+        if (column.is_extra_data) {
+          uniq_column_values = _.uniqBy(states, function (state) {
+            // Normalize missing column_name keys returning undefined to return null.
+            return state.extra_data[column.column_name] || null;
+          });
+        } else {
+          uniq_column_values = _.uniqBy(states, column.column_name);
+        }
+
+        column.changed = uniq_column_values.length > 1;
         return column;
       };
 
@@ -351,9 +360,10 @@ angular.module('BE.seed.controller.inventory_detail', [])
       $scope.diff = function () {
         if (_.isEmpty($scope.item_copy)) return {};
         // $scope.item_state, $scope.item_copy
+        const ignored_root_keys = ['extra_data', 'files', 'measures', 'scenarios']
         var result = {};
         _.forEach($scope.item_state, function (value, key) {
-          if (key === 'extra_data') return;
+          if (ignored_root_keys.includes(key)) return;
           if (value === $scope.item_copy[key]) return;
           if (_.isNull($scope.item_copy[key]) && _.isString(value) && _.isEmpty(value)) return;
           if (_.isNumber($scope.item_copy[key]) && _.isString(value) && $scope.item_copy[key] === _.toNumber(value)) return;
@@ -393,11 +403,11 @@ angular.module('BE.seed.controller.inventory_detail', [])
 
         Notification.info({
           message: (merged_count + ' total ' + (merged_count === 1 ? singular : plural) + ' merged'),
-          delay: 10000,
+          delay: 10000
         });
         Notification.info({
           message: (link_count + ' cross-cycle link' + (link_count === 1 ? '' : 's') + ' established'),
-          delay: 10000,
+          delay: 10000
         });
       };
 
@@ -463,6 +473,22 @@ angular.module('BE.seed.controller.inventory_detail', [])
         });
       };
 
+      $scope.open_analyses_modal = function () {
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/inventory_detail_analyses_modal.html',
+          controller: 'inventory_detail_analyses_modal_controller',
+          resolve: {
+            inventory_ids: function () {
+              return [$scope.inventory.view_id];
+            }
+            // meters: ['$stateParams', 'user_service', 'meter_service', function ($stateParams, user_service, meter_service) {
+            // var organization_id = user_service.get_organization().id;
+            // return meter_service.get_meters($stateParams.view_id, organization_id);
+          // }],
+          }
+        });
+      };
+
       $scope.unmerge = function () {
         var modalInstance = $uibModal.open({
           templateUrl: urls.static_url + 'seed/partials/unmerge_modal.html',
@@ -489,16 +515,37 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       $scope.export_building_sync = function () {
-        var the_url = '/api/v2_1/properties/' + $stateParams.view_id + '/building_sync/';
-        $http.get(the_url, {})
-          .then(function (response) {
-            var blob = new Blob([response.data], {type: 'application/xml;charset=utf-8;'});
-            var downloadLink = angular.element('<a></a>');
-            var filename = 'buildingsync_property_' + $stateParams.view_id + '.xml';
-            downloadLink.attr('href', $window.URL.createObjectURL(blob));
-            downloadLink.attr('download', filename);
-            downloadLink[0].click();
-          });
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/export_buildingsync_modal.html',
+          controller: 'export_buildingsync_modal_controller',
+          resolve: {
+            property_view_id: function () {
+              return $stateParams.view_id;
+            },
+            column_mapping_profiles: [
+              'column_mappings_service',
+              'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT',
+              'COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM',
+              function (
+                column_mappings_service,
+                COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
+                COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
+              ) {
+                var filter_profile_types = [
+                  COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_DEFAULT,
+                  COLUMN_MAPPING_PROFILE_TYPE_BUILDINGSYNC_CUSTOM
+                ];
+                return column_mappings_service.get_column_mapping_profiles_for_org(
+                  $scope.organization.id,
+                  filter_profile_types
+                ).then(function (response) {
+                  return response.data;
+                });
+              }]
+          }
+        });
+        modalInstance.result.then(function () {
+        });
       };
 
       $scope.export_building_sync_xlsx = function () {
@@ -508,7 +555,7 @@ angular.module('BE.seed.controller.inventory_detail', [])
         //   profileId = $scope.currentProfile.id;
         // }
 
-        $http.post('/api/v2.1/tax_lot_properties/export/', {
+        $http.post('/api/v3/tax_lot_properties/export/', {
           ids: [$stateParams.view_id],
           filename: filename,
           profile_id: null, // TODO: reconfigure backend to handle detail settings profiles
@@ -541,23 +588,23 @@ angular.module('BE.seed.controller.inventory_detail', [])
       var reload_with_view_id = function (view_id) {
         $state.go('inventory_detail', {
           inventory_type: $scope.inventory_type,
-          view_id: view_id,
+          view_id: view_id
         });
-      }
+      };
 
       $scope.match_merge_link_record = function () {
         var new_view_id;
         if ($scope.inventory_type === 'properties') {
-          inventory_service.property_match_merge_link($scope.inventory.view_id).then(function(result) {
+          inventory_service.property_match_merge_link($scope.inventory.view_id).then(function (result) {
             new_view_id = result.view_id;
             notify_merges_and_links(result);
-            if (new_view_id) reload_with_view_id(new_view_id)
+            if (new_view_id) reload_with_view_id(new_view_id);
           });
         } else if ($scope.inventory_type === 'taxlots') {
-          inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then(function(result) {
+          inventory_service.taxlot_match_merge_link($scope.inventory.view_id).then(function (result) {
             new_view_id = result.view_id;
             notify_merges_and_links(result);
-            if (new_view_id) reload_with_view_id(new_view_id)
+            if (new_view_id) reload_with_view_id(new_view_id);
           });
         }
       };
@@ -576,13 +623,13 @@ angular.module('BE.seed.controller.inventory_detail', [])
             headers: function () {
               if (trigger === 'manual') {
                 return {
-                  properties: "Merge and Link Matching Properties",
-                  taxlots: "Merge and Link Matching Tax Lots",
+                  properties: 'Merge and Link Matching Properties',
+                  taxlots: 'Merge and Link Matching Tax Lots'
                 };
               } else if (trigger === 'edit') {
                 return {
-                  properties: "Updating this property will merge & link any matching properties.",
-                  taxlots: "Updating this tax lot will merge & link any matching tax lots.",
+                  properties: 'Updating this property will trigger a matching round for this record.',
+                  taxlots: 'Updating this tax lot will trigger a matching round for this record.'
                 };
               }
             }
@@ -645,11 +692,20 @@ angular.module('BE.seed.controller.inventory_detail', [])
       // Horizontal scroll for "2 tables" that scroll together for fixed header effect.
       var table_container = $('.table-xscroll-fixed-header-container');
 
-      table_container.scroll(function() {
+      table_container.scroll(function () {
         $('.table-xscroll-fixed-header-container > .table-body-x-scroll').width(
           table_container.width() + table_container.scrollLeft()
         );
       });
+
+      $scope.displayValue = function(dataType, value) {
+        if (dataType === 'datetime') {
+          return $filter('date')(value, 'yyyy-MM-dd h:mm a')
+        } else if (dataType === 'eui' || dataType === 'area') {
+          return $filter('number')(value, $scope.organization.display_significant_figures)
+        }
+        return value
+      }
 
       /**
        *   init: sets default state of inventory detail page,
@@ -667,5 +723,14 @@ angular.module('BE.seed.controller.inventory_detail', [])
       };
 
       init();
+
+      $scope.toggle_freeze = function () {
+        var table_div = document.getElementById('pin');
+        if (table_div.className === 'section_content_container table-xscroll-unfrozen') {
+          table_div.className = 'section_content_container table-xscroll-frozen';
+        } else {
+          table_div.className = 'section_content_container table-xscroll-unfrozen';
+        }
+      };
 
     }]);

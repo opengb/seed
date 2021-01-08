@@ -53,7 +53,7 @@
                 </button>
                 <ul id="#inventory-actions-dropdown" uib-dropdown-menu class="dropdown-menu" role="menu" aria-labelledby="btnInventoryActions">
                     <li role="menuitem" ng-if="::inventory_type === 'properties'" class="upload-list-item">
-                        <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="item_parent.id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
+                        <div sd-uploader sourcetype="BuildingSyncUpdate" sourceprog="" sourcever="" importrecord="inventory.view_id" organization-id="organization.id" cycle-id="cycle.id" eventfunc="uploaderfunc(message, file, progress)">{$:: 'Update with BuildingSync' | translate $}</div>
                     </li>
 
                     <li ng-if="::inventory_type === 'properties'" role="menuitem">
@@ -65,7 +65,11 @@
                     </li>
 
                     <li role="menuitem">
-                        <a ng-click="open_update_labels_modal()" ng-disabled="selectedCount === 0">{$:: 'Add/Remove Labels' | translate $}</a>
+                        <a ng-click="open_update_labels_modal()">{$:: 'Add/Remove Labels' | translate $}</a>
+                    </li>
+
+                    <li role="menuitem">
+                        <a ng-click="open_analyses_modal()">{$:: 'Run Analysis'$}</a>
                     </li>
 
                     <li role="menuitem" ng-if="::historical_items.length > 1">
@@ -100,7 +104,7 @@
 
             <div>
                 <span ng-show="profiles.length > 0">
-                    <label>{$:: 'Detail Settings Profile' | translate $}:</label>
+                    <label>{$:: 'Detail Column List Profile' | translate $}:</label>
                     <div style="display: inline-block;">
                         <select class="form-control input-sm" ng-model="currentProfile" ng-options="option.name for option in profiles track by option.id"></select>
                     </div>
@@ -123,13 +127,17 @@
             </div>
         </div>
 
-        <div class="section_content_container table-xscroll-fixed-header-container">
+        <div id="pin" class="section_content_container table-xscroll-unfrozen">
             <div class="table_list_container table_item_detail">
                 <table id="inventory-detail-table" class="table table-striped table_highlight_first fixed-layout">
                     <thead>
                         <tr>
                             <th id="building-fields">{$:: 'Field' | translate $}</th>
-                            <th>{$:: 'Master' | translate $}</th>
+                            <th id="building-fields" ng-click="toggle_freeze()">
+                                <span class="pin">{$:: 'Master' | translate $}
+                                    <i class="glyphicon glyphicon-pushpin"></i>
+                                </span>
+                            </th>
                             <!-- Historical values -->
                             <th ng-repeat="historical_item in ::historical_items">
                                 <div ng-if="::_.includes(['ImportFile', 'UserEdit'], historical_item.source)" uib-popover="{$:: historical_item.filename $}" popover-placement="bottom">
@@ -138,10 +146,6 @@
                             </th>
                         </tr>
                     </thead>
-                </table>
-            </div>
-            <div class="table_list_container table_item_detail table-body-x-scroll">
-                <table class="table table-striped table_highlight_first fixed-layout">
                     <tbody>
                         <tr ng-repeat="col in ::columns">
                             <!-- Column name -->
@@ -150,24 +154,21 @@
                             <!-- Show read-only current 'regular' field value -->
                             <td ng-if="edit_form_showing===false && !col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$:: item_state[col.column_name] $}">
-                                    <span ng-if="::col.data_type !== 'datetime'">{$:: item_state[col.column_name] $}</span>
-                                    <span ng-if="::col.data_type === 'datetime'">{$:: item_state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                    <span>{$:: displayValue(col.data_type, item_state[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current 'extra_data' field value -->
                             <td ng-if="edit_form_showing===false && col.is_extra_data && col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
                                 <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state.extra_data[col.column_name] $}">
-                                    <span ng-if="::col.data_type !== 'datetime'">{$:: item_state.extra_data[col.column_name] $}</span>
-                                    <span ng-if="::col.data_type === 'datetime'">{$:: item_state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                    <span>{$:: displayValue(col.data_type, item_state.extra_data[col.column_name]) $}</span>
                                 </span>
                             </td>
 
                             <!-- Show read-only current 'property / taxlot' fields -->
                             <td ng-if="edit_form_showing===false && !col.table_name.toLowerCase().includes('state')" ng-class="{highlight: col.changed}" class="ellipsis">
-                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_state[col.column_name] $}">
-                                    <span ng-if="::col.data_type !== 'datetime'">{$:: item_parent[col.column_name] $}</span>
-                                    <span ng-if="::col.data_type === 'datetime'">{$:: item_parent[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                <span class="sd-data-content" popover-placement="top-left" popover-animation="false" popover-trigger="outsideClick" uib-popover="{$ item_parent[col.column_name] $}">
+                                    <span>{$:: displayValue(col.data_type, item_parent[col.column_name]) $}</span>
                                 </span>
                             </td>
 
@@ -186,16 +187,13 @@
 
                             <!-- Show read-only historical field value -->
                             <td ng-repeat="historical_item in historical_items" ng-class="{highlight: col.changed}" class="ellipsis">
-                                <span ng-if="::!col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
-                                    <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state[col.column_name] $}</span>
-                                    <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                <span ng-if="::!col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state[col.column_name] $}">
+                                    <span>{$:: displayValue(col.data_type, historical_item.state[col.column_name]) $}</span>
                                 </span>
-                                <span ng-if="::col.is_extra_data" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
-                                    <span ng-if="col.data_type !== 'datetime'">{$:: historical_item.state.extra_data[col.column_name] $}</span>
-                                    <span ng-if="col.data_type === 'datetime'">{$:: historical_item.state.extra_data[col.column_name] | date: 'yyyy-MM-dd h:mm a' $}</span>
+                                <span ng-if="::col.is_extra_data && col.table_name.toLowerCase().includes('state')" class="sd-data-content" popover-placement="top-left" popover-trigger="outsideClick" popover-animation="false" uib-popover="{$:: historical_item.state.extra_data[col.column_name] $}">
+                                    <span>{$:: displayValue(col.data_type, historical_item.state.extra_data[col.column_name]) $}</span>
                                 </span>
                             </td>
-
                         </tr>
                     </tbody>
                 </table>
@@ -380,6 +378,7 @@
                                 <tr>
                                     <th sd-resizable>Scenario</th>
                                     <th sd-resizable class="ellipsis-resizable">Type</th>
+                                    <th sd-resizable class="ellipsis-resizable">Annual Savings</th>
                                     <th sd-resizable class="ellipsis-resizable">Measures</th>
                                 </tr>
                             </thead>
@@ -387,6 +386,10 @@
                                 <tr ng-repeat="scenario in item_state.scenarios | orderBy:'$index':true">
                                     <td> {$ scenario.name $}</td>
                                     <td> {$ scenario.temporal_status $}</td>
+                                    <td>
+                                        Electricity savings (kBtu): {$ scenario.annual_electricity_savings | number : 2 $}<br>
+                                        Natural gas savings (kBtu): {$ scenario.annual_natural_gas_savings | number : 2 $}
+                                    </td>
                                     <td>
                                         <div ng-repeat="measure in scenario.measures | orderBy:'$index':true">
                                             <a href="" ng-click="gotoMeasureAnchor(measure.id)">{$ measure.category_display_name $} : {$ measure.display_name $}</a>
