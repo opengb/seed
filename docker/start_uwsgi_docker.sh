@@ -3,13 +3,7 @@
 cd /seed
 
 echo "Waiting for postgres to start"
-if [ -v POSTGRES_HOST ];
-then
-   POSTGRES_ACTUAL_HOST=$POSTGRES_HOST
-else
-   POSTGRES_ACTUAL_HOST=db-postgres
-fi
-/usr/local/wait-for-it.sh --strict $POSTGRES_ACTUAL_HOST:$POSTGRES_PORT
+/usr/local/wait-for-it.sh --strict db-postgres:5432
 
 echo "Waiting for redis to start"
 /usr/local/wait-for-it.sh --strict db-redis:6379
