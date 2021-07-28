@@ -1,13 +1,14 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from django.test import TestCase
+from quantityfield import ureg
 
 from seed.landing.models import SEEDUser as User
-from seed.models import AnalysisPropertyView, Analysis, PropertyState
+from seed.models import AnalysisPropertyView, Analysis
 from seed.test_helpers.fake import (
     FakeCycleFactory,
     FakePropertyViewFactory,
@@ -33,23 +34,43 @@ class TestAnalysisPropertyViews(TestCase):
         cycle_b = FakeCycleFactory(organization=self.org_b, user=self.user).get_cycle(name="Cycle Org B")
 
         self.analysis_a = (
-            FakeAnalysisFactory(organization=self.org_a, user=self.user).get_analysis(
+            FakeAnalysisFactory(organization=self.org_a, user=self.user)
+            .get_analysis(
                 name='Quite neat',
                 service=Analysis.BSYNCR,
+                configuration={'model_type': 'Simple Linear Regression'}
             )
         )
 
         view_factory_a = FakePropertyViewFactory(cycle=cycle_a, organization=self.org_a, user=self.user)
-        self.property_views_a = [view_factory_a.get_property_view() for i in range(2)]
+        self.property_views_a = [
+            view_factory_a.get_property_view(
+                # override unitted fields so that hashes are correct
+                site_eui=ureg.Quantity(
+                    float(view_factory_a.fake.random_int(min=50, max=600)),
+                    "kBtu / foot ** 2 / year"
+                ),
+                gross_floor_area=ureg.Quantity(
+                    float(view_factory_a.fake.random_number(digits=6)),
+                    "foot ** 2"
+                ),
+            )
+            for i in range(2)]
 
         view_factory_b = FakePropertyViewFactory(cycle=cycle_b, organization=self.org_b, user=self.user)
-        self.property_views_b = [view_factory_b.get_property_view() for i in range(2)]
-
-        # TODO: remove this section, it's necessary to make sure the state objects'
-        # hashes are correct, see issue #2493
-        for view in self.property_views_a + self.property_views_b:
-            PropertyState.objects.get(id=view.state.id).save()
-            view.refresh_from_db()
+        self.property_views_b = [
+            view_factory_b.get_property_view(
+                # override unitted fields so that hashes are correct
+                site_eui=ureg.Quantity(
+                    float(view_factory_b.fake.random_int(min=50, max=600)),
+                    "kBtu / foot ** 2 / year"
+                ),
+                gross_floor_area=ureg.Quantity(
+                    float(view_factory_b.fake.random_number(digits=6)),
+                    "foot ** 2"
+                ),
+            )
+            for i in range(2)]
 
     def test_batch_create_is_successful_with_valid_inputs(self):
         # Act

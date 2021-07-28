@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2020, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
@@ -81,6 +81,14 @@ class AnalysisMessage(models.Model):
             'exception': repr(exception),
         }
         logger.log(logger_level, json.dumps(log_message_dict))
+
+        # truncate the messages to make sure they meet our db constraints
+        MAX_MESSAGE_LENGTH = 255
+        ELIPSIS = '...'
+        if len(user_message) > MAX_MESSAGE_LENGTH:
+            user_message = user_message[:MAX_MESSAGE_LENGTH - len(ELIPSIS)] + ELIPSIS
+        if len(debug_message) > MAX_MESSAGE_LENGTH:
+            debug_message = debug_message[:MAX_MESSAGE_LENGTH - len(ELIPSIS)] + ELIPSIS
 
         return AnalysisMessage.objects.create(
             type=type_,
