@@ -103,19 +103,24 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
         'domain': domain,
         'protocol': 'https',
         'first_name': first_name,
-        'signup_url': signup_url
+        'signup_url': signup_url,
+        'STATIC_URL': settings.STATIC_URL
     }
 
     subject = 'New SEED account'
     email_body = loader.render_to_string(
+        'seed/account_create_email.txt',
+        context
+    )
+    html_email_body = loader.render_to_string(
         'seed/account_create_email.html',
         context
     )
-    send_mail(subject, email_body, settings.SERVER_EMAIL, [email_address])
+    send_mail(subject, email_body, settings.SERVER_EMAIL, [email_address], html_message=html_email_body)
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
         new_subject = "{} ({})".format(subject, email_address)
-        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
+        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address], html_message=html_email_body)
     except AttributeError:
         pass
 
