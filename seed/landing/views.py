@@ -22,7 +22,7 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from seed.landing.models import SEEDUser
 from seed.tasks import (
-    invite_new_user_to_seed,
+    invite_to_seed,
 )
 
 from .forms import LoginForm, CustomCreateUserForm
@@ -175,7 +175,7 @@ def create_account(request):
                         domain = request.get_host()
                     except Exception:
                         domain = 'seed-platform.org'
-                    invite_new_user_to_seed(
+                    invite_to_seed(
                         domain, user.email, default_token_generator.make_token(user),
                         user.pk, user.email
                     )
