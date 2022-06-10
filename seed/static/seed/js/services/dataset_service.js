@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // dataset services
@@ -93,9 +93,9 @@ angular.module('BE.seed.service.dataset', []).factory('dataset_service', [
           organization_id: user_service.get_organization().id
         }
       }).then(function (response) {
-        return response.data
+        return response.data;
       });
-    }
+    };
 
     dataset_service.reuse_inventory_file_for_meters = function (file_id) {
       return $http.post('/api/v3/import_files/reuse_inventory_file_for_meters/', {

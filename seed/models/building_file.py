@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author nicholas.long@nrel.gov
 """
 from __future__ import unicode_literals
@@ -135,13 +135,15 @@ class BuildingFile(models.Model):
 
         return self._cache_kbtu_thermal_conversion_factors
 
-    def process(self, organization_id, cycle, property_view=None):
+    def process(self, organization_id, cycle, property_view=None, promote_property_state=True):
         """
         Process the building file that was uploaded and create the correct models for the object
 
         :param organization_id: integer, ID of organization
         :param cycle: object, instance of cycle object
         :param property_view: Existing property view of the building file that will be updated from merging the property_view.state
+        :param promote_property_state: If no property_view is provided and this is True, it will promote the property state to a canonical property
+            WARNING: it is the caller's responsibility to link created Meters to canonical properties if they choose not to promote the property state!
         :return: list, [status, (PropertyState|None), (PropertyView|None), messages]
         """
 
@@ -212,13 +214,13 @@ class BuildingFile(models.Model):
             join.useful_life = m.get('useful_life')
             join.save()
 
+        scenario_temporal_status_map = {
+            status_name: status_enum
+            for status_enum, status_name in Scenario.TEMPORAL_STATUS_TYPES
+        }
         # add in scenarios
+        linked_meters = []
         for s in data.get('scenarios', []):
-            # measures = models.ManyToManyField(PropertyMeasure)
-
-            # {'reference_case': 'Baseline', 'annual_savings_site_energy': None,
-            #  'measures': [], 'id': 'Baseline', 'name': 'Baseline'}
-
             # If the scenario does not have a name then log a warning and continue
             if not s.get('name'):
                 messages['warnings'].append('Skipping scenario because it does not have a name. ID = %s' % s.get('id'))
@@ -248,9 +250,10 @@ class BuildingFile(models.Model):
             scenario.annual_electricity_energy = s.get('annual_electricity_energy')
             scenario.annual_peak_demand = s.get('annual_peak_demand')
             scenario.annual_peak_electricity_reduction = s.get('annual_peak_electricity_reduction')
-
-            # temporal_status = models.IntegerField(choices=TEMPORAL_STATUS_TYPES,
-            #                                       default=TEMPORAL_STATUS_CURRENT)
+            scenario.temporal_status = scenario_temporal_status_map.get(
+                s.get('temporal_status'),
+                Scenario.TEMPORAL_STATUS_CURRENT
+            )
 
             if s.get('reference_case'):
                 ref_case = Scenario.objects.filter(
@@ -281,6 +284,30 @@ class BuildingFile(models.Model):
             # meters
             energy_types = dict(Meter.ENERGY_TYPES)
             for m in s.get('meters', []):
+                num_skipped_readings = 0
+                valid_readings = []
+                for mr in m.get('readings', []):
+                    is_usable = (
+                        mr.get('start_time') is not None
+                        and mr.get('end_time') is not None
+                        and mr.get('reading') is not None
+                    )
+                    if is_usable:
+                        valid_readings.append(mr)
+                    else:
+                        num_skipped_readings += 1
+
+                if len(valid_readings) == 0:
+                    # skip this meter
+                    messages['warnings'].append(f'Skipped meter {m.get("source_id")} because it had no valid readings')
+                    continue
+
+                if num_skipped_readings > 0:
+                    messages['warnings'].append(
+                        f'Skipped {num_skipped_readings} readings due to missing start time,'
+                        f' end time, or reading value for meter {m.get("source_id")}'
+                    )
+
                 # print("BUILDING FILE METER: {}".format(m))
                 # check by scenario_id and source_id
                 meter, _ = Meter.objects.get_or_create(
@@ -295,6 +322,7 @@ class BuildingFile(models.Model):
                 if meter.is_virtual is None:
                     meter.is_virtual = False
                 meter.save()
+                linked_meters.append(meter)
 
                 # meterreadings
                 if meter.type in energy_types:
@@ -302,7 +330,8 @@ class BuildingFile(models.Model):
                 else:
                     meter_type = None
                 meter_conversions = self._kbtu_thermal_conversion_factors().get(meter_type, {})
-                readings = {
+
+                valid_reading_models = {
                     MeterReading(
                         start_time=mr.get('start_time'),
                         end_time=mr.get('end_time'),
@@ -311,10 +340,9 @@ class BuildingFile(models.Model):
                         meter_id=meter.id,
                         conversion_factor=meter_conversions.get(mr.get('source_unit'), 1.00)
                     )
-                    for mr in m.get('readings', [])
-                    if mr.get('start_time') is not None and mr.get('end_time') is not None
+                    for mr in valid_readings
                 }
-                MeterReading.objects.bulk_create(readings)
+                MeterReading.objects.bulk_create(valid_reading_models)
 
         # merge or create the property state's view
         if property_view:
@@ -352,10 +380,13 @@ class BuildingFile(models.Model):
 
             # set the property_state to the new one
             property_state = merged_state
-        elif not property_view:
+        elif not property_view and promote_property_state:
             property_view = property_state.promote(cycle)
         else:
-            # invalid arguments, must pass both or neither
-            return False, None, None, "Invalid arguments passed to BuildingFile.process()"
+            return True, property_state, None, messages
+
+        for meter in linked_meters:
+            meter.property = property_view.property
+            meter.save()
 
         return True, property_state, property_view, messages

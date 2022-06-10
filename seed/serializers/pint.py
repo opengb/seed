@@ -1,4 +1,8 @@
 """
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
+"""
 Collects the various utility functions for doing a last-moment collapse of the
 Pint-aware values/columns to raw floats before sending them out over the API.
 Generally this collapsing relies on having access to the organization, since
@@ -9,7 +13,7 @@ import re
 
 from builtins import str
 from django.core.serializers.json import DjangoJSONEncoder
-from quantityfield import ureg
+from quantityfield.units import ureg
 from rest_framework import serializers
 
 # Update the registry's definition for year
@@ -55,7 +59,7 @@ def collapse_unit(org, x):
         dimensionality = get_dimensionality(x)
         pint_spec = pint_specs[dimensionality]
         converted_value = x.to(pint_spec).magnitude
-        return round(converted_value, org.display_significant_figures)
+        return round(converted_value, org.display_decimal_places)
     elif isinstance(x, list):
         # recurse out to collapse a dict for eg. the `related` key that
         # contains properties when the pt_dict is for a taxlot and vice-versa
