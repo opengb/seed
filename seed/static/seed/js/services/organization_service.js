@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 // organization services
@@ -217,6 +217,26 @@ angular.module('BE.seed.service.organization', []).factory('organization_service
       }, function (error) {
         deferred.reject(error);
       });
+    };
+
+    /**
+     * Returns the display value for an inventory
+     * @param  {object} { property_display_field, taxlot_display_field }, organization object
+     * @param  {string} inventory_type 'property' or 'taxlot'
+     * @param  {object} inventory_state state object of the inventory
+     */
+    organization_factory.get_inventory_display_value = function ({ property_display_field, taxlot_display_field }, inventory_type, inventory_state) {
+      const field = inventory_type === 'property' ? property_display_field : taxlot_display_field;
+      if (field == null) {
+        throw Error(`Provided display field for type "${inventory_type}" is undefined`);
+      }
+      // if nothing is returned, check in extra data
+      let return_field = inventory_state[field];
+      if (return_field == null) {
+        return_field = inventory_state.extra_data[field];
+      }
+
+      return return_field;
     };
 
     return organization_factory;

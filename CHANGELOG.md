@@ -1,3 +1,215 @@
+# SEED Version 2.14.0
+
+Date Range: 12/27/21 - 03/31/22
+
+Closed Issues and Features (Total: 46):
+- Fixed [#2508]( https://github.com/SEED-platform/seed/issues/2508 ), Inventory Detail View: Text bubbles stay on the screen even if you scroll down the page
+- Fixed [#2515]( https://github.com/SEED-platform/seed/issues/2515 ), Progress bar sits on 33% for a very long time so that users think the program has crashed
+- Feature [#2624]( https://github.com/SEED-platform/seed/issues/2624 ), Merge and Link Matches - Enable and Change Sorting
+- Fixed [#2683]( https://github.com/SEED-platform/seed/issues/2683 ), Meter screen shows intervals for meters that are "unselected"
+- Feature [#2761]( https://github.com/SEED-platform/seed/issues/2761 ), Derived Columns: Many small improvements
+- Feature [#2806]( https://github.com/SEED-platform/seed/issues/2806 ), Summarize the count for each of the columns from the "Columns Setting" Tab in the Property Tab
+- Improved [#2813]( https://github.com/SEED-platform/seed/issues/2813 ), Update Portfolio Manager Defaults column mapping profile
+- Fixed [#2831]( https://github.com/SEED-platform/seed/issues/2831 ), Deleting Property Inventory doesn't delete the BETTER analyses
+- Fixed [#2843]( https://github.com/SEED-platform/seed/issues/2843 ), BETTER - GHG emission reduction units
+- Feature [#2844]( https://github.com/SEED-platform/seed/issues/2844 ), BETTER -- show a list of all buildings in Org/Analyses, not just grouped by Portfolio
+- Fixed [#2891]( https://github.com/SEED-platform/seed/issues/2891 ), Fix deprecated urls
+- Fixed [#2892]( https://github.com/SEED-platform/seed/issues/2892 ), Fix usage of deprecated method request.is_ajax()
+- Fixed [#2902]( https://github.com/SEED-platform/seed/issues/2902 ), XMLSchema fails to fetch gbXML Schema
+- Fixed [#2947]( https://github.com/SEED-platform/seed/issues/2947 ), BETTER: update endpoint for token validity check
+- Fixed [#2959]( https://github.com/SEED-platform/seed/issues/2959 ), BuildingSync: add matching/linking for imported files
+- Fixed [#2962]( https://github.com/SEED-platform/seed/issues/2962 ), BSyncr: Analysis results link back to properties doesn't work
+- Fixed [#2974]( https://github.com/SEED-platform/seed/issues/2974 ), Derived Columns: add ability to specify decimal places for individual columns
+- Feature [#2976]( https://github.com/SEED-platform/seed/issues/2976 ), Export Properties and Tax Lots Progress Bar
+- Feature [#2998]( https://github.com/SEED-platform/seed/issues/2998 ), Geocoding -- allow user to specify field to appear in text associated with map pin
+- Maintenance [#3020]( https://github.com/SEED-platform/seed/issues/3020 ), Backup prod postgres docker volume
+- Fixed [#3040]( https://github.com/SEED-platform/seed/issues/3040 ), Refactor list API to make adding related data optional
+- Feature [#3041]( https://github.com/SEED-platform/seed/issues/3041 ), Add server-side filtering for canonical columns
+- Feature [#3042]( https://github.com/SEED-platform/seed/issues/3042 ), Add server-side filtering for extra data columns
+- Feature [#3044]( https://github.com/SEED-platform/seed/issues/3044 ), Add server-side filtering by labels
+- Feature [#3045]( https://github.com/SEED-platform/seed/issues/3045 ), Add server-side sorting for inventory list
+- Feature [#3046]( https://github.com/SEED-platform/seed/issues/3046 ), Frontend: enable actions for current page and across entire result set (for inventory list BETA page)
+- Feature [#3047]( https://github.com/SEED-platform/seed/issues/3047 ), Add frontend functionality for filtering on canonical columns
+- Feature [#3048]( https://github.com/SEED-platform/seed/issues/3048 ), Add frontend filtering for extra data columns
+- Feature [#3049]( https://github.com/SEED-platform/seed/issues/3049 ), Add frontend filtering of inventory by labels
+- Improved [#3052]( https://github.com/SEED-platform/seed/issues/3052 ), Update functionality of top right nav shortcut
+- Maintenance [#3062]( https://github.com/SEED-platform/seed/issues/3062 ), Remove warnings from tests
+- Fixed [#3071]( https://github.com/SEED-platform/seed/issues/3071 ), bug: saved filter/sort results in multiple initial queries
+- Fixed [#3073]( https://github.com/SEED-platform/seed/issues/3073 ), Refactor Beta-Inventory List Filters View
+- Maintenance [#3079]( https://github.com/SEED-platform/seed/issues/3079 ), Run WAVA and address issues
+- Fixed [#3081]( https://github.com/SEED-platform/seed/issues/3081 ), refactor: move filtering of querysets into generalized function
+- Fixed [#3093]( https://github.com/SEED-platform/seed/issues/3093 ), refactor: enable inventory `/filter` endpoints to return only IDs
+- Fixed [#3094]( https://github.com/SEED-platform/seed/issues/3094 ), refactor(frontend): fetch all inventory IDs when an action is performed when user does a "select all"
+- Fixed [#3095]( https://github.com/SEED-platform/seed/issues/3095 ), Fix the test using vcr
+- Maintenance [#3096]( https://github.com/SEED-platform/seed/issues/3096 ), chore: update celery to 5.2.2
+- Fixed [#3108]( https://github.com/SEED-platform/seed/issues/3108 ), refactor(buildingsync): use consistent scenario/measure/meter merge logic
+- Feature [#3126]( https://github.com/SEED-platform/seed/issues/3126 ), Upload Portfolio Manager Meter Readings -- allow data shown on that screen to be exported
+- Feature [#3127]( https://github.com/SEED-platform/seed/issues/3127 ), Portfolio Manager Meter Import Results -- add count of Properties + count of meters
+- Feature [#3128]( https://github.com/SEED-platform/seed/issues/3128 ), Data Sets feedback on number of records for meters -- right now it says 0
+- Fixed [#3130]( https://github.com/SEED-platform/seed/issues/3130 ), Org: Settings: Default Display Fields -- doesn't work for all fields
+- Improved [#3132]( https://github.com/SEED-platform/seed/issues/3132 ), Update the Getting Started PDF for 2.13.0 release
+- Fixed [#3140]( https://github.com/SEED-platform/seed/issues/3140 ), Redirect to home on 404s
+- Fixed [#3163]( https://github.com/SEED-platform/seed/issues/3163 ), Recognize Empty not working as intended
+
+# SEED Version 2.13.0
+
+Date Range: 11/20/21 - 12/27/21
+
+Closed Issues and Features (Total: 17):
+- Fixed [#2702]( https://github.com/SEED-platform/seed/issues/2702 ), Add sample data record for BETTER
+- Fixed [#2813]( https://github.com/SEED-platform/seed/issues/2813 ), Update Portfolio Manager Defaults column mapping profile
+- Fixed [#2890]( https://github.com/SEED-platform/seed/issues/2890 ), Update deprecated JSONFields
+- Fixed [#2902]( https://github.com/SEED-platform/seed/issues/2902 ), XMLSchema fails to fetch gbXML Schema
+- Fixed [#2930]( https://github.com/SEED-platform/seed/issues/2930 ), BuildingSync: improve UI/UX for post-mapping messages
+- Fixed [#2958]( https://github.com/SEED-platform/seed/issues/2958 ), Improve progress data text when validating BuildingSync files
+- Fixed [#2960]( https://github.com/SEED-platform/seed/issues/2960 ), BuildingSync: allow users to export warnings/errors when importing data
+- Fixed [#2999]( https://github.com/SEED-platform/seed/issues/2999 ), Bug: property details "notes" tab breaks links
+- Fixed [#3018]( https://github.com/SEED-platform/seed/issues/3018 ), Delete column timeout
+- Fixed [#3027]( https://github.com/SEED-platform/seed/issues/3027 ), Configure OEP k8s
+- Fixed [#3028]( https://github.com/SEED-platform/seed/issues/3028 ), Fix: electricity meter import from ESPM custom report
+- Fixed [#3034]( https://github.com/SEED-platform/seed/issues/3034 ), RFC: begin using python 3 type hints in codebase
+- Fixed [#3039]( https://github.com/SEED-platform/seed/issues/3039 ), Create new inventory list
+- Fixed [#3040]( https://github.com/SEED-platform/seed/issues/3040 ), Refactor list API to make adding related data
+
+# SEED Version 2.12.4
+
+Date Range: 11/11/21 - 11/19/21
+
+Closed Issues and Features (Total: 2):
+- Fixed [#2822]( https://github.com/SEED-platform/seed/issues/2822 ), Create documentation for running BETTER analysis
+- Fixed [#3014]( https://github.com/SEED-platform/seed/issues/3014 ), Analysis: include Meter source 'Electric - Unknown' in analysis
+
+# SEED Version 2.12.3
+
+Date Range: 11/05/21 - 11/10/21
+
+Closed Issues and Features (Total: 7):
+- Fixed [#2702]( https://github.com/SEED-platform/seed/issues/2702 ), Add sample data record for BETTER
+- Fixed [#2930]( https://github.com/SEED-platform/seed/issues/2930 ), BuildingSync: improve UI/UX for post-mapping messages
+- Fixed [#2945]( https://github.com/SEED-platform/seed/issues/2945 ), Deprecate PropertyState's analysis_state field
+- Fixed [#2958]( https://github.com/SEED-platform/seed/issues/2958 ), Improve progress data text when validating BuildingSync files
+- Fixed [#2997]( https://github.com/SEED-platform/seed/issues/2997 ), CO2 Analysis -- eGRID Subregion Code not picked up by program
+- Fixed [#2999]( https://github.com/SEED-platform/seed/issues/2999 ), Bug: property details "notes" tab breaks links
+- Fixed [#3001]( https://github.com/SEED-platform/seed/issues/3001 ), Tax Lot Inventory List View -- clicking on "i" to get to Detail view generates erro
+
+# SEED Version 2.12.2
+
+Date Range: 09/28/21 - 11/04/21
+
+Closed Issues and Features (Total: 36):
+- Feature [#2524]( https://github.com/SEED-platform/seed/issues/2524 ), Export CSV -- Need a status bar or spinner or something to indicate that program is still working 
+- Feature [#2557]( https://github.com/SEED-platform/seed/issues/2557 ), Create Analyses Section
+- Fixed [#2587]( https://github.com/SEED-platform/seed/issues/2587 ), Add admin tools
+- Fixed [#2651]( https://github.com/SEED-platform/seed/issues/2651 ), Analysis and Merge/Link Matches on Property Detail view on production server (and shouldn't be)
+- Fixed [#2751]( https://github.com/SEED-platform/seed/issues/2751 ), Update EKS Kubernetes version to 1.18
+- Maintenance [#2787]( https://github.com/SEED-platform/seed/issues/2787 ), Move to BETTER Production API
+- Fixed [#2810]( https://github.com/SEED-platform/seed/issues/2810 ), Bug: check meters tab on spreadsheet is broken
+- Fixed [#2830]( https://github.com/SEED-platform/seed/issues/2830 ), Write tests for updated Audit Template import
+- Feature [#2840]( https://github.com/SEED-platform/seed/issues/2840 ), BETTER - show which records had 0 savings in the Analyses view
+- Fixed [#2871]( https://github.com/SEED-platform/seed/issues/2871 ), Analysis detail page trying to fetch bad pages
+- Feature [#2872]( https://github.com/SEED-platform/seed/issues/2872 ), Create eGRID emissions analysis
+- Fixed [#2877]( https://github.com/SEED-platform/seed/issues/2877 ), Tweak EUI Analysis
+- Fixed [#2884]( https://github.com/SEED-platform/seed/issues/2884 ), Remove usage of address line 1 in BETTER analysis
+- Fixed [#2886]( https://github.com/SEED-platform/seed/issues/2886 ), Update values parsed from BETTER analysis
+- Fixed [#2898]( https://github.com/SEED-platform/seed/issues/2898 ), Update "contact us" mailto for the maintenance page
+- Fixed [#2899]( https://github.com/SEED-platform/seed/issues/2899 ), v2.11 fails to load page after login
+- Maintenance [#2908]( https://github.com/SEED-platform/seed/issues/2908 ), Bump BETTER BSync version to v2.3
+- Fixed [#2913]( https://github.com/SEED-platform/seed/issues/2913 ), After importing Meter Data, program shows the previous Mapping screen
+- Fixed [#2917]( https://github.com/SEED-platform/seed/issues/2917 ), BETTER: fails to create Buildings (too many meters?)
+- Feature [#2921]( https://github.com/SEED-platform/seed/issues/2921 ), Analyses: Add a Creation Date to analyses
+- Fixed [#2924]( https://github.com/SEED-platform/seed/issues/2924 ), [10-14-2021] Update staging:
+- Fixed [#2925]( https://github.com/SEED-platform/seed/issues/2925 ), update priority spreadsheet
+- Fixed [#2926]( https://github.com/SEED-platform/seed/issues/2926 ), move remaining BETTER tasks from spreadsheet into tickets
+- Fixed [#2928]( https://github.com/SEED-platform/seed/issues/2928 ), BETTER: display building report above portfolio report
+- Fixed [#2929]( https://github.com/SEED-platform/seed/issues/2929 ), BuildingSync: improve UI/UX for initial validation
+- Fixed [#2936]( https://github.com/SEED-platform/seed/issues/2936 ), Remove old members from LBL AWS
+- Fixed [#2938]( https://github.com/SEED-platform/seed/issues/2938 ), BuildingSync: add v2.4 to SEED
+- Fixed [#2944]( https://github.com/SEED-platform/seed/issues/2944 ), release: v2.12.1 patch -- fix reset password url
+- Fixed [#2956]( https://github.com/SEED-platform/seed/issues/2956 ), EKS RBAC Roles
+- Fixed [#2961]( https://github.com/SEED-platform/seed/issues/2961 ), BuildingSync: ignore scenarios without meters or measures
+- Fixed [#2963]( https://github.com/SEED-platform/seed/issues/2963 ), Columns: create eGRID Subregion Code column
+- Fixed [#2965]( https://github.com/SEED-platform/seed/issues/2965 ), Add database/mediafiles backup to dev1
+- Fixed [#2969]( https://github.com/SEED-platform/seed/issues/2969 ), Analysis: use organization's "Property Display Field" in analysis tables
+- Fixed [#2987]( https://github.com/SEED-platform/seed/issues/2987 ), Analysis: indicate analysis functionality is BETA
+
+# SEED Version 2.12.1
+
+Minor patch to fix resetting passwords.
+
+Closed Issues:
+- Fixed [#2941]( https://github.com/SEED-platform/seed/issues/2941 ), Password reset error
+
+# SEED Version 2.12.0
+
+Date Range: 06/22/21 - 09/27/21
+
+Closed Issues and Features (Total: 65):
+- Fixed [#869]( https://github.com/SEED-platform/seed/issues/869 ), Make import of Portfolio Manager Monthly meter data one step and include mapping
+- Fixed [#1962]( https://github.com/SEED-platform/seed/issues/1962 ), Update data upload dialog with icons (or better text)
+- Maintenance [#2379]( https://github.com/SEED-platform/seed/issues/2379 ), Refactor perms for several API v3 views
+- Fixed [#2433]( https://github.com/SEED-platform/seed/issues/2433 ), Upgrade dependencies, python 3.9
+- Fixed [#2490]( https://github.com/SEED-platform/seed/issues/2490 ), Update Python dependencies to re-enable Python package installation
+- Feature [#2511]( https://github.com/SEED-platform/seed/issues/2511 ), Inventory List: Hover over the notes icon and see the notes 
+- Feature [#2535]( https://github.com/SEED-platform/seed/issues/2535 ), BSyncr Analysis results should render image results when available
+- Fixed [#2574]( https://github.com/SEED-platform/seed/issues/2574 ), `eui` and `area` columns don't respect filter syntax
+- Fixed [#2654]( https://github.com/SEED-platform/seed/issues/2654 ), Report on user adoption
+- Fixed [#2656]( https://github.com/SEED-platform/seed/issues/2656 ), Django version 3.0 upgrade
+- Fixed [#2659]( https://github.com/SEED-platform/seed/issues/2659 ), Add sample data record for BSync
+- Feature [#2660]( https://github.com/SEED-platform/seed/issues/2660 ), Data Analysis (Statistics)
+- Fixed [#2674]( https://github.com/SEED-platform/seed/issues/2674 ), Fix unit conversions between ESPM and SEED
+- Fixed [#2693]( https://github.com/SEED-platform/seed/issues/2693 ), BuildingSync: allow bsync to import all current and future v2 docs
+- Fixed [#2696]( https://github.com/SEED-platform/seed/issues/2696 ), BuildingSync: handling `auc:ResourceUse`s with no `auc:EnergyResource`
+- Maintenance [#2723]( https://github.com/SEED-platform/seed/issues/2723 ), BuildingSync Selection Tool API Update
+- Fixed [#2728]( https://github.com/SEED-platform/seed/issues/2728 ), Fix post_office email backend
+- Fixed [#2734]( https://github.com/SEED-platform/seed/issues/2734 ), Bump Django from 3.1 to 3.2
+- Maintenance [#2737]( https://github.com/SEED-platform/seed/issues/2737 ), Bump Django from 3.0 to 3.1
+- Feature [#2739]( https://github.com/SEED-platform/seed/issues/2739 ), Add EUI analysis
+- Feature [#2740]( https://github.com/SEED-platform/seed/issues/2740 ), Add ability for users to view analysis results in inventory list view
+- Fixed [#2743]( https://github.com/SEED-platform/seed/issues/2743 ), Test round-trip of BSync with Audit Template and SEED
+- Fixed [#2748]( https://github.com/SEED-platform/seed/issues/2748 ), Inventory list: labels appear broken when viewing few columns
+- Fixed [#2749]( https://github.com/SEED-platform/seed/issues/2749 ), Derived columns: Moving derived column in inventory list clears non-derived columns from column profile
+- Improved [#2752]( https://github.com/SEED-platform/seed/issues/2752 ), Allow ESPM property types to be used
+- Improved [#2753]( https://github.com/SEED-platform/seed/issues/2753 ), Allow all BETTER supported meter types to be used in SEED
+- Improved [#2757]( https://github.com/SEED-platform/seed/issues/2757 ), User-facing errors from BETTER analysis should be informative
+- Feature [#2759]( https://github.com/SEED-platform/seed/issues/2759 ), Embed BETTER results in SEED page
+- Feature [#2768]( https://github.com/SEED-platform/seed/issues/2768 ), [stretch] Add BETTER portfolio analysis
+- Feature [#2769]( https://github.com/SEED-platform/seed/issues/2769 ), Add batch analysis capability
+- Feature [#2770]( https://github.com/SEED-platform/seed/issues/2770 ), [stretch] Add analysis results to original inventory PropertyState
+- Feature [#2778]( https://github.com/SEED-platform/seed/issues/2778 ), Update fields that are saved into PropertyState from BETTER analysis building results
+- Feature [#2779]( https://github.com/SEED-platform/seed/issues/2779 ), Add org-level setting for BETTER API token
+- Fixed [#2786]( https://github.com/SEED-platform/seed/issues/2786 ), Fix square footage encoding/decoding
+- Fixed [#2790]( https://github.com/SEED-platform/seed/issues/2790 ), Inventory List columns disappear in Column List Profile after hiding a field in the list view
+- Fixed [#2794]( https://github.com/SEED-platform/seed/issues/2794 ), Derived columns request too large
+- Improved [#2801]( https://github.com/SEED-platform/seed/issues/2801 ), Cleanup configuration display on the analysis summary UI.
+- Improved [#2802]( https://github.com/SEED-platform/seed/issues/2802 ), The default value for the r^2 user input should be 0.6
+- Improved [#2803]( https://github.com/SEED-platform/seed/issues/2803 ), HTML links for download should have more meaningful descriptions.
+- Fixed [#2807]( https://github.com/SEED-platform/seed/issues/2807 ), Don't download BETTER pages that should be in iframe
+- Fixed [#2814]( https://github.com/SEED-platform/seed/issues/2814 ), AT BSync import error
+- Improved [#2816]( https://github.com/SEED-platform/seed/issues/2816 ), Users have to refresh analyses pages to get updated status
+- Fixed [#2818]( https://github.com/SEED-platform/seed/issues/2818 ), Bad display for config for analysis run
+- Improved [#2828]( https://github.com/SEED-platform/seed/issues/2828 ), Parse meter readings from Audit Template file
+- Improved [#2834]( https://github.com/SEED-platform/seed/issues/2834 ), BETTER Results -- round the values to match the BETTER report
+- Improved [#2835]( https://github.com/SEED-platform/seed/issues/2835 ), BETTER Reports - Units are defaulting to SI - Can they be set to either SI or IP?
+- Improved [#2836]( https://github.com/SEED-platform/seed/issues/2836 ), BETTER -- HTML report sometimes has left logo overlapping the report title
+- Improved [#2837]( https://github.com/SEED-platform/seed/issues/2837 ), BETTER -- run analysis immediately
+- Improved [#2838]( https://github.com/SEED-platform/seed/issues/2838 ), BETTER -- Setting up analysis parameters - make default R2 an actual value
+- Improved [#2839]( https://github.com/SEED-platform/seed/issues/2839 ), BETTER -- Portfolio Report Cost Savings units are % not USD
+- Feature [#2841]( https://github.com/SEED-platform/seed/issues/2841 ), BETTER - Easy access to analysis report
+- Feature [#2842]( https://github.com/SEED-platform/seed/issues/2842 ), BETTER -- Add PM Property ID as link in the Analyses sections
+- Feature [#2846]( https://github.com/SEED-platform/seed/issues/2846 ), BETTER - Pin most recent BETTER analysis to top
+- Maintenance [#2858]( https://github.com/SEED-platform/seed/issues/2858 ), CI: don't run tests on push for non-main branches
+- Improved [#2863]( https://github.com/SEED-platform/seed/issues/2863 ), Make analyses page more easily accessible
+- Improved [#2864]( https://github.com/SEED-platform/seed/issues/2864 ), Add dollar sign to cost savings
+- Fixed [#2865]( https://github.com/SEED-platform/seed/issues/2865 ), Remove obj/dict/hash content from analysis card on inventory detail page
+- Fixed [#2867]( https://github.com/SEED-platform/seed/issues/2867 ), Fix failing analysis tests
+- Fixed [#2873]( https://github.com/SEED-platform/seed/issues/2873 ), Analysis cards show most recent highlights
+- Fixed [#2880]( https://github.com/SEED-platform/seed/issues/2880 ), Data quality rule creation fails when label is added
+- Fixed [#2882]( https://github.com/SEED-platform/seed/issues/2882 ), Recaptcha fails with local docker deployment
+- Maintenance [#2900]( https://github.com/SEED-platform/seed/issues/2900 ), TypeError: the JSON object must be str, bytes or bytearray, not dict
+- Fixed [#2903]( https://github.com/SEED-platform/seed/issues/2903 ), Analysis page fails to update analysis status after a step is "completed"
+- Fixed [#2904]( https://github.com/SEED-platform/seed/issues/2904 ), Unable to run BSyncr analysis
+- Feature [#2910]( https://github.com/SEED-platform/seed/issues/2910 ), Promote BETTER URL to a config setting
+
 # SEED Version 2.11.0
 
 Date Range: 3/31/2021 - 5/22/21

@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -176,9 +176,19 @@ describe('controller: inventory_detail_controller', function () {
         audit_logs: []
       },
       organization_payload: {
-        id: 1,
-        display_significant_figures: 2,
-      }
+        organization: {
+          id: 1,
+          display_decimal_places: 2,
+          property_display_field: 'address_line_1',
+          taxlot_display_field: 'address_line_1',
+        },
+      },
+      analyses_payload: {
+        analyses: []
+      },
+      users_payload: {
+        users: []
+      },
     });
   }
 

@@ -1,12 +1,12 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 from seed.models.derived_columns import DerivedColumn
 from django.forms.models import model_to_dict
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.models import Column, DerivedColumnParameter, PropertyView
 from seed.models.data_quality import (
@@ -23,10 +23,10 @@ from seed.test_helpers.fake import (
     FakePropertyStateFactory,
     FakeTaxLotStateFactory,
 )
-from seed.tests.util import DataMappingBaseTestCase
+from seed.tests.util import DataMappingBaseTestCase, AssertDictSubsetMixin
 
 
-class DataQualityCheckTests(DataMappingBaseTestCase):
+class DataQualityCheckTests(AssertDictSubsetMixin, DataMappingBaseTestCase):
     def setUp(self):
         selfvars = self.set_up(ASSESSED_RAW)
 

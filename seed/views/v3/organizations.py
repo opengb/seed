@@ -1,6 +1,6 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 
@@ -115,11 +115,13 @@ def _dict_org(request, organizations):
             'parent_id': o.parent_id,
             'display_units_eui': o.display_units_eui,
             'display_units_area': o.display_units_area,
-            'display_significant_figures': o.display_significant_figures,
+            'display_decimal_places': o.display_decimal_places,
             'cycles': cycles,
             'created': o.created.strftime('%Y-%m-%d') if o.created else '',
             'mapquest_api_key': o.mapquest_api_key or '',
             'geocoding_enabled': o.geocoding_enabled,
+            'better_analysis_api_key': o.better_analysis_api_key or '',
+            'better_host_url': settings.BETTER_HOST,
             'property_display_field': o.property_display_field,
             'taxlot_display_field': o.taxlot_display_field,
             'display_meter_units': o.display_meter_units,
@@ -517,12 +519,12 @@ class OrganizationViewSet(viewsets.ViewSet):
         else:
             warn_bad_pint_spec('area', desired_display_units_area)
 
-        desired_display_significant_figures = posted_org.get('display_significant_figures')
-        if isinstance(desired_display_significant_figures, int) and desired_display_significant_figures >= 0:  # noqa
-            org.display_significant_figures = desired_display_significant_figures
-        elif desired_display_significant_figures is not None:
+        desired_display_decimal_places = posted_org.get('display_decimal_places')
+        if isinstance(desired_display_decimal_places, int) and desired_display_decimal_places >= 0:  # noqa
+            org.display_decimal_places = desired_display_decimal_places
+        elif desired_display_decimal_places is not None:
             _log.warn("got bad sig figs {0} for org {1}".format(
-                desired_display_significant_figures, org.name))
+                desired_display_decimal_places, org.name))
 
         desired_display_meter_units = posted_org.get('display_meter_units')
         if desired_display_meter_units:
@@ -541,6 +543,11 @@ class OrganizationViewSet(viewsets.ViewSet):
         geocoding_enabled = posted_org.get('geocoding_enabled', True)
         if geocoding_enabled != org.geocoding_enabled:
             org.geocoding_enabled = geocoding_enabled
+
+        # Update BETTER Analysis API Key if it's been changed
+        better_analysis_api_key = posted_org.get('better_analysis_api_key', '').strip()
+        if better_analysis_api_key != org.better_analysis_api_key:
+            org.better_analysis_api_key = better_analysis_api_key
 
         # Update property_display_field option
         property_display_field = posted_org.get('property_display_field', 'address_line_1')
@@ -1504,7 +1511,7 @@ class OrganizationViewSet(viewsets.ViewSet):
         import_record = ImportRecord.objects.create(name='Auto-Populate', super_organization=org)
 
         # Interval Data
-        filename = 'PM Meter Data 12.xlsx'
+        filename = 'PM Meter Data.xlsx'  # contians meter data for bsyncr and BETTER
         filepath = f"{Path(__file__).parent.absolute()}/data/{filename}"
 
         import_meterdata = ImportFile.objects.create(

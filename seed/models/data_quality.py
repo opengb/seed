@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import json
@@ -17,7 +17,7 @@ from django.db import models, IntegrityError
 from django.utils.timezone import get_current_timezone, make_aware, make_naive
 from past.builtins import basestring
 from pint.errors import DimensionalityError
-from quantityfield import ureg
+from quantityfield.units import ureg
 
 from seed.lib.superperms.orgs.models import Organization
 from seed.models import (

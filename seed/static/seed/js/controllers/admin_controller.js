@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.admin', [])
@@ -17,7 +17,6 @@ angular.module('BE.seed.controller.admin', [])
     'users_payload',
     'Notification',
     '$window',
-    'urls',
     function (
       $scope,
       $log,
@@ -31,8 +30,7 @@ angular.module('BE.seed.controller.admin', [])
       user_profile_payload,
       users_payload,
       Notification,
-      $window,
-      urls
+      $window
     ) {
       $scope.is_superuser = auth_payload.auth.requires_superuser;
       $scope.user = {};

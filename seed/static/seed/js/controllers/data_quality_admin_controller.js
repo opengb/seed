@@ -1,5 +1,5 @@
 /**
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 angular.module('BE.seed.controller.data_quality_admin', [])
@@ -140,9 +140,9 @@ angular.module('BE.seed.controller.data_quality_admin', [])
           column_name: derived_column.name,
           displayName: derived_column.name,
           group: 'Derived',
-          is_derived: true,
-        }
-      }))
+          is_derived: true
+        };
+      }));
 
       // if (flippers.is_active('release:orig_columns')) {
       //   // db may return _orig columns; don't suggest them in the select
@@ -268,7 +268,7 @@ angular.module('BE.seed.controller.data_quality_admin', [])
                 severity: rule.severity,
                 units: rule.units,
                 status_label: null,
-                for_derived_column: !!column.is_derived,
+                for_derived_column: !!column.is_derived
               };
               if (rule.condition === 'not_null' || rule.condition === 'required') {
                 r.min = null;

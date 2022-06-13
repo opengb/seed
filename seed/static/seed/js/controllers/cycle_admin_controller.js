@@ -1,5 +1,5 @@
 /*
- * :copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
+ * :copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
  * :author
  */
 
@@ -153,8 +153,8 @@ angular.module('BE.seed.controller.cycle_admin', [])
             cycle: (organization_service) => {
               return organization_service.get_organization($scope.org.id)
                 .then(res => {
-                  return res.organization.cycles.find(cycle => cycle.cycle_id == cycle_id)
-                })
+                  return res.organization.cycles.find(cycle => cycle.cycle_id == cycle_id);
+                });
             },
             organization_id: () => $scope.org.id
           }

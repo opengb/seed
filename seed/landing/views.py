@@ -1,7 +1,7 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import urllib
@@ -22,7 +22,7 @@ from django.utils.encoding import force_text
 from django.utils.http import urlsafe_base64_decode
 from seed.landing.models import SEEDUser
 from seed.tasks import (
-    invite_new_user_to_seed,
+    invite_to_seed,
 )
 
 from .forms import LoginForm, CustomCreateUserForm
@@ -175,14 +175,15 @@ def create_account(request):
                         domain = request.get_host()
                     except Exception:
                         domain = 'seed-platform.org'
-                    invite_new_user_to_seed(
+                    invite_to_seed(
                         domain, user.email, default_token_generator.make_token(user),
                         user.pk, user.email
                     )
                     return redirect('landing:account_activation_sent')
-                except Exception:
+                except Exception as e:
+                    logger.error(f'Unexpected error creating new account: {str(e)}')
                     errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
-                    errors.append('Username and/or password already exist.')
+                    errors.append('An unexpected error occurred. Please contact the site administrator.')
             else:
                 errors = form._errors.setdefault(NON_FIELD_ERRORS, errors)
                 errors.append('Invalid reCAPTCHA, please try again')

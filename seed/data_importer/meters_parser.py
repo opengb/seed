@@ -1,5 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
+"""
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:author
+"""
 
 from calendar import monthrange
 
@@ -463,9 +467,10 @@ class MetersParser(object):
             return []
 
         TYPE_AND_UNITS_REGEX = re.compile(r'(?P<meter_type>.*)\s+\((?P<units>.*)\)')
+        meter_type_lookup = dict(Meter.ENERGY_TYPES)
         METER_TYPE_MAPPING = {
-            'Electricity Use': 'Electric - Unknown',
-            'Natural Gas Use': 'Natural Gas',
+            'Electricity Use (Grid)': meter_type_lookup[Meter.ELECTRICITY_GRID],
+            'Natural Gas Use': meter_type_lookup[Meter.NATURAL_GAS],
         }
         METER_UNITS_MAPPING = {
             'kBtu': 'kBtu (thousand Btu)',

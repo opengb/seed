@@ -1,14 +1,13 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2021, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
+:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.  # NOQA
 :author
 """
 import logging
 
 from django.conf import settings
 from django.contrib.auth.models import User
-from django.contrib.postgres.fields import JSONField
 from django.db import models
 from django.db.models.signals import pre_delete
 
@@ -179,13 +178,13 @@ class Organization(models.Model):
                                           choices=MEASUREMENT_CHOICES_AREA,
                                           blank=False,
                                           default='ft**2')
-    display_significant_figures = models.PositiveSmallIntegerField(blank=False, default=2)
+    display_decimal_places = models.PositiveSmallIntegerField(blank=False, default=2)
 
     created = models.DateTimeField(auto_now_add=True, null=True)
     modified = models.DateTimeField(auto_now=True, null=True)
 
     # Default preferred all meter units to kBtu
-    display_meter_units = JSONField(default=_get_default_display_meter_units)
+    display_meter_units = models.JSONField(default=_get_default_display_meter_units)
 
     # If below this threshold, we don't show results from this Org
     # in exported views of its data.
@@ -208,6 +207,9 @@ class Organization(models.Model):
     thermal_conversion_assumption = models.IntegerField(choices=THERMAL_CONVERSION_ASSUMPTION_CHOICES, default=US)
 
     comstock_enabled = models.BooleanField(default=False)
+
+    # API Token for communicating with BETTER
+    better_analysis_api_key = models.CharField(blank=True, max_length=128, default='')
 
     def save(self, *args, **kwargs):
         """Perform checks before saving."""
