@@ -63,6 +63,10 @@ WORKDIR /seed
 COPY . /seed/
 COPY ./docker/wait-for-it.sh /usr/local/wait-for-it.sh
 
+# OPENGB: fix a permission error when attempting to view the About page (it
+# calls `git rev-parse` on the `/seed` directory).
+RUN git config --system --replace-all safe.directory /seed
+
 # nginx configuration - replace the root/default nginx config file
 COPY /docker/nginx-seed.conf /etc/nginx/nginx.conf
 # symlink maintenance.html that nginx will serve in the case of a 503
