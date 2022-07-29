@@ -97,21 +97,17 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
 
     Returns: nothing
     """
-    sign_up_url = Template("{{protocol}}://{{domain}}{{sign_up_url}}").render(Context({
-        'protocol': settings.PROTOCOL,
-        'domain': domain,
-        'sign_up_url': reverse_lazy('landing:signup', kwargs={
-            'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
-            'token': token
-        })
-    }))
+    signup_url = reverse_lazy('landing:activate', kwargs={
+        'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
+        'token': token
+    })
 
     context = {
         'email': email_address,
         'domain': domain,
         'protocol': settings.PROTOCOL,
         'first_name': first_name,
-        'signup_url': sign_up_url,
+        'signup_url': signup_url,
         'STATIC_URL': settings.STATIC_URL
     }
 
