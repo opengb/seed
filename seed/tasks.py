@@ -53,7 +53,7 @@ def invite_new_user_to_seed(domain, email_address, token, user_pk, first_name):
 
     Returns: nothing
     """
-    signup_url = reverse_lazy('landing:activate', kwargs={
+    signup_url = reverse_lazy('landing:signup', kwargs={
         'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
         'token': token
     })
@@ -97,7 +97,7 @@ def invite_to_seed(domain, email_address, token, user_pk, first_name):
 
     Returns: nothing
     """
-    signup_url = reverse_lazy('landing:activate', kwargs={
+    signup_url = reverse_lazy('landing:signup', kwargs={
         'uidb64': urlsafe_base64_encode(force_bytes(user_pk)),
         'token': token
     })
