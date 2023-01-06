@@ -64,12 +64,12 @@ def kbtu_thermal_conversion_factors(country):
     Returns thermal conversion factors provided by Portfolio Manager.
     In the PM app, using NREL's test account, a property was created for each US
     and CAN. All possible Meters of different Type and Units were added.
-    Readings of value 1 were added to deduce the factos provided below.
+    Readings of value 1 were added to deduce the factors provided below.
 
     Consideration was given regarding having the provided 'country' value align with
     Organizations' thermal_conversion_assumption enums. Even though these two
     should be aligned, the concept and need for these factors are not specific
-    soley to Orgs. So the 'country' value here is expected to be a string.
+    solely to Orgs. So the 'country' value here is expected to be a string.
     Specifically, there are instances in the codebase where the factors are
     needed irrespective of any Organization's preferences.
     """
@@ -408,9 +408,12 @@ def usage_point_id(raw_source_id):
     """
     Extracts and returns the usage point ID of a GreenButton full uri ID.
     """
-    id_split = raw_source_id.split('/')
-    usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
-    return id_split[usage_point_index]
+    if raw_source_id and '/' in raw_source_id:
+        id_split = raw_source_id.split('/')
+        usage_point_index = next(i for i, substr in enumerate(id_split) if substr == "UsagePoint") + 1
+        return id_split[usage_point_index]
+    else:
+        return raw_source_id
 
 
 class CoercionRobot(object):

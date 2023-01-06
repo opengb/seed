@@ -1,7 +1,7 @@
 <div class="page_header_container">
     <div class="page_header">
         <div class="left page_action_container"></div>
-        <div class="page_title"><h1>{$:: 'Analyses' | translate $}</h1></div>
+        <div class="page_title"><h1 translate>Analyses</h1></div>
         <div class="right page_action_container"></div>
     </div>
 </div>
@@ -47,6 +47,12 @@
                         <td>
                             <ul ng-repeat="(config, setting) in analysis.configuration">
                                 <li ng-if="!has_children(setting)">{$:: config $} = {$:: setting $}</li>
+                            </ul>
+                            <ul ng-if="analysis.configuration.select_meters && analysis.configuration.select_meters == 'select'">
+                                <li>
+                                meter start date = {$:: analysis.configuration.meter.start_date | date : "shortDate" $}</li>
+                                <li>
+                                    meter end date = {$:: analysis.configuration.meter.end_date | date : "shortDate" $}</li>
                             </ul>
                         </td>
                         <td>{$:: analysis.created_at | date : 'MM-dd-yyyy HH:mm' $}</td>

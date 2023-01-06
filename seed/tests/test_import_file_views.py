@@ -119,7 +119,7 @@ class TestSensorViewSet(DataMappingBaseTestCase):
             {'display_name': 'my dex sensor', 'type': 'dex', 'location_description': '???', 'units': 'cartwheels', 'column_name': 'dex_sensor_1', 'description': 'poof!'},
             {'display_name': 'my cuteness sensor', 'type': 'cute', 'location_description': 'the heart', 'units': 'kisses', 'column_name': 'my_cuteness_sensor', 'description': ''},
             {'display_name': 'my coolness sensor', 'type': 'cool', 'location_description': '', 'units': 'cigarettes', 'column_name': 'my_coolness_sensor', 'description': ''},
-            {'display_name': 'my intelligence', 'type': 'intl', 'location_description': 'brain', 'units': 'opions', 'column_name': 'intelligence_sensor', 'description': ''},
+            {'display_name': 'my intelligence', 'type': 'intl', 'location_description': 'brain', 'units': 'opinions', 'column_name': 'intelligence_sensor', 'description': ''},
         ]
 
         self.assertCountEqual(result_dict.get("proposed_imports"), expectation)
@@ -597,7 +597,7 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         save_format, expected = first_five_rows_helper(header, raw_data)
         converted = convert_first_five_rows_to_list(header, save_format)
 
-        # This test fails on purpose becasue the format of the first five rows will not
+        # This test fails on purpose because the format of the first five rows will not
         # support this use case.
         self.assertNotEqual(converted, expected)
 
@@ -628,6 +628,29 @@ class DataImporterViewTests(DataMappingBaseTestCase):
         # create import file record with Meter Entries tab
         import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
         filename = "example-data-request-response.xlsx"
+        filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
+
+        import_file = ImportFile.objects.create(
+            import_record=import_record,
+            uploaded_filename=filename,
+            file=SimpleUploadedFile(
+                name=filename,
+                content=pathlib.Path(filepath).read_bytes()
+            ),
+        )
+
+        # hit endpoint with record ID
+        url = reverse_lazy('api:v3:import_files-check-meters-tab-exists', args=[import_file.id]) + '?organization_id=' + str(self.org.id)
+        response = self.client.get(url)
+
+        # verify return true
+        body = json.loads(response.content)
+        self.assertEqual(body.get('data'), True)
+
+    def test_get_check_for_meters_tab_returns_true_when_monthly_usage_tab_present_new_format(self):
+        # create import file record with Meter Entries tab
+        import_record = ImportRecord.objects.create(owner=self.user, last_modified_by=self.user, super_organization=self.org)
+        filename = "example-data-request-response-new-format.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + filename
 
         import_file = ImportFile.objects.create(

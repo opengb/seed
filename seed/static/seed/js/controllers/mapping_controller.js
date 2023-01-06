@@ -302,12 +302,26 @@ angular.module('BE.seed.controller.mapping', [])
         return col.suggestion_table_name === 'PropertyState' && Boolean(_.find(area_columns, {column_name: col.suggestion_column_name}));
       };
 
+      var ghg_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg'});
+      $scope.is_ghg_column = function (col) {
+        return col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_columns, {column_name: col.suggestion_column_name}))
+      };
+
+      var ghg_intensity_columns = _.filter($scope.mappable_property_columns, {data_type: 'ghg_intensity'});
+      $scope.is_ghg_intensity_column = function (col) {
+        return col.suggestion_table_name == 'PropertyState' && Boolean(_.find(ghg_intensity_columns, {column_name: col.suggestion_column_name}))
+      };
+
       var get_default_quantity_units = function (col) {
         // TODO - hook up to org preferences / last mapping in DB
         if ($scope.is_eui_column(col)) {
           return 'kBtu/ft**2/year';
         } else if ($scope.is_area_column(col)) {
           return 'ft**2';
+        } else if ($scope.is_ghg_column(col)) {
+          return 'MtCO2e/year';
+        } else if ($scope.is_ghg_intensity_column(col)) {
+          return 'kgCO2e/ft**2/year';
         }
         return null;
       };
@@ -419,7 +433,8 @@ angular.module('BE.seed.controller.mapping', [])
           raw_data: _.map(first_five_rows_payload.first_five_rows, name),
           suggestion: suggestion.to_field,
           suggestion_column_name: suggestion.to_field,
-          suggestion_table_name: suggestion.to_table_name
+          suggestion_table_name: suggestion.to_table_name,
+          isOmitted: false,
         };
       };
 
@@ -503,7 +518,7 @@ angular.module('BE.seed.controller.mapping', [])
        */
       $scope.get_mappings = function () {
         var mappings = [];
-        _.forEach($scope.mappings, function (col) {
+        _.forEach($scope.mappings.filter(m => !m.isOmitted), function (col) {
           mappings.push({
             from_field: col.name,
             from_units: col.from_units || null,
@@ -569,7 +584,7 @@ angular.module('BE.seed.controller.mapping', [])
         var property_mappings_found = _.find($scope.mappings, {suggestion_table_name: 'PropertyState'});
         if (!property_mappings_found) return true;
 
-        var intersections = _.intersectionWith(required_property_fields, $scope.mappings, function (required_field, raw_col) {
+        var intersections = _.intersectionWith(required_property_fields, $scope.mappings.filter(m => !m.isOmitted), function (required_field, raw_col) {
           return _.isMatch(required_field, {
             column_name: raw_col.suggestion_column_name,
             inventory_type: raw_col.suggestion_table_name
@@ -605,7 +620,7 @@ angular.module('BE.seed.controller.mapping', [])
        *   mappings' button.
        */
       $scope.empty_fields_present = function () {
-        return Boolean(_.find($scope.mappings, {suggestion: ''}));
+        return Boolean(_.find($scope.mappings.filter(m => !m.isOmitted), {suggestion: ''}));
       };
 
       /**

@@ -89,7 +89,6 @@ class GBRPropertyViewSet(SEEDOrgCreateUpdateModelViewSet):
                 'properties': [
                     {
                         'id': Property primary key,
-                        'campus': property is a campus,
                         'parent_property': dict of associated parent property
                         'labels': list of associated label ids
                     }
@@ -210,7 +209,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         per_page = request.query_params.get('per_page', 1)
         org_id = request.query_params.get('organization_id', None)
         cycle_id = request.query_params.get('cycle')
-        # check if there is a query paramater for the profile_id. If so, then use that one
+        # check if there is a query parameter for the profile_id. If so, then use that one
         profile_id = request.query_params.get('profile_id', profile_id)
 
         if not org_id:
@@ -624,7 +623,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         new_view1.save()
         new_view2.save()
 
-        # Asssociate labels
+        # Associate labels
         label_objs = StatusLabel.objects.filter(pk__in=label_ids)
         new_view1.labels.set(label_objs)
         new_view2.labels.set(label_objs)
@@ -1014,7 +1013,7 @@ class PropertyViewSet(ViewSet, ProfileIdMixin):
         - checks if any fields have changed
         - if nothing has changed, return 422 - Really?  Not sure how I feel about that one, it *is* processable
         - get the property audit log for this property state
-        - if the new property state has extra_data, the original extra_data is update'd
+        - if the new property state has extra_data, the original extra_data is updated
         - and then whoa stuff about the audit log?
         - I'm going to assume 'Import Creation' is the key I'm looking for
         - create a serializer for the new property state

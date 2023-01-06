@@ -22,6 +22,9 @@ angular.module('BE.seed.controller.inventory_list', [])
     'cycles',
     'profiles',
     'current_profile',
+    'filter_groups',
+    'current_filter_group',
+    'filter_groups_service',
     'all_columns',
     'derived_columns_payload',
     'urls',
@@ -52,6 +55,9 @@ angular.module('BE.seed.controller.inventory_list', [])
       cycles,
       profiles,
       current_profile,
+      filter_groups,
+      current_filter_group,
+      filter_groups_service,
       all_columns,
       derived_columns_payload,
       urls,
@@ -72,6 +78,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       for (const i in all_columns) {
         $scope.columnDisplayByName[all_columns[i].name] = all_columns[i].displayName;
       }
+
 
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.data = [];
@@ -110,6 +117,230 @@ angular.module('BE.seed.controller.inventory_list', [])
         // No profiles exist
         $scope.columns = _.reject(all_columns, 'is_extra_data');
       }
+
+      // Filter Groups
+      $scope.filterGroups = filter_groups;
+      $scope.currentFilterGroup = current_filter_group;
+      $scope.currentFilterGroupId = current_filter_group ? String(current_filter_group.id) : '-1';
+
+      $scope.Modified = false;
+
+      $scope.new_filter_group = function () {
+        var label_ids = [];
+        for (label in $scope.selected_labels) {
+          label_ids.push($scope.selected_labels[label].id);
+        }
+        filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+        var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
+
+        var filterGroupData = {
+          "query_dict": query_dict,
+          "inventory_type": filter_group_inventory_type,
+          "labels": label_ids,
+          "label_logic": $scope.labelLogic
+        };
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('new'),
+            data: _.constant(filterGroupData),
+          }
+        });
+
+        modalInstance.result.then(function (new_filter_group) {
+          $scope.filterGroups.push(new_filter_group);
+          $scope.Modified=false;
+          $scope.currentFilterGroup = _.last($scope.filterGroups);
+          $scope.currentFilterGroupId = String(new_filter_group.id)
+
+          Notification.primary('Created ' + $scope.currentFilterGroup.name);
+        });
+      };
+
+      $scope.remove_filter_group = function () {
+        var oldFilterGroupName = $scope.currentFilterGroup.name;
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('remove'),
+            data: _.constant($scope.currentFilterGroup)
+          }
+        });
+
+        modalInstance.result.then(function () {
+          _.remove($scope.filterGroups, $scope.currentFilterGroup);
+          $scope.Modified=false;
+          $scope.currentFilterGroup = _.last($scope.filterGroups);
+
+          Notification.primary('Removed ' + oldFilterGroupName);
+        });
+      };
+
+      $scope.rename_filter_group = function () {
+        var oldFilterGroup = angular.copy($scope.currentFilterGroup);
+
+        var modalInstance = $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/filter_group_modal.html',
+          controller: 'filter_group_modal_controller',
+          resolve: {
+            action: _.constant('rename'),
+            data: _.constant($scope.currentFilterGroup),
+          }
+        });
+
+        modalInstance.result.then((newName) => {
+          $scope.currentFilterGroup.name = newName;
+          _.find($scope.filterGroups, {id: $scope.currentFilterGroup.id}).name = newName;
+          Notification.primary('Renamed ' + oldFilterGroup.name + ' to ' + newName);
+        });
+      };
+
+      $scope.save_filter_group = function () {
+        var label_ids = [];
+        for (label in $scope.selected_labels) {
+            label_ids.push($scope.selected_labels[label].id);
+        };
+        filter_group_inventory_type = $scope.inventory_type === 'properties' ? 'Property' : 'Tax Lot';
+        var query_dict = inventory_service.get_format_column_filters($scope.column_filters);
+        var filterGroupData = {
+          "name": $scope.currentFilterGroup.name,
+          "query_dict": query_dict,
+          "inventory_type": filter_group_inventory_type,
+          "labels": label_ids,
+          "label_logic": $scope.labelLogic
+        };
+        filter_groups_service.update_filter_group($scope.currentFilterGroup.id, filterGroupData).then(function (result) {
+          $scope.currentFilterGroup = result;
+          const currentFilterGroupIndex = $scope.filterGroups.findIndex(fg => fg.id == result.id)
+          $scope.filterGroups[currentFilterGroupIndex] = result;
+          $scope.Modified=false;
+          Notification.primary('Saved ' + $scope.currentFilterGroup.name);
+        });
+      };
+
+
+      // compare filters if different then true, then compare labels, and finally label_logic. All must be the same to return false
+      $scope.isModified = function () {
+        if ($scope.currentFilterGroup == null) return false;
+
+        if ($scope.filterGroups.length > 0) {
+          current_filters = {};
+          current_filters = inventory_service.get_format_column_filters($scope.column_filters);
+          saved_filters = $scope.currentFilterGroup.query_dict;
+          current_labels = [];
+          for (label in $scope.selected_labels) {
+            current_labels.push($scope.selected_labels[label].id);
+          };
+          saved_labels = $scope.currentFilterGroup.labels;
+          current_label_logic = $scope.labelLogic;
+          saved_label_logic = $scope.currentFilterGroup.label_logic;
+          if (!_.isEqual(current_filters, saved_filters)) {
+            $scope.Modified = true
+          } else if (!_.isEqual(current_labels.sort(), saved_labels.sort())) {
+            $scope.Modified = true
+          } else if (current_label_logic !== saved_label_logic) {
+            $scope.Modified = true
+          } else {
+            $scope.Modified = false
+          }
+        }
+
+
+        return $scope.Modified;
+      };
+
+      const getTableFilter = (value, operator) => {
+        switch (operator) {
+          case 'exact': return `"${value}"`;
+          case 'icontains':return value;
+          case 'gt': return `>${value}`;
+          case 'gte': return `>=${value}`;
+          case 'lt': return `<${value}`;
+          case 'lte': return `<=${value}`;
+          case 'ne': return `!="${value}"`;
+          default: console.error('Unknown action:', elSelectActions.value, 'Update "run_action()"');
+        }
+      };
+
+      const updateCurrentFilterGroup = (filterGroup) => {
+        // Set current filter group
+        $scope.currentFilterGroup = filterGroup;
+
+        if (filterGroup) {
+          filter_groups_service.save_last_filter_group($scope.currentFilterGroup.id, $scope.inventory_type);
+
+          // Update labels
+          $scope.labelLogicUpdated($scope.currentFilterGroup.label_logic);
+          $scope.selected_labels = _.filter($scope.labels, label => _.includes($scope.currentFilterGroup.labels, label.id));
+        $scope.filterUsingLabels();
+
+          // clear table filters
+          $scope.gridApi.grid.columns.forEach(column => {
+            column.filters[0] = {
+              term: null
+            };
+          });
+
+          // write new filter in table
+          for (const key in $scope.currentFilterGroup.query_dict) {
+            const value = $scope.currentFilterGroup.query_dict[key];
+            const [column_name, operator] = key.split('__');
+
+            // TODO: if this column is hidden, this whole operation falls apart.
+            const column = $scope.gridApi.grid.columns.find(({colDef}) => colDef.name === column_name);
+
+            if (column.filters[0].term == null) {
+              column.filters[0].term = getTableFilter(value, operator);
+            } else {
+              column.filters[0].term += `, ${getTableFilter(value, operator)}`;
+            }
+          }
+
+          // update filtering
+          updateColumnFilterSort();
+        } else {
+          // Clear filter group
+          $scope.currentFilterGroupId = -1
+          filter_groups_service.save_last_filter_group(-1, $scope.inventory_type);
+          $scope.selected_labels = [];
+          $scope.filterUsingLabels();
+
+            // clear table filters
+            $scope.gridApi.grid.columns.forEach(column => {
+              column.filters[0] = {
+                term: null
+              };
+            });
+            updateColumnFilterSort();
+        }
+      };
+
+      $scope.check_for_filter_group_changes = (currentFilterGroupId, oldFilterGroupId) => {
+        currentFilterGroupId = +currentFilterGroupId;
+
+        let selectedFilterGroup = null;
+        if (currentFilterGroupId !== -1) {
+          selectedFilterGroup = $scope.filterGroups.find(({id}) => id === currentFilterGroupId);
+        }
+
+        if ($scope.Modified) {
+          $uibModal.open({
+            template: '<div class="modal-header"><h3 class="modal-title" translate>You have unsaved changes</h3></div><div class="modal-body" translate>You will lose your unsaved changes if you switch filter groups without saving. Would you like to continue?</div><div class="modal-footer"><button type="button" class="btn btn-warning" ng-click="$dismiss()" translate>Cancel</button><button type="button" class="btn btn-primary" ng-click="$close()" autofocus translate>Switch Filter Groups</button></div>',
+            backdrop: 'static'
+          }).result.then(() => {
+            $scope.Modified = false;
+            updateCurrentFilterGroup(selectedFilterGroup);
+          }).catch(() => {
+            $scope.currentFilterGroupId = String(oldFilterGroupId);
+          });
+        } else {
+          updateCurrentFilterGroup(selectedFilterGroup);
+        }
+      };
 
       // restore_response is a state tracker for avoiding multiple reloads
       // of the inventory data when initializing the page.
@@ -228,6 +459,7 @@ angular.module('BE.seed.controller.inventory_list', [])
 
       $scope.clear_labels = function () {
         $scope.selected_labels = [];
+        $scope.filterUsingLabels();
       };
 
       var ignoreNextChange = true;
@@ -315,9 +547,10 @@ angular.module('BE.seed.controller.inventory_list', [])
         });
       };
 
-      var filterUsingLabels = function () {
+      $scope.filterUsingLabels = function () {
         inventory_service.saveSelectedLabels(localStorageLabelKey, _.map($scope.selected_labels, 'id'));
         $scope.load_inventory(1);
+        $scope.isModified();
       };
 
       $scope.labelLogic = localStorage.getItem('labelLogic');
@@ -325,7 +558,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       $scope.labelLogicUpdated = function (labelLogic) {
         $scope.labelLogic = labelLogic;
         localStorage.setItem('labelLogic', $scope.labelLogic);
-        filterUsingLabels();
+        $scope.isModified();
       };
 
       /**
@@ -353,6 +586,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.load_inventory(1);
         });
       };
+
 
       /**
        Opens the postoffice modal for sending emails.
@@ -566,30 +800,33 @@ angular.module('BE.seed.controller.inventory_list', [])
         else if (col.related || col.is_extra_data) options.treeAggregationType = 'uniqueList';
         return _.defaults(col, options, defaults);
       });
-      $scope.columns.unshift({
-        name: 'merged_indicator',
-        displayName: '',
-        headerCellTemplate: '<span></span>', // remove header
-        cellTemplate: '<div class="ui-grid-row-header-link">' +
+
+      // The meters_exist_indicator column is only applicable to properties
+      if ($stateParams.inventory_type == 'properties') {
+        $scope.columns.unshift({
+          name: 'merged_indicator',
+          displayName: '',
+          headerCellTemplate: '<span></span>', // remove header
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
           '  <div title="' + $translate.instant('Merged Records') + '" class="ui-grid-cell-contents merged-indicator">' +
           '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
           '  </div>' +
           '</div>',
-        enableColumnMenu: false,
-        enableColumnMoving: false,
-        enableColumnResizing: false,
-        enableFiltering: false,
-        enableHiding: false,
-        enableSorting: false,
-        exporterSuppressExport: true,
-        pinnedLeft: true,
-        visible: true,
-        width: 30
-      }, {
-        name: 'notes_count',
-        displayName: '',
-        headerCellTemplate: '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
-        cellTemplate: '<div class="ui-grid-row-header-link">' +
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        }, {
+          name: 'notes_count',
+          displayName: '',
+          headerCellTemplate: '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
           '  <a title="' + $translate.instant('Go to Notes') + '" class="ui-grid-cell-contents notes-button" ng-if="row.entity.$$treeLevel === 0" ng-click="grid.appScope.view_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id, record: row.entity} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id, record: row.entity})">' +
           '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count || \'\' $}</div>' +
           '  </a>' +
@@ -597,21 +834,40 @@ angular.module('BE.seed.controller.inventory_list', [])
           '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count || \'\' $}</div>' +
           '  </a>' +
           '</div>',
-        enableColumnMenu: false,
-        enableColumnMoving: false,
-        enableColumnResizing: false,
-        enableFiltering: false,
-        enableHiding: false,
-        enableSorting: true,
-        exporterSuppressExport: true,
-        pinnedLeft: true,
-        visible: true,
-        width: 30
-      }, {
-        name: 'id',
-        displayName: '',
-        headerCellTemplate: '<span></span>', // remove header
-        cellTemplate: '<div class="ui-grid-row-header-link">' +
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: true,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        }, {
+          name: 'meters_exist_indicator',
+          displayName: '',
+          headerCellTemplate: '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
+          '  <a title="' + $translate.instant('Go to Meters') + '" class="ui-grid-cell-contents meters-exist-indicator" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail_meters(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
+          '    <i class="fa fa-bolt" ng-class="{\'text-muted\': !row.entity.meters_exist_indicator, \'text-info\': row.entity.meters_exist_indicator}"></i>' +
+          '  </a>' +
+          '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: true,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        }, {
+          name: 'id',
+          displayName: '',
+          headerCellTemplate: '<span></span>', // remove header
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
           '  <a title="' + $translate.instant('Go to Detail Page') + '" class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
           '    <i class="ui-grid-icon-info-circled"></i>' +
           '  </a>' +
@@ -619,33 +875,132 @@ angular.module('BE.seed.controller.inventory_list', [])
           '    <i class="ui-grid-icon-info-circled"></i>' +
           '  </a>' +
           '</div>',
-        enableColumnMenu: false,
-        enableColumnMoving: false,
-        enableColumnResizing: false,
-        enableFiltering: false,
-        enableHiding: false,
-        enableSorting: false,
-        exporterSuppressExport: true,
-        pinnedLeft: true,
-        visible: true,
-        width: 30
-      }, {
-        name: 'labels',
-        displayName: '',
-        headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fa fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
-        cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
-        enableColumnMenu: false,
-        enableColumnMoving: false,
-        enableColumnResizing: false,
-        enableFiltering: false,
-        enableHiding: false,
-        enableSorting: false,
-        exporterSuppressExport: true,
-        pinnedLeft: true,
-        visible: true,
-        width: $scope.get_label_column_width(),
-        maxWidth: $scope.max_label_width
-      });
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        }, {
+          name: 'labels',
+          displayName: '',
+          headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fa fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
+          cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: $scope.get_label_column_width(),
+          maxWidth: $scope.max_label_width
+        });
+      } else {
+        $scope.columns.unshift({
+          name: 'merged_indicator',
+          displayName: '',
+          headerCellTemplate: '<span></span>', // remove header
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
+          '  <div title="' + $translate.instant('Merged Records') + '" class="ui-grid-cell-contents merged-indicator">' +
+          '    <i class="fa fa-code-fork" ng-class="{\'text-muted\': !row.entity.merged_indicator, \'text-info\': row.entity.merged_indicator}"></i>' +
+          '  </div>' +
+          '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        }, {
+          name: 'notes_count',
+          displayName: '',
+          headerCellTemplate: '<div role="columnheader" ng-class="{ \'sortable\': sortable }" ui-grid-one-bind-aria-labelledby-grid="col.uid + \'-header-text \' + col.uid + \'-sortdir-text\'" aria-sort="{{col.sort.direction == asc ? \'ascending\' : ( col.sort.direction == desc ? \'descending\' : \'none\')}}"><div role="button" tabindex="0" ng-keydown="handleKeyDown($event)" class="ui-grid-cell-contents ui-grid-header-cell-primary-focus" col-index="renderIndex"><span ui-grid-one-bind-id-grid="col.uid + \'-sortdir-text\'" aria-label="{{getSortDirectionAriaLabel()}}"><i ng-class="{ \'ui-grid-icon-up-dir\': col.sort.direction == asc, \'ui-grid-icon-down-dir\': col.sort.direction == desc, \'ui-grid-icon-up-dir translucent\': !col.sort.direction }" title="{{isSortPriorityVisible() ? i18n.headerCell.priority + \' \' + ( col.sort.priority + 1 ) : null}}" aria-hidden="true"></i><sub ui-grid-visible="isSortPriorityVisible()" class="ui-grid-sort-priority-number">{{col.sort.priority + 1}}</sub></span></div></div>',
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
+          '  <a title="' + $translate.instant('Go to Notes') + '" class="ui-grid-cell-contents notes-button" ng-if="row.entity.$$treeLevel === 0" ng-click="grid.appScope.view_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id, record: row.entity} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id, record: row.entity})">' +
+          '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count || \'\' $}</div>' +
+          '  </a>' +
+          '  <a title="' + $translate.instant('Go to Notes') + '" class="ui-grid-cell-contents notes-button" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ng-click="grid.appScope.view_notes(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id, record: row.entity} : {inventory_type: \'properties\', view_id: row.entity.property_view_id, record: row.entity})">' +
+          '    <i class="fa fa-comment" ng-class="{\'text-muted\': !row.entity.notes_count}"></i><div>{$ row.entity.notes_count > 999 ? \'> 999\' : row.entity.notes_count || \'\' $}</div>' +
+          '  </a>' +
+          '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: true,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        }, {
+          name: 'id',
+          displayName: '',
+          headerCellTemplate: '<span></span>', // remove header
+          cellTemplate: '<div class="ui-grid-row-header-link">' +
+          '  <a title="' + $translate.instant('Go to Detail Page') + '" class="ui-grid-cell-contents" ng-if="row.entity.$$treeLevel === 0" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'properties\', view_id: row.entity.property_view_id} : {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id})">' +
+          '    <i class="ui-grid-icon-info-circled"></i>' +
+          '  </a>' +
+          '  <a title="' + $translate.instant('Go to Detail Page') + '" class="ui-grid-cell-contents" ng-if="!row.entity.hasOwnProperty($$treeLevel)" ui-sref="inventory_detail(grid.appScope.inventory_type === \'properties\' ? {inventory_type: \'taxlots\', view_id: row.entity.taxlot_view_id} : {inventory_type: \'properties\', view_id: row.entity.property_view_id})">' +
+          '    <i class="ui-grid-icon-info-circled"></i>' +
+          '  </a>' +
+          '</div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: 30
+        }, {
+          name: 'labels',
+          displayName: '',
+          headerCellTemplate: '<i ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents fa fa-chevron-circle-right" id="label-header-icon" style="margin:2px; float:right;"></i>',
+          cellTemplate: '<div ng-click="grid.appScope.toggle_labels()" class="ui-grid-cell-contents" ng-bind-html="grid.appScope.display_labels(row.entity)"></div>',
+          enableColumnMenu: false,
+          enableColumnMoving: false,
+          enableColumnResizing: false,
+          enableFiltering: false,
+          enableHiding: false,
+          enableSorting: false,
+          exporterSuppressExport: true,
+          pinnedLeft: true,
+          visible: true,
+          width: $scope.get_label_column_width(),
+          maxWidth: $scope.max_label_width
+        });
+      }
+
+      // disable sorting (but not filtering) on related data until the backend can filter/sort over two models
+      for (const i in $scope.columns) {
+        let column = $scope.columns[i];
+        if (column['related']) {
+          column['enableSorting'] = false;
+          let title = "Filtering disabled for property columns on the taxlot list.";
+          if ($scope.inventory_type == 'properties') {
+            title = "Filtering disabled for taxlot columns on the property list.";
+          }
+        }
+        if (column['derived_column'] != null) {
+          column['enableSorting'] = false;
+          let title = "Sorting and filtering disabled for derived columns.";
+          column['filterHeaderTemplate'] = '<div class="ui-grid-filter-container"><input type="text" title="' + title + '" class="ui-grid-filter-input" disabled=disabled />'
+        }
+      }
 
       var findColumn = _.memoize(function (name) {
         return _.find(all_columns, {name: name});
@@ -655,7 +1010,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       var processData = function (data) {
         if (_.isUndefined(data)) data = $scope.data;
         var visibleColumns = _.map($scope.columns, 'name')
-          .concat(['$$treeLevel', 'notes_count', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
+          .concat(['$$treeLevel', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'property_state_id', 'property_view_id', 'taxlot_state_id', 'taxlot_view_id']);
 
         var columnsToAggregate = _.filter($scope.columns, 'treeAggregationType').reduce(function (obj, col) {
           obj[col.name] = col.treeAggregationType;
@@ -710,7 +1065,7 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.updateQueued = true;
       };
 
-      var fetch = function (page, chunk) {
+      var fetch = function (page, chunk, ids_only=false) {
         var fn;
         if ($scope.inventory_type === 'properties') {
           fn = inventory_service.get_properties;
@@ -743,7 +1098,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           $scope.organization.id,
           true,
           $scope.column_filters,
-          $scope.column_sorts
+          $scope.column_sorts,
+          ids_only
         ).then(function (data) {
           return data;
         });
@@ -762,15 +1118,15 @@ angular.module('BE.seed.controller.inventory_list', [])
         }
 
         // Find all columns that linked to a derived column.
-        // With the associated derived columns evaluate it and attatch it to the original column
+        // With the associated derived columns evaluate it and attach it to the original column
         const visible_columns_with_derived_columns = $scope.columns.filter(col => col.derived_column);
         const derived_column_ids = visible_columns_with_derived_columns.map(col => col.derived_column);
-        const attatched_derived_columns = derived_columns_payload.derived_columns.filter(col => derived_column_ids.includes(col.id))
+        const attached_derived_columns = derived_columns_payload.derived_columns.filter(col => derived_column_ids.includes(col.id))
         column_name_lookup = {}
         visible_columns_with_derived_columns.forEach(col => (column_name_lookup[col.column_name] = col.name))
 
         const all_evaluation_results = [];
-        for (const col of attatched_derived_columns) {
+        for (const col of attached_derived_columns) {
           all_evaluation_results.push(...batched_inventory_ids.map(ids => {
             return derived_columns_service.evaluate($scope.organization.id, col.id, $scope.cycle.selected_cycle.id, ids)
               .then(res => {
@@ -793,7 +1149,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           // finally, update the data to include the calculated values
           $scope.data.forEach(row => {
             Object.entries(aggregated_results).forEach(([derived_column_id, results]) => {
-              const derived_column = attatched_derived_columns.find(col => col.id == derived_column_id);
+              const derived_column = attached_derived_columns.find(col => col.id == derived_column_id);
               const result = results.find(res => res.id == row.id) || {};
               row[column_name_lookup[derived_column.name]] = result.value;
             });
@@ -848,7 +1204,6 @@ angular.module('BE.seed.controller.inventory_list', [])
         $scope.gridApi.core.raise.sortChanged();
       };
 
-      let watchingSelectedLabels = false;
       var get_labels = function () {
         label_service.get_labels($scope.inventory_type).then(function (current_labels) {
           $scope.labels = _.filter(current_labels, function (label) {
@@ -861,11 +1216,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             return _.includes(ids, label.id);
           });
 
-          // watch for changes
-          if (!watchingSelectedLabels) {
-            watchingSelectedLabels = true;
-            $scope.$watchCollection('selected_labels', filterUsingLabels);
-          }
+          $scope.filterUsingLabels();
           $scope.build_labels();
         });
       };
@@ -1038,15 +1389,15 @@ angular.module('BE.seed.controller.inventory_list', [])
           selectedViewIds = viewIds;
 
         // if it appears everything selected, only get the full set of ids...
-        } else if ($scope.selectedCount === $scope.inventory_pagination.total) {
+        } else if ($scope.selectedCount >= $scope.inventory_pagination.total && $scope.inventory_pagination.num_pages > 1) {
           selectedViewIds = [];
 
           if ($scope.inventory_type === 'properties') {
-            selectedViewIds = inventory_service.get_properties(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = fetch(undefined, undefined, ids_only=true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           } else if ($scope.inventory_type === 'taxlots') {
-            selectedViewIds = inventory_service.get_taxlots(undefined, undefined, $scope.cycle.selected_cycle, -1, undefined, undefined, true, null, true, $scope.column_filters, $scope.column_sorts, true).then(function (inventory_data) {
+            selectedViewIds = fetch(undefined, undefined, ids_only=true).then(function (inventory_data) {
               $scope.run_action(inventory_data.results);
             });
           }
@@ -1116,7 +1467,8 @@ angular.module('BE.seed.controller.inventory_list', [])
           resolve: {
             inventory_ids: function () {
               return $scope.inventory_type === 'properties' ? selectedViewIds : [];
-            }
+            },
+            current_cycle: _.constant($scope.cycle.selected_cycle),
           }
         });
         modalInstance.result.then(function (data) {
@@ -1152,7 +1504,7 @@ angular.module('BE.seed.controller.inventory_list', [])
       function currentColumns () {
         // Save all columns except first 3
         var gridCols = _.filter($scope.gridApi.grid.columns, function (col) {
-          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'merged_indicator', 'id', 'labels'], col.name)
+          return !_.includes(['treeBaseRowHeaderCol', 'selectionRowHeaderCol', 'notes_count', 'meters_exist_indicator', 'merged_indicator', 'id', 'labels'], col.name)
             && col.visible
             && !col.colDef.is_derived_column;
         });
@@ -1344,6 +1696,7 @@ angular.module('BE.seed.controller.inventory_list', [])
             $scope.column_sorts.sort((a, b) => (a.priority > b.priority));
           }
         }
+        $scope.isModified();
       };
 
       const restoreGridSettings = function () {
@@ -1410,7 +1763,7 @@ angular.module('BE.seed.controller.inventory_list', [])
           });
 
           gridApi.colMovable.on.columnPositionChanged($scope, function () {
-            // Ensure that 'merged_indicator', 'notes_count', and 'id' remain first
+            // Ensure that 'merged_indicator', 'notes_count', 'meters_exist_indicator', and 'id' remain first
             var col, staticColIndex;
             staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'merged_indicator'});
             if (staticColIndex !== 2) {
@@ -1424,11 +1777,17 @@ angular.module('BE.seed.controller.inventory_list', [])
               $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(3, 0, col);
             }
-            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'meters_exist_indicator'});
             if (staticColIndex !== 4) {
               col = $scope.gridApi.grid.columns[staticColIndex];
               $scope.gridApi.grid.columns.splice(staticColIndex, 1);
               $scope.gridApi.grid.columns.splice(4, 0, col);
+            }
+            staticColIndex = _.findIndex($scope.gridApi.grid.columns, {name: 'id'});
+            if (staticColIndex !== 5) {
+              col = $scope.gridApi.grid.columns[staticColIndex];
+              $scope.gridApi.grid.columns.splice(staticColIndex, 1);
+              $scope.gridApi.grid.columns.splice(5, 0, col);
             }
             saveSettings();
           });

@@ -11,6 +11,7 @@ elsewhere.
 
 """
 import json
+import logging
 import mmap
 import operator
 import re
@@ -25,6 +26,8 @@ from xlrd.xldate import XLDateAmbiguous
 
 from seed.data_importer.utils import kbtu_thermal_conversion_factors
 
+# Create a list of Excel cell types. This is copied
+# directly from the xlrd source code.
 (
     XL_CELL_EMPTY,
     XL_CELL_TEXT,
@@ -32,11 +35,14 @@ from seed.data_importer.utils import kbtu_thermal_conversion_factors
     XL_CELL_DATE,
     XL_CELL_BOOLEAN,
     XL_CELL_ERROR,
-    XL_CELL_BLANK,  # for use in debugging, gathering stats, etc
+    XL_CELL_BLANK,
 ) = range(7)
 
 ROW_DELIMITER = "|#*#|"
 SEED_GENERATED_HEADER_PREFIX = "SEED Generated Header"
+
+
+_log = logging.getLogger(__name__)
 
 
 def clean_fieldnames(fieldnames):
@@ -363,13 +369,24 @@ class ExcelParser(object):
             else:
                 return item.value
 
+        # If Excel reports an ERROR (typically the #VALUE! or #NAME! in the cell), then return None,
+        # otherwise the item.value will be the error code and saved in SEED incorrectly.
+        if item.ctype in [XL_CELL_ERROR]:
+            return None
+
+        # If it is blank or empty, then return empty string
+        if item.ctype in [XL_CELL_EMPTY, XL_CELL_BLANK]:
+            return ''
+
+        # XL_CELL_TEXT
         if isinstance(item.value, basestring):
             return unidecode(item.value)
 
+        # only remaining items should be booleans
         return item.value
 
     def XLSDictReader(self, sheet, header_row=0):
-        """returns a generator yeilding a dict per row from the XLS/XLSX file
+        """returns a generator yielding a dict per row from the XLS/XLSX file
         https://gist.github.com/mdellavo/639082
 
         :param sheet: xlrd Sheet
@@ -440,7 +457,14 @@ class CSVParser(object):
         self.csvfile.readline()
         # Read a significant chunk of the data to improve the odds of
         # determining the dialect.  MCM is often run on very wide csv files.
-        dialect = Sniffer().sniff(self.csvfile.read(16384))
+        try:
+            dialect = Sniffer().sniff(self.csvfile.read(16384))
+            if dialect.delimiter != ',':
+                _log.warn('CSV file has a non-standard delimiter, converting to \'comma\'')
+                dialect.delimiter = ','
+        except SyntaxError:
+            raise Exception("CSV file is not in a format that SEED can interpret. Try converting to XLSX.")
+
         self.csvfile.seek(0)
 
         fieldnames, generated_headers = clean_fieldnames(
@@ -473,7 +497,7 @@ class MCMParser(object):
     columnar data against a set of known ontologies and separates data
     according to those distinctions.
 
-    Map: mapping the columns to known ontologies, then colating data by these.
+    Map: mapping the columns to known ontologies, then collating data by these.
     Clean: coerce data according to ontology schema.
     Merge: merging the data from multiple sources into one ontology.
 
@@ -526,7 +550,7 @@ class MCMParser(object):
         elif isinstance(self.reader, ExcelParser):
             self.data = self.reader.excelreader
         else:
-            raise Exception('Uknown type of parser in MCMParser')
+            raise Exception('Unknown type of parser in MCMParser')
 
         return self.reader.seek_to_beginning()
 

@@ -6,7 +6,9 @@
 """
 import copy
 import logging
+from datetime import timedelta
 
+import dateutil.parser
 from celery import chain, shared_task
 from django.core.files.base import ContentFile
 from django.db.models import Count
@@ -59,6 +61,8 @@ def _validate_better_config(analysis):
     config = analysis.configuration
     if not isinstance(config, dict):
         return ['Analysis configuration must be a dictionary/JSON']
+
+    # print(f"ANALYSIS CONFIG IN PIPELINE: {config}")
 
     REQUIRED_CONFIG_PROPERTIES = [
         'min_model_r_squared',
@@ -138,7 +142,7 @@ class BETTERPipeline(AnalysisPipeline):
         ).apply_async()
 
 
-def get_meter_readings(property_id, preprocess_meters):
+def get_meter_readings(property_id, preprocess_meters, config):
     """Returns meters and readings which should meet BETTER's requirements
 
     :param property_id: int
@@ -156,9 +160,30 @@ def get_meter_readings(property_id, preprocess_meters):
             type__in=list(SEED_TO_BSYNC_RESOURCE_TYPE.keys()),
         )
     )
+
+    # check if dates are ok
+    if 'select_meters' in config and config['select_meters'] == 'select':
+        try:
+            value1 = dateutil.parser.parse(config['meter']['start_date'])
+            value2 = dateutil.parser.parse(config['meter']['end_date'])
+            # add a day to get the timestamps to include the last day otherwise timestamp is 00:00:00
+            value2 = value2 + timedelta(days=1)
+
+        except Exception as err:
+            raise AnalysisPipelineException(
+                f'Analysis configuration error: invalid dates selected for meter readings: {err}')
+
     if preprocess_meters:
         for meter in meters:
-            meter_readings = meter.meter_readings
+            if 'select_meters' in config and config['select_meters'] == 'select':
+                try:
+                    meter_readings = meter.meter_readings.filter(start_time__range=[value1, value2])
+                except Exception as err:
+                    logger.error(f"!!! Error retrieving meter readings: {err}")
+                    # continue but analysis will fail
+                    continue
+            else:
+                meter_readings = meter.meter_readings
             if meter_readings.count() == 0:
                 continue
             monthly_readings = calendarize_and_extrapolate_meter_readings(meter_readings.all())
@@ -179,7 +204,17 @@ def get_meter_readings(property_id, preprocess_meters):
         )
         for meter in meters:
             # filtering on readings >= 1.0 b/c BETTER flails when readings are less than 1 currently
-            readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
+            readings = []
+            if 'select_meters' in config and config['select_meters'] == 'select':
+                try:
+                    readings = meter.meter_readings.filter(start_time__range=[value1, value2], reading__gte=1.0).order_by('start_time')
+                except Exception as err:
+                    logger.error(f"!!! Error retrieving meter readings: {err}")
+                    # continue but analysis will fail
+                    continue
+            else:
+                readings = meter.meter_readings.filter(reading__gte=1.0).order_by('start_time')
+
             if readings.count() >= 12:
                 selected_meters_and_readings.append({
                     'meter_type': meter.type,
@@ -209,7 +244,8 @@ def _prepare_all_properties(self, analysis_view_ids_by_property_view_id, analysi
     for analysis_property_view in analysis_property_views:
         selected_meters_and_readings = get_meter_readings(
             analysis_property_view.property_id,
-            analysis.configuration.get('preprocess_meters', False)
+            analysis.configuration.get('preprocess_meters', False),
+            analysis.configuration
         )
 
         if len(selected_meters_and_readings) == 0:
@@ -458,7 +494,7 @@ def _process_results(self, analysis_id):
             'inverse_model.Electricity.r2'
         ),
         ExtraDataColumnPath(
-            'better_inverse_r_squared_fossile_fuel',
+            'better_inverse_r_squared_fossil_fuel',
             'BETTER Inverse Model R^2 (Fossil Fuel)',
             1,
             'inverse_model.Fossil Fuel.r2'
@@ -504,9 +540,9 @@ def _process_results(self, analysis_id):
         # create a message for the failed models
         warning_messages = []
         if not electricity_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption.')
+            warning_messages.append('No reasonable change-point model could be found for this building\'s electricity consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
         if not fuel_model_is_valid:
-            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption.')
+            warning_messages.append('No reasonable change-point model could be found for this building\'s fossil fuel consumption. Model R^2 was {}'.format(round(simplified_results['better_inverse_r_squared_fossil_fuel'], 4)))
         for warning_message in warning_messages:
             AnalysisMessage.log_and_create(
                 logger,

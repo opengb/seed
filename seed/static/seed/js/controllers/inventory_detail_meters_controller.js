@@ -41,14 +41,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       $scope.inventory_type = $stateParams.inventory_type;
       $scope.organization = organization_payload.organization;
       $scope.filler_cycle = cycles.cycles[0].id;
-      $scope.scenarios = _.uniqBy(_.map(meters, function (meter) {
-        return {
-          id: meter.scenario_id,
-          name: meter.scenario_name
-        };
-      }), 'id').filter(function (scenario) {
-        return !_.isNil(scenario.id);
-      });
 
       $scope.inventory = {
         view_id: $stateParams.view_id
@@ -59,51 +51,70 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       };
 
       var resetSelections = function () {
-        $scope.meter_selections = _.map(sorted_meters, function (meter) {
-          return {
-            selected: true,
-            label: getMeterLabel(meter),
-            value: meter.id
-          };
-        });
-
-        $scope.scenario_selections = _.map($scope.scenarios, function (scenario) {
-          return {
-            selected: true,
-            label: scenario.name,
-            value: scenario.id
-          };
-        });
+        $scope.sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
       };
 
       // On page load, all meters and readings
+      $scope.has_meters = meters.length > 0;
       $scope.data = property_meter_usage.readings;
       $scope.has_readings = $scope.data.length > 0;
 
-      var sorted_meters = _.sortBy(meters, ['source', 'source_id', 'type']);
       resetSelections();
 
-      $scope.meter_selection_toggled = function (is_open) {
-        if (!is_open) {
-          $scope.applyFilters();
+      deleteButton = '<button type="button" class="btn-primary" style="border-radius: 4px;" ng-click="grid.appScope.open_meter_deletion_modal(row.entity)" translate>Delete</button>';
+
+      $scope.meterGridOptions = {
+        data: 'sorted_meters',
+        columnDefs: [
+          {field: "type"},
+          {field: "alias"},
+          {field: "source"},
+          {field: "source_id"},
+          {field: "scenario_id"},
+          {field: "is_virtual"},
+          {field: "scenario_name"},
+          {field: "actions", cellTemplate: deleteButton},
+        ],
+        enableColumnResizing: true,
+        flatEntityAccess: true,
+        rowIdentity: (meter) => {return meter.id},
+        fastWatch: true,
+        minRowsToShow: Math.min($scope.sorted_meters.length, 10),
+        onRegisterApi: function (meterGridApi) {
+          $scope.meterGridApi = meterGridApi;
+
+          _.delay($scope.updateHeight, 150);
+
+          var debouncedHeightUpdate = _.debounce($scope.updateHeight, 150);
+          angular.element($window).on('resize', debouncedHeightUpdate);
+          $scope.$on('$destroy', function () {
+            angular.element($window).off('resize', debouncedHeightUpdate);
+          });
+
+          $scope.meterGridApi.selection.on.rowSelectionChanged($scope, $scope.applyFilters);
+          $scope.meterGridApi.selection.on.rowSelectionChangedBatch($scope, $scope.applyFilters);
+
+          // only run once, once data is ready, TODO: find a better way to do this.
+          init = true;
+          $scope.meterGridApi.core.on.rowsRendered($scope, function() {
+            if(init){
+              $scope.meterGridApi.selection.selectAllRows();
+              init = false;
+            }
+          });
         }
       };
 
-      $scope.scenario_selection_toggled = function (is_open) {
-        if (!is_open) {
-          $scope.applyFilters();
-        }
-      };
-
-      $scope.gridOptions = {
+      $scope.meterReadGridOptions = {
         data: 'data',
         columnDefs: property_meter_usage.column_defs,
         enableColumnResizing: true,
         enableFiltering: true,
         flatEntityAccess: true,
         fastWatch: true,
-        onRegisterApi: function (gridApi) {
-          $scope.gridApi = gridApi;
+        minRowsToShow: Math.min($scope.data.length, 10),
+        onRegisterApi: function (readingGridApi) {
+          $scope.readingGridApi = readingGridApi;
 
           _.delay($scope.updateHeight, 150);
 
@@ -115,8 +126,26 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         }
       };
 
+      $scope.open_meter_deletion_modal = function (meter) {
+        $uibModal.open({
+          templateUrl: urls.static_url + 'seed/partials/meter_deletion_modal.html',
+          controller: 'meter_deletion_modal_controller',
+          resolve: {
+            meter: function () {
+              return meter;
+            },
+            view_id: function () {
+              return $scope.inventory.view_id;
+            },
+            refresh_meters_and_readings: function () {
+              return $scope.refresh_meters_and_readings;
+            },
+          }
+        });
+      };
+
       $scope.apply_column_settings = function () {
-        _.forEach($scope.gridOptions.columnDefs, function (column) {
+        _.forEach($scope.meterReadGridOptions.columnDefs, function (column) {
           column.enableHiding = false;
           column.enableColumnResizing = true;
 
@@ -145,18 +174,6 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         selected: 'Exact'
       };
 
-      $scope.filterMethod = {
-        options: [
-          'meter',
-          'scenario'
-        ],
-        selected: 'meter'
-      };
-      // remove option to filter by scenario if there are no scenarios
-      if ($scope.scenarios.length === 0) {
-        $scope.filterMethod.options = ['meter'];
-      }
-
       // given a list of meter labels, it returns the filtered readings and column defs
       // This is used by the primary filterBy... functions
       var filterByMeterLabels = function filterByMeterLabels (readings, columnDefs, meterLabels) {
@@ -175,54 +192,48 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
       };
 
       // given the meter selections, it returns the filtered readings and column defs
-      var filterByMeterSelections = function (readings, columnDefs, meterSelections) {
+      var filterByMeterSelections = function (readings, columnDefs) {
         // filter according to meter selections
-        var selectedMeterLabels = meterSelections.filter(function (selection) {
-          return selection.selected;
-        })
-          .map(function (selection) {
-            return selection.label;
+        var selected_meters = $scope.meterGridApi.selection.getSelectedGridRows()
+        var selectedMeterLabels = selected_meters.map(function (row) {
+            return getMeterLabel(row.entity);
           });
 
         return filterByMeterLabels(readings, columnDefs, selectedMeterLabels);
       };
 
-      // given the scenario selections, it returns the filtered readings and column defs
-      var filterByScenarioSelections = function (readings, columnDefs, meters, scenarioSelections) {
-        var selectedScenarioIds = scenarioSelections.filter(function (selection) {
-          return selection.selected;
-        }).map(function (selection) {
-          return selection.value;
-        });
-        var selectedMeterLabels = meters.filter(function (meter) {
-          return selectedScenarioIds.includes(meter.scenario_id);
-        }).map(function (meter) {
-          return getMeterLabel(meter);
-        });
-
-        return filterByMeterLabels(readings, columnDefs, selectedMeterLabels);
-      };
-
-      // filters the meter readings by selected meters or scenarios and updates the table
+      // filters the meter readings by selected meters and updates the table
       $scope.applyFilters = function () {
-        var results, readings, columnDefs;
-        if ($scope.filterMethod.selected === 'meter') {
-          results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs, $scope.meter_selections);
-          readings = results.readings;
-          columnDefs = results.columnDefs;
-        } else if ($scope.filterMethod.selected === 'scenario') {
-          results = filterByScenarioSelections(property_meter_usage.readings, property_meter_usage.column_defs, sorted_meters, $scope.scenario_selections);
-          readings = results.readings;
-          columnDefs = results.columnDefs;
-        } else {
-          $log.error('Invalid filter method selected: ', $scope.filterMethod);
-          return;
-        }
-
-        $scope.data = readings;
-        $scope.gridOptions.columnDefs = columnDefs;
+        results = filterByMeterSelections(property_meter_usage.readings, property_meter_usage.column_defs);
+        $scope.data = results.readings;
+        $scope.meterReadGridOptions.columnDefs = results.columnDefs;;
+        $scope.has_meters = meters.length > 0;
         $scope.has_readings = $scope.data.length > 0;
         $scope.apply_column_settings();
+      };
+
+      // refresh_readings make an API call to refresh the base readings data
+      // according to the selected interval
+      $scope.refresh_meters_and_readings = function () {
+        spinner_utility.show();
+        get_meters_Promise = meter_service.get_meters(
+          $scope.inventory.view_id,
+          $scope.organization.id,
+        )
+        get_readings_Promise = meter_service.property_meter_usage(
+          $scope.inventory.view_id,
+          $scope.organization.id,
+          $scope.interval.selected,
+          [] // Not excluding any meters from the query
+        )
+        Promise.all([get_meters_Promise, get_readings_Promise]).then(function (data) {
+          // update the base data and reset filters
+          [meters, property_meter_usage] = data;
+
+          resetSelections();
+          $scope.applyFilters();
+          spinner_utility.hide();
+        });
       };
 
       // refresh_readings make an API call to refresh the base readings data
@@ -288,6 +299,7 @@ angular.module('BE.seed.controller.inventory_detail_meters', [])
         });
         angular.element('#grid-container').css('height', 'calc(100vh - ' + (height + 2) + 'px)');
         angular.element('#grid-container > div').css('height', 'calc(100vh - ' + (height + 4) + 'px)');
-        $scope.gridApi.core.handleWindowResize();
+        $scope.readingGridApi.core.handleWindowResize();
+        $scope.meterGridApi.core.handleWindowResize();
       };
     }]);

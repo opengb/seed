@@ -84,11 +84,11 @@ def convert_first_five_rows_to_list(header, first_five_rows):
     Return the first five rows. This is a complicated method because it handles converting the
     persisted format of the first five rows into a list of dictionaries. It handles some basic
     logic if there are crlf in the fields. Note that this method does not cover all the use cases
-    and cannot due to the custom delimeter. See the tests in
+    and cannot due to the custom delimiter. See the tests in
     test_views.py:test_get_first_five_rows_newline_should_work to see the limitation
 
     :param header: list, ordered list of headers as strings
-    :param first_five_rows: string, long string with |#*#| delimeter.
+    :param first_five_rows: string, long string with |#*#| delimiter.
     :return: list
     """
     row_data = []
@@ -926,7 +926,8 @@ class ImportFileViewSet(viewsets.ViewSet, OrgMixin):
         # Fix the table name, eventually move this to the build_column_mapping
         for m in suggested_mappings:
             table, _destination_field, _confidence = suggested_mappings[m]
-            # Do not return the campus, created, updated fields... that is force them to be in the property state
+            # Do not return the created or updated fields... that is force them
+            # to be in the property state. Not sure how this happens in this code though.
             if not table or table == 'Property':
                 suggested_mappings[m][0] = 'PropertyState'
             elif table == 'TaxLot':

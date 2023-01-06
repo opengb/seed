@@ -67,12 +67,11 @@ class Property(models.Model):
     remain the same. The PropertyView will point to the unchanged property as the PropertyState
     and Property view are updated.
 
-    If the property can be a campus. The property can also reference a parent property.
+    The property can also reference a parent property.
     """
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
 
     # Handle properties that may have multiple properties (e.g., buildings)
-    campus = models.BooleanField(default=False)
     parent_property = models.ForeignKey('Property', on_delete=models.CASCADE, blank=True, null=True)
 
     # Track when the entry was created and when it was updated
@@ -170,8 +169,8 @@ class PropertyState(models.Model):
     ubid = models.CharField(max_length=255, null=True, blank=True)
 
     # If the property is a campus then the pm_parent_property_id is the same
-    # for all the properties. The main campus record (campus=True on Property model) will
-    # have the pm_property_id set to be the same as the pm_parent_property_id
+    # for all the properties. The main campus record will have the pm_property_id
+    # set to be the same as the pm_parent_property_id
     pm_parent_property_id = models.CharField(max_length=255, null=True, blank=True)
     pm_property_id = models.CharField(max_length=255, null=True, blank=True)
 
@@ -244,7 +243,7 @@ class PropertyState(models.Model):
     # site EUI (modeled 8/4/2017).
     #
     # note: `*_orig` are all the unit-unaware original fields in the property
-    # state, which have been superceded by unit-aware Quantity fields. The old
+    # state, which have been superseded by unit-aware Quantity fields. The old
     # ones are left in place via the rename from eg. site_eui -> site_eui_orig
     # with their original data intact until we're sure things are OK with the
     # new columns. At that point (probably 2.4 release) these can be safely
@@ -472,7 +471,7 @@ class PropertyState(models.Model):
                     if (log.parent1_id is None and log.parent2_id is None) or log.name == 'Manual Edit':
                         break
 
-                    # initalize the tree to None everytime. If not new tree is found, then we will not iterate
+                    # initialize the tree to None everytime. If not new tree is found, then we will not iterate
                     tree = None
 
                     # Check if parent2 has any other parents or is the original import creation. Start with parent2
@@ -511,6 +510,12 @@ class PropertyState(models.Model):
                         done_searching = True
                     else:
                         log = tree
+
+                    # only get 10 histories at max
+                    if len(history) >= 10:
+                        history = history[:10]
+                        break
+
             elif log.name == 'Manual Edit':
                 record = record_dict(log.parent1)
                 history.append(record)
@@ -700,7 +705,7 @@ class PropertyState(models.Model):
                 else:
                     try:
                         new_measure = copy.deepcopy(measure)
-                        # copy the created and modifed time
+                        # copy the created and modified time
                         new_measure.pk = None
                         new_measure.property_state = merged_state
                         new_measure.save()
@@ -713,7 +718,7 @@ class PropertyState(models.Model):
 
                     except IntegrityError:
                         _log.error(
-                            "Measure state_id, measure_id, application_sacle, and implementation_status already exists -- skipping for now")
+                            "Measure state_id, measure_id, application_scale, and implementation_status already exists -- skipping for now")
 
                 new_items.append(test_dict)
 

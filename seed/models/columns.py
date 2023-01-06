@@ -115,13 +115,11 @@ class Column(models.Model):
         'longitude',
         'year_built',
         'property_footprint',
-        'campus',
         'created',
         'updated',
     ] + COLUMN_EXCLUDE_FIELDS
 
     EXCLUDED_RENAME_FROM_FIELDS = [
-        'campus',
         'lot_number',
         'year_built',
         'property_footprint',
@@ -139,7 +137,6 @@ class Column(models.Model):
 
     # These are columns that should not be offered as suggestions during mapping
     UNMAPPABLE_PROPERTY_FIELDS = [
-        'campus',
         'created',
         'geocoding_confidence',
         'lot_number',
@@ -355,13 +352,6 @@ class Column(models.Model):
             'display_name': 'Tax Lot Footprint',
             'column_description': 'Tax Lot Footprint',
             'data_type': 'geometry',
-        }, {
-            'column_name': 'campus',
-            'table_name': 'Property',
-            'display_name': 'Campus',
-            'column_description': 'Campus',
-            'data_type': 'boolean',
-            # 'type': 'boolean',
         }, {
             'column_name': 'updated',
             'table_name': 'PropertyState',
@@ -617,25 +607,25 @@ class Column(models.Model):
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions',
             'column_description': 'Total GHG Emissions',
-            'data_type': 'number',
+            'data_type': 'ghg',
         }, {
             'column_name': 'total_marginal_ghg_emissions',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions',
             'column_description': 'Total Marginal GHG Emissions',
-            'data_type': 'number',
+            'data_type': 'ghg',
         }, {
             'column_name': 'total_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total GHG Emissions Intensity',
             'column_description': 'Total GHG Emissions Intensity',
-            'data_type': 'number',
+            'data_type': 'ghg_intensity',
         }, {
             'column_name': 'total_marginal_ghg_emissions_intensity',
             'table_name': 'PropertyState',
             'display_name': 'Total Marginal GHG Emissions Intensity',
             'column_description': 'Total Marginal GHG Emissions Intensity',
-            'data_type': 'number',
+            'data_type': 'ghg_intensity',
         }, {
             'column_name': 'property_timezone',
             'table_name': 'PropertyState',
@@ -820,7 +810,7 @@ class Column(models.Model):
         except (ValidationError, DataError):
             return [False, "The column data aren't formatted properly for the new column due to type constraints (e.g., Datatime, Quantities, etc.)."]
         except DimensionalityError:
-            return [False, "The column data can't be converted to the new column due to conversion contraints (e.g., converting square feet to kBtu etc.)."]
+            return [False, "The column data can't be converted to the new column due to conversion constraints (e.g., converting square feet to kBtu etc.)."]
 
         # Return true if this operation was successful
         return [True, 'Successfully renamed column and moved data']
@@ -1212,7 +1202,9 @@ class Column(models.Model):
             'date': 'date',
             'boolean': 'boolean',
             'area': 'float',
-            'eui': 'float'
+            'eui': 'float',
+            'ghg': 'float',
+            'ghg_intensity': 'float'
         }
 
         types = OrderedDict()
@@ -1380,6 +1372,7 @@ class Column(models.Model):
         inventory_type: Optional[Literal['property', 'taxlot']] = None,
         only_used: bool = False,
         include_related: bool = True,
+        exclude_derived: bool = False
     ) -> list[dict]:
         """
         Retrieve all the columns for an organization. This method will query for all the columns in the
@@ -1396,8 +1389,11 @@ class Column(models.Model):
         # Grab all the columns out of the database for the organization that are assigned to a
         # table_name. Order extra_data last so that extra data duplicate-checking will happen after
         # processing standard columns
-        columns_db = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
-            table_name=None).order_by('is_extra_data', 'column_name')
+        column_query = Column.objects.filter(organization_id=org_id).exclude(table_name='').exclude(
+            table_name=None)
+        if exclude_derived:
+            column_query = column_query.exclude(derived_column__isnull=False)
+        columns_db = column_query.order_by('is_extra_data', 'column_name')
         columns = []
         for c in columns_db:
             if c.column_name in Column.EXCLUDED_COLUMN_RETURN_FIELDS:
