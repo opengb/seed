@@ -17,7 +17,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.renderers import JSONRenderer
 
 from seed.building_sync.building_sync import BuildingSync
-from seed.data_importer.utils import usage_point_id
+from seed.data_importer.utils import kbtu_thermal_conversion_factors
 from seed.decorators import ajax_request_class
 from seed.hpxml.hpxml import HPXML
 from seed.lib.superperms.orgs.decorators import has_perm_class
@@ -312,47 +312,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     @ajax_request_class
     @has_perm_class('requires_viewer')
     @action(detail=True, methods=['GET'])
-    def meters(self, request, pk):
-        """
-        Retrieves meters for the property
-        """
-        org_id = self.get_organization(request)
-
-        property_view = PropertyView.objects.get(
-            pk=pk,
-            cycle__organization_id=org_id
-        )
-        property_id = property_view.property.id
-        scenario_ids = [s.id for s in property_view.state.scenarios.all()]
-        energy_types = dict(Meter.ENERGY_TYPES)
-
-        res = []
-        for meter in Meter.objects.filter(Q(property_id=property_id) | Q(scenario_id__in=scenario_ids)):
-            if meter.source == meter.GREENBUTTON:
-                source = 'GB'
-                source_id = usage_point_id(meter.source_id)
-            elif meter.source == meter.BUILDINGSYNC:
-                source = 'BS'
-                source_id = meter.source_id
-            else:
-                source = 'PM'
-                source_id = meter.source_id
-
-            res.append({
-                'id': meter.id,
-                'type': energy_types[meter.type],
-                'source': source,
-                'source_id': source_id,
-                'scenario_id': meter.scenario.id if meter.scenario is not None else None,
-                'scenario_name': meter.scenario.name if meter.scenario is not None else None
-            })
-
-        return res
-
-    @swagger_auto_schema_org_query_param
-    @ajax_request_class
-    @has_perm_class('requires_viewer')
-    @action(detail=True, methods=['GET'])
     def sensors(self, request, pk):
         """
         Retrieves sensors for the property
@@ -550,6 +509,24 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
 
         return Meter.objects.filter(property_id__in=Subquery(property_views.values('property_id'))).exists()
 
+    @ajax_request_class
+    @action(detail=False, methods=['GET'])
+    def valid_meter_types_and_units(self, request):
+        """
+        Returns the valid type for units.
+
+        The valid type and unit combinations are built from US Thermal Conversion
+        values. As of this writing, the valid combinations are the same as for
+        Canadian conversions, even though the actual factors may differ between
+        the two.
+        (https://portfoliomanager.energystar.gov/pdf/reference/Thermal%20Conversions.pdf)
+        """
+        return {
+            type: list(units.keys())
+            for type, units
+            in kbtu_thermal_conversion_factors("US").items()
+        }
+
     @swagger_auto_schema(
         manual_parameters=[AutoSchemaHelper.query_org_id_field()],
         request_body=AutoSchemaHelper.schema_factory(
@@ -728,7 +705,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         new_view1.save()
         new_view2.save()
 
-        # Asssociate labels
+        # Associate labels
         label_objs = Label.objects.filter(pk__in=label_ids)
         new_view1.labels.set(label_objs)
         new_view2.labels.set(label_objs)
@@ -1192,7 +1169,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         Return a property view based on the property id and cycle
         :param pk: ID of property (not property view)
         :param cycle_pk: ID of the cycle
-        :return: dict, propety view and status
+        :return: dict, property view and status
         """
         try:
             property_view = PropertyView.objects.select_related(

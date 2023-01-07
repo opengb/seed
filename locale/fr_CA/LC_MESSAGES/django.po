@@ -45,6 +45,12 @@ msgstr "(pas de minimum)"
 msgid "A 'Remove' button is shown for tags that are already applied to one or more properties in the current selection"
 msgstr "Un bouton «Supprimer» s'affiche pour les balises déjà appliquées à une ou plusieurs propriétés dans la sélection actuelle"
 
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles.  This is useful to see how specific metrics change over time. doesn't exist"
+msgstr "Un rapport personnalisé vous permet de consulter des données agrégées sur vos inventaires et vos cycles. Ceci est utile pour voir comment des métriques spécifiques changent au fil du temps. n'existe pas"
+
+msgid "A Custom Report allows you to look at aggregated data across your inventories and cycles. This is useful to see how specific metrics change over time."
+msgstr "Un rapport personnalisé vous permet de consulter des données agrégées sur vos inventaires et vos cycles. Ceci est utile pour voir comment des métriques spécifiques changent au fil du temps."
+
 msgid "A list of your imported headers."
 msgstr "Une liste de vos en-têtes importés."
 
@@ -75,6 +81,16 @@ msgstr "Documentation de l'API"
 msgid "API Key"
 msgstr "Clé API"
 
+msgid "AT_EMAIL_TEXT"
+msgstr "Utilisez l'e-mail associé à votre compte depuis <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
+
+msgid "AT_PASS_TEXT"
+msgstr "Utilisez le mot de passe associé à votre compte sur le <a href=\"{link}/\" target=\"_blank\" rel=\"noopener noreferrer\"> Building Energy Score </a> ."
+
+#. Helper text for the Audit Template token in organization settings.
+msgid "AT_TOKEN_TEXT"
+msgstr "Veuillez consulter la <a href=\"{link}/reports/api/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation sur Audit Template </a> pour savoir comment obtenir une clé API. Remarque, ne préfixez pas le jeton avec \"Jeton \", incluez uniquement le jeton lui-même."
+
 msgid "About"
 msgstr "À Propos"
 
@@ -98,6 +114,12 @@ msgstr "Actions"
 #: seed/models/projects.py:24
 msgid "Active"
 msgstr "actif"
+
+msgid "Actual > Target"
+msgstr "Réel > Cible"
+
+msgid "Actual Column"
+msgstr "Colonne réelle"
 
 msgid "Add"
 msgstr "Ajouter"
@@ -126,14 +148,14 @@ msgstr "Ajouter un autre fichier"
 msgid "Add compliance information"
 msgstr "Ajouter des informations sur la conformité"
 
-msgid "Add compliance information."
-msgstr "Ajouter des informations sur la conformité"
-
 msgid "Add files to"
 msgstr "Ajouter des fichiers à"
 
 msgid "Add more data files"
 msgstr "Ajouter plus de fichiers de données"
+
+msgid "Add program information."
+msgstr "Ajouter des informations sur le programme."
 
 msgid "Add user"
 msgstr "Ajouter un utilisateur"
@@ -210,6 +232,9 @@ msgstr "Êtes-vous sûr de vouloir supprimer le fichier de données"
 msgid "Are you sure you want to delete the data set"
 msgstr "Êtes-vous sûr de vouloir supprimer le jeu de données"
 
+msgid "Are you sure you want to delete the filter group"
+msgstr "Êtes-vous sûr de vouloir supprimer le groupe de filtres"
+
 msgid "Are you sure you want to unmerge these properties and then merge with the selected properties?"
 msgstr "Êtes-vous sûr de vouloir annuler la fusion de ces propriétés et fusionner avec les propriétés sélectionnées?"
 
@@ -252,6 +277,9 @@ msgstr "Correspondance automatique"
 
 msgid "BEFORE_GEOCODING"
 msgstr "Avant le géocodage"
+
+msgid "BETTER_TOKEN_TEXT"
+msgstr "Veuillez consulter la <a href=\"{link}/docs/api/\" target=\"_blank\" rel=\"noopener noreferrer\"> documentation BETTER </a> pour savoir comment obtenir une clé API. Remarque, ne préfixez pas le jeton avec \"Token\", incluez uniquement le jeton lui-même. L'hôte BETTER est configuré pour être"
 
 msgid "BUILDING ENERGY DATA EXCHANGE SPECIFICATION (BEDES)"
 msgstr "SPECIFICATION DE L'ÉCHANGE DE DONNÉES D'ÉNERGIE DES BÂTIMENTS (BEDES)"
@@ -417,6 +445,9 @@ msgstr "Changer mon mot de passe"
 msgid "Changed By"
 msgstr "Changé par"
 
+msgid "Chart Legend"
+msgstr "Légende du graphique"
+
 msgid "Choose Existing Organization:"
 msgstr "Choisissez Organisation Existante:"
 
@@ -446,6 +477,9 @@ msgstr "Fermer l'aperçu"
 
 msgid "Collapse Tabs"
 msgstr "Réduire les onglets"
+
+msgid "Column"
+msgstr "Colonne"
 
 msgid "Column Description"
 msgstr "Description de la colonne"
@@ -486,6 +520,15 @@ msgstr "Conformité"
 
 msgid "Compliance Information"
 msgstr "Informations de conformité"
+
+msgid "Compliance Period"
+msgstr "Période de conformité"
+
+msgid "Compliance Period (years)"
+msgstr "Période de conformité (années)"
+
+msgid "Compliant"
+msgstr "Conforme"
 
 msgid "Concatenate Headers (Columns of Data)"
 msgstr "Concaténer les en-Têtes (colonnes de données)"
@@ -545,6 +588,9 @@ msgstr "Créer un cycle"
 
 msgid "Create Data Set"
 msgstr "Créer un ensemble de données"
+
+msgid "Create Filter Group"
+msgstr "Créer un groupe de filtres"
 
 msgid "Create New Sub-Organization"
 msgstr "Créer nouvelle sous-organisation"
@@ -632,6 +678,9 @@ msgstr "ID personnalisé 1 (propriété)"
 
 msgid "Custom ID 1 (Tax Lot)"
 msgstr "ID personnalisé 1 (lot d'impôt)"
+
+msgid "Custom Reports"
+msgstr "Rapports"
 
 msgid "Custom emails can be sent to Building Owners using the templates defined below. The email will be sent to the SEED record's Owner Email address and is currently not configurable. The email 'from' address is the same as the server email address which is also used to email users their account information."
 msgstr "Des e-mails personnalisés peuvent être envoyés aux propriétaires d'immeubles à l'aide des modèles définis ci-dessous. L'e-mail sera envoyé à l'adresse e-mail du propriétaire de l'enregistrement SEED et n'est actuellement pas configurable. L'adresse e-mail \"de\" est la même que l'adresse e-mail du serveur qui est également utilisée pour envoyer aux utilisateurs leurs informations de compte par e-mail."
@@ -777,6 +826,9 @@ msgstr "Supprimez votre fichier de données"
 msgid "Delete your Data Set"
 msgstr "Supprimez votre ensemble de données"
 
+msgid "Delete your Filter Group"
+msgstr "Supprimer votre groupe de filtres"
+
 msgid "Delete your Inventory"
 msgstr "Supprimez votre inventaire"
 
@@ -785,6 +837,9 @@ msgstr "Supprimer votre profil"
 
 msgid "Deleting in progress..."
 msgstr "Suppression en cours ..."
+
+msgid "Derived Columns"
+msgstr "Colonnes dérivées"
 
 #: seed/landing/models.py:48
 msgid "Designates whether the user can log into this admin site."
@@ -814,6 +869,9 @@ msgstr "Rejeter"
 
 msgid "Display Name"
 msgstr "Afficher un nom"
+
+msgid "Distance to Target"
+msgstr "Distance à la cible"
 
 msgid "District"
 msgstr "District"
@@ -890,6 +948,12 @@ msgstr "adresse e-mail"
 msgid "Email Address:"
 msgstr "Adresse e-mail:"
 
+msgid "Email Templates"
+msgstr "Modèles d'e-mails"
+
+msgid "Emission Metric"
+msgstr "Mesure des émissions"
+
 msgid "Enable ComStock Functionality"
 msgstr "Activer la fonctionnalité ComStock"
 
@@ -901,6 +965,9 @@ msgstr "Énergie"
 
 msgid "Energy Alerts"
 msgstr "Alertes énergétiques"
+
+msgid "Energy Metric"
+msgstr "Métrique énergétique"
 
 msgid "Energy data file"
 msgstr "Fichier de données d'énergie"
@@ -1020,6 +1087,15 @@ msgstr "Source du fichier:"
 #, fuzzy
 msgid "Files (Main State Only)"
 msgstr "Fichiers (état principal uniquement)"
+
+msgid "Filter Group"
+msgstr "Groupe de filtres"
+
+msgid "Filter Group Name"
+msgstr "Filtrer le nom du groupe"
+
+msgid "Filter Groups"
+msgstr "Groupe de filtres"
 
 msgid "Filter by label"
 msgstr "Filtrer par étiquette"
@@ -1167,6 +1243,9 @@ msgstr "Guide de Démarrage"
 msgid "Go to Detail Page"
 msgstr "Accéder à la page Détail"
 
+msgid "Go to Meters"
+msgstr "Aller aux compteurs"
+
 msgid "Go to Notes"
 msgstr "Accéder aux Notes"
 
@@ -1274,6 +1353,9 @@ msgstr "Inclure des notes"
 msgid "Ineligible"
 msgstr "Inéligible"
 
+msgid "Insights"
+msgstr "Connaissances"
+
 msgid "Integer"
 msgstr "Entier"
 
@@ -1362,6 +1444,9 @@ msgstr "Le nom de famille est requis."
 
 msgid "Latitude"
 msgstr "Latitude"
+
+msgid "Left Axis"
+msgstr "Axe gauche"
 
 msgid "Left Half"
 msgstr "Moitié gauche"
@@ -1613,6 +1698,21 @@ msgstr "Données du compteur"
 msgid "Meters"
 msgstr "Mètres"
 
+msgid "Metric"
+msgstr "Métrique"
+
+msgid "Metric Actual Column"
+msgstr "Colonne de mesures réelles"
+
+msgid "Metric Name"
+msgstr "Nom de la métrique"
+
+msgid "Metric Target Column"
+msgstr "Colonne Cible de métrique"
+
+msgid "Metric Type"
+msgstr "Type de métrique"
+
 msgid "Min"
 msgstr "Min"
 
@@ -1702,6 +1802,9 @@ msgstr "Prochain"
 msgid "No"
 msgstr "Non"
 
+msgid "No Custom Reports Selected"
+msgstr "Aucun rapport personnalisé sélectionné"
+
 msgid "No Data"
 msgstr "Pas de données"
 
@@ -1719,6 +1822,9 @@ msgstr "Aucun avertissement/erreur"
 
 msgid "None"
 msgstr "Aucun"
+
+msgid "Not Compliant"
+msgstr "Non conforme"
 
 msgid "Not Null"
 msgstr "Pas nul"
@@ -1796,6 +1902,9 @@ msgstr "Nom de l'organisation:"
 
 msgid "Organization Owner(s)"
 msgstr "Propriétaire(s) de l'organisation"
+
+msgid "Organization Settings"
+msgstr "Paramètres de l'organisation"
 
 msgid "Organizations"
 msgstr "Organisations"
@@ -1987,6 +2096,18 @@ msgstr "Informations sur le profil"
 msgid "Profile Name"
 msgstr "Nom de profil"
 
+msgid "Program Metric"
+msgstr "Métrique du programme"
+
+msgid "Program Configuration"
+msgstr "Configuration du programme"
+
+msgid "Program Overview"
+msgstr "Métrique du programme"
+
+msgid "Program Setup"
+msgstr "Configuration du programme"
+
 #: seed/models/models.py:239
 msgid "Project"
 msgstr "Projet"
@@ -2046,6 +2167,9 @@ msgstr "Champ d'affichage de la propriété"
 
 msgid "Property Footprint"
 msgstr "Empreinte de propriété"
+
+msgid "Property Insights"
+msgstr "Rapports de propriété"
 
 msgid "Property Name"
 msgstr "Nom de la propriété"
@@ -2137,8 +2261,14 @@ msgstr "Retrait des bâtiments du projet"
 msgid "Rename"
 msgstr "Renommer"
 
+msgid "Rename Filter Group"
+msgstr "Renommer le groupe de filtres"
+
 msgid "Rename Profile"
 msgstr "Renommer le profil"
+
+msgid "Rename your Filter Group"
+msgstr "Renommez votre groupe de filtres"
 
 #, fuzzy
 msgid "Rename your Profile"
@@ -2186,6 +2316,9 @@ msgstr "Examiner les données mappées"
 
 msgid "Review matches"
 msgstr "Examiner les correspondences"
+
+msgid "Right Axis"
+msgstr "Axe droit"
 
 msgid "Right Half"
 msgstr "Moitié droite"
@@ -2347,6 +2480,12 @@ msgstr "Sélectionnez toutes les colonnes"
 msgid "Select None"
 msgstr "Sélectionnez Aucun"
 
+msgid "Select a Custom Report to get started!"
+msgstr "Sélectionnez un rapport personnalisé pour commencer !"
+
+msgid "Select a column to show data on this axis.  Only columns with one of these data types will be listed:"
+msgstr "Sélectionnez une colonne pour afficher les données sur cet axe. Seules les colonnes contenant l'un de ces types de données seront répertoriées :"
+
 msgid "Select columns from the list below to make them appear in your Buildings List table."
 msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire apparaître dans votre tableau Liste des bâtiments."
 
@@ -2358,6 +2497,9 @@ msgstr "Sélectionnez les colonnes de la liste ci-dessous pour les faire appara�
 
 msgid "Select columns from the lists below to make them appear on the left or right halves of your Matching List table. Drag the rows to change the order in which they appear."
 msgstr "Sélectionnez les colonnes dans les listes ci-dessous pour les faire apparaître sur les moitiés gauche ou droite de votre table de Liste des Correspondances. Faites glisser les lignes pour modifier l'ordre dans lequel elles apparaissent."
+
+msgid "Select one or more filter groups to load your inventory."
+msgstr "Sélectionnez un ou plusieurs groupes de filtres pour charger votre inventaire."
 
 msgid "Select the type of file(s) you would like to add to"
 msgstr "Sélectionnez le type de fichier (s) que vous souhaitez ajouter à"
@@ -2373,6 +2515,9 @@ msgstr "Lots d'impôt Sélectionnés"
 
 msgid "Selecting Fields to Share"
 msgstr "Sélection des champs à partager"
+
+msgid "Selections:"
+msgstr "Sélections:"
 
 msgid "Send Invite"
 msgstr "Envoyer une invitation"
@@ -2516,6 +2661,12 @@ msgstr "Veuillez saisir <strong> {org} </strong> pour confirmer."
 
 msgid "Table Name"
 msgstr "Nom de la table"
+
+msgid "Target > Actual"
+msgstr "Cible > Réel"
+
+msgid "Target Column"
+msgstr "Colonne cible"
 
 msgid "Tax Lot"
 msgstr "Lot d'impôt"
@@ -2728,6 +2879,9 @@ msgstr "Pour les colonnes avec des paramètres d'unité, les unités par défaut
 msgid "Units"
 msgstr "Unités"
 
+msgid "Unknown"
+msgstr "Inconnue"
+
 msgid "Until last date of"
 msgstr "Jusqu'à la dernière date de"
 
@@ -2826,6 +2980,9 @@ msgstr "Valide"
 msgid "Version"
 msgstr "Version"
 
+msgid "View Compliance Tracking"
+msgstr "Afficher le suivi de la conformité"
+
 msgid "View Project"
 msgstr "Voir le projet"
 
@@ -2881,6 +3038,9 @@ msgstr "Bienvenue sur SEED Platform™"
 msgid "Welcome to SEED!"
 msgstr "Bienvenue chez SEED!"
 
+msgid "What is a Custom Report?"
+msgstr "Qu'est-ce qu'un rapport personnalisé ?"
+
 msgid "What type of file would you like to upload?"
 msgstr "Quel type de fichier souhaitez-vous télécharger?"
 
@@ -2889,6 +3049,15 @@ msgstr "Où aimeriez-vous déplacer ces bâtiments?"
 
 msgid "X Axis"
 msgstr "Axe X"
+
+msgid "X Axis Column Selections:"
+msgstr "Sélections de colonne sur l'axe X :"
+
+msgid "X Axis Column Types for Plotting:"
+msgstr "Types de colonne de l'axe X pour le traçage:"
+
+msgid "X-Axis Columns"
+msgstr "Colonnes de l'axe X"
 
 #. Using this string to test if the translation machinery is escaping/sanitizing correctly.
 msgid "XSS_TEST"
@@ -2938,6 +3107,9 @@ msgstr "Oui, supprimer la sous-organisation"
 
 msgid "Yes, Delete User"
 msgstr "Oui, Supprimer l'utilisateur"
+
+msgid "Yes, Remove Filter Group"
+msgstr "Oui, supprimer le groupe de filtres"
 
 msgid "You can review and edit each individual match by clicking one of the linked IDs in the table. This will open a new table that shows the source data for the individual record you are attempting to match. Underneath this record is a searchable list of all potential existing matches. Use this table to explore all your records and to select single or multiple records to match your source data to."
 msgstr "Vous pouvez vérifier et modifier chaque correspondance en cliquant sur l'un des ID liés dans la table. Cela ouvrira une nouvelle table qui montre les données source pour l'enregistrement individuel que vous essayez de faire correspondre. Sous cet enregistrement est une liste consultable de toutes les correspondances existantes potentielles. Utilisez ce tableau pour explorer tous vos enregistrements et pour sélectionner un ou plusieurs enregistrements correspondant à vos données source."

@@ -9,7 +9,6 @@
 .coverage
 .vscode
 coverage.protractor.json
-.noseids
 .vscode
 *~
 *~$*
@@ -87,6 +86,7 @@ docker-compose.*.yml
 !docker-compose.local.yml
 !docker-compose.build.yml
 !docker-compose.dev.yml
+docker-compose-dbs.yml
 
 # generated files
 /auto*.csv

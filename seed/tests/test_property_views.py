@@ -570,7 +570,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
 
         self.state_1 = self.property_state_factory.get_property_state(
             address_line_1='1 property state',
-            pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
+            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
         self.view_1 = PropertyView.objects.create(
@@ -754,7 +754,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         self.assertEqual(PropertyView.objects.first().property.meters.first().meter_readings.count(), 2)
 
     def test_properties_merge_without_losing_meters_from_different_sources_nonoverlapping(self):
-        # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        # For first Property, PM Meters containing 2 readings for each Electricity and Natural Gas for property_1
         # This file has multiple tabs
         pm_filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
@@ -840,7 +840,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
         }
         self.client.post(gb_import_url, gb_import_post_params)
 
-        # For second Property, add GreenButton Meters containing 2 Electricitiy readings: 1 overlapping
+        # For second Property, add GreenButton Meters containing 2 Electricity readings: 1 overlapping
         gb_overlapping_filename = "example-GreenButton-data-1-overlapping.xml"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + gb_overlapping_filename
         gb_overlapping_import_file = ImportFile.objects.create(
@@ -936,7 +936,7 @@ class PropertyMergeViewTests(DataMappingBaseTestCase):
     @unittest.skip("TODO: fix merging of PM and BSync meters")
     def test_properties_merge_combining_bsync_and_pm_sources(self):
         # -- SETUP
-        # For first Property, PM Meters containing 2 readings for each Electricty and Natural Gas for property_1
+        # For first Property, PM Meters containing 2 readings for each Electricity and Natural Gas for property_1
         # This file has multiple tabs
         pm_filename = "example-pm-monthly-meter-usage.xlsx"
         filepath = os.path.dirname(os.path.abspath(__file__)) + "/data/" + pm_filename
@@ -1032,7 +1032,7 @@ class PropertyUnmergeViewTests(DataMappingBaseTestCase):
 
         self.state_1 = self.property_state_factory.get_property_state(
             address_line_1='1 property state',
-            pm_property_id='5766973'  # this allows the Property to be targetted for PM meter additions
+            pm_property_id='5766973'  # this allows the Property to be targeted for PM meter additions
         )
         self.property_1 = self.property_factory.get_property()
         self.view_1 = PropertyView.objects.create(
@@ -1515,15 +1515,14 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
 
         # create GB gas meter
         meter_details = {
+            'property_id': self.property_view_1.property.id,
+            'type': Meter.NATURAL_GAS,
             'source': Meter.GREENBUTTON,
             'source_id': '/v1/User/000/UsagePoint/123fakeID/MeterReading/000',
-            'type': Meter.NATURAL_GAS,
-            'property_id': self.property_view_1.property.id,
         }
         gb_gas_meter = Meter.objects.create(**meter_details)
 
-        url = reverse('api:v3:properties-meters', kwargs={'pk': self.property_view_1.id})
-        url += f'?organization_id={self.org.pk}'
+        url = reverse('api:v3:property-meters-list', kwargs={'property_pk': self.property_view_1.id})
 
         result = self.client.get(url)
         result_dict = json.loads(result.content)
@@ -1534,24 +1533,30 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             {
                 'id': electric_meter.id,
                 'type': 'Electric - Grid',
-                'source': 'PM',
+                'source': 'Portfolio Manager',
                 'source_id': '5766973-0',
                 'scenario_id': None,
-                'scenario_name': None
+                'scenario_name': None,
+                'is_virtual': False,
+                'alias': 'Electric - Grid - Portfolio Manager - 5766973-0',
             }, {
                 'id': gas_meter.id,
                 'type': 'Natural Gas',
-                'source': 'PM',
+                'source': 'Portfolio Manager',
                 'source_id': '5766973-1',
                 'scenario_id': None,
-                'scenario_name': None
+                'scenario_name': None,
+                'is_virtual': False,
+                'alias': 'Natural Gas - Portfolio Manager - 5766973-1',
             }, {
                 'id': gb_gas_meter.id,
                 'type': 'Natural Gas',
-                'source': 'GB',
+                'source': 'GreenButton',
                 'source_id': '123fakeID',
                 'scenario_id': None,
-                'scenario_name': None
+                'scenario_name': None,
+                'is_virtual': False,
+                'alias': 'Natural Gas - GreenButton - 123fakeID',
             },
         ]
 
@@ -1599,15 +1604,15 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 {
                     'start_time': '2016-01-01 00:00:00',
                     'end_time': '2016-02-01 00:00:00',
-                    'Electric - Grid - PM - 5766973-0': (597478.9 / 3.41),
-                    'Natural Gas - PM - 5766973-1': 576000.2 / 1026,
-                    'Natural Gas - GB - 123fakeID': 1000 / 1026,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': (597478.9 / 3.41),
+                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2 / 1026,
+                    'Natural Gas - GreenButton - 123fakeID': 1000 / 1026,
                 },
                 {
                     'start_time': '2016-02-01 00:00:00',
                     'end_time': '2016-03-01 00:00:00',
-                    'Electric - Grid - PM - 5766973-0': (548603.7 / 3.41),
-                    'Natural Gas - PM - 5766973-1': 488000.1 / 1026,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': (548603.7 / 3.41),
+                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1 / 1026,
                 },
             ],
             'column_defs': [
@@ -1620,18 +1625,18 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
+                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas - PM - 5766973-1',
-                    'displayName': 'Natural Gas - PM - 5766973-1 (kcf (thousand cubic feet))',
+                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
+                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kcf (thousand cubic feet))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas - GB - 123fakeID',
-                    'displayName': 'Natural Gas - GB - 123fakeID (kcf (thousand cubic feet))',
+                    'field': 'Natural Gas - GreenButton - 123fakeID',
+                    'displayName': 'Natural Gas - GreenButton - 123fakeID (kcf (thousand cubic feet))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -1673,18 +1678,18 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                 {
                     'start_time': '2016-01-01 00:00:00',
                     'end_time': '2016-02-01 00:00:00',
-                    'Electric - Grid - PM - 5766973-0': 597478.9 / 3.41,
-                    'Cost - PM - 5766973-0': 100,
-                    'Natural Gas - PM - 5766973-1': 576000.2,
-                    'Cost - PM - 5766973-1': 300,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 597478.9 / 3.41,
+                    'Cost - Portfolio Manager - 5766973-0': 100,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
+                    'Cost - Portfolio Manager - 5766973-1': 300,
                 },
                 {
                     'start_time': '2016-02-01 00:00:00',
                     'end_time': '2016-03-01 00:00:00',
-                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
-                    'Cost - PM - 5766973-0': 200,
-                    'Natural Gas - PM - 5766973-1': 488000.1,
-                    'Cost - PM - 5766973-1': 400,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 548603.7 / 3.41,
+                    'Cost - Portfolio Manager - 5766973-0': 200,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
+                    'Cost - Portfolio Manager - 5766973-1': 400,
                 },
             ],
             'column_defs': [
@@ -1697,23 +1702,23 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
+                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas - PM - 5766973-1',
-                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
+                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Cost - PM - 5766973-0',
-                    'displayName': 'Cost - PM - 5766973-0 (US Dollars)',
+                    'field': 'Cost - Portfolio Manager - 5766973-0',
+                    'displayName': 'Cost - Portfolio Manager - 5766973-0 (US Dollars)',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Cost - PM - 5766973-1',
-                    'displayName': 'Cost - PM - 5766973-1 (US Dollars)',
+                    'field': 'Cost - Portfolio Manager - 5766973-1',
+                    'displayName': 'Cost - Portfolio Manager - 5766973-1 (US Dollars)',
                     '_filter_type': 'reading',
                 },
             ]
@@ -1777,8 +1782,8 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             {
                 'start_time': '2016-01-01 00:00:00',
                 'end_time': '2016-02-01 00:00:00',
-                'Diesel - PM - 123fakeID': 10 / 36.30,
-                'Coke - PM - 456fakeID': 100 / 12.39,
+                'Diesel - Portfolio Manager - 123fakeID': 10 / 36.30,
+                'Coke - Portfolio Manager - 456fakeID': 100 / 12.39,
             },
         ]
 
@@ -1826,23 +1831,23 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electric - Grid - PM - 5766973-0': round(597478.9 / 3.41, 2),
-                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': round(597478.9 / 3.41, 2),
+                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electric - Grid - PM - 5766973-0': round(548603.7 / 3.41, 2),
-                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': round(548603.7 / 3.41, 2),
+                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electric - Grid - PM - 5766973-0': round(100 / 3.41, 2),
-                    'Natural Gas - PM - 5766973-1': 100,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': round(100 / 3.41, 2),
+                    'Natural Gas - Portfolio Manager - 5766973-1': 100,
                 },
                 {
                     'month': 'May 2016',
-                    'Electric - Grid - PM - 5766973-0': round(200 / 3.41, 2),
-                    'Natural Gas - PM - 5766973-1': 200,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': round(200 / 3.41, 2),
+                    'Natural Gas - Portfolio Manager - 5766973-1': 200,
                 },
             ],
             'column_defs': [
@@ -1851,13 +1856,13 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
+                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas - PM - 5766973-1',
-                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
+                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -1871,7 +1876,7 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         save_raw_data(self.import_file.id)
 
         property_1_electric_meter = Meter.objects.get(source_id='5766973-0')
-        # add additional sub-montly entries for each initial meter
+        # add additional sub-monthly entries for each initial meter
         tz_obj = timezone(TIME_ZONE)
         for meter in Meter.objects.all():
             # November 2019 reading between DST transition
@@ -1912,15 +1917,15 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'November 2019',
-                    'Natural Gas - PM - 5766973-1': 300,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 300,
                 },
             ],
             'column_defs': [
@@ -1929,8 +1934,8 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Natural Gas - PM - 5766973-1',
-                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
+                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -2022,21 +2027,21 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'month': 'January 2016',
-                    'Electric - Grid - PM - 5766973-0': 100000000000000 / 3.41,
-                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 100000000000000 / 3.41,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
                 },
                 {
                     'month': 'February 2016',
-                    'Electric - Grid - PM - 5766973-0': 548603.7 / 3.41,
-                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 548603.7 / 3.41,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
                 },
                 {
                     'month': 'March 2016',
-                    'Electric - Grid - PM - 5766973-0': 1100 / 3.41,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 1100 / 3.41,
                 },
                 {
                     'month': 'April 2016',
-                    'Electric - Grid - PM - 5766973-0': 200 / 3.41,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 200 / 3.41,
                 },
             ],
             'column_defs': [
@@ -2045,13 +2050,13 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
+                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas - PM - 5766973-1',
-                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
+                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -2101,13 +2106,13 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
             'readings': [
                 {
                     'year': 2016,
-                    'Electric - Grid - PM - 5766973-0': (597478.9 + 548603.7) / 3.41,
-                    'Natural Gas - PM - 5766973-1': 576000.2 + 488000.1,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': (597478.9 + 548603.7) / 3.41,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2 + 488000.1,
                 },
                 {
                     'year': 2018,
-                    'Electric - Grid - PM - 5766973-0': (100 + 200) / 3.41,
-                    'Natural Gas - PM - 5766973-1': 100 + 200,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': (100 + 200) / 3.41,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 100 + 200,
                 },
             ],
             'column_defs': [
@@ -2116,13 +2121,13 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
+                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas - PM - 5766973-1',
-                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
+                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]
@@ -2187,42 +2192,42 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
         expectation = {
             'readings': [
                 {
-                    'Electric - Grid - PM - 5766973-0': 175213.75,
-                    'Natural Gas - PM - 5766973-1': 576000.2,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 175213.75,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 576000.2,
                     'month': 'January 2016'
                 },
                 {
-                    'Electric - Grid - PM - 5766973-0': 160880.85,
-                    'Natural Gas - PM - 5766973-1': 488000.1,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 160880.85,
+                    'Natural Gas - Portfolio Manager - 5766973-1': 488000.1,
                     'month': 'February 2016'
                 },
                 {
                     'month': 'January 2020',
-                    'Electric - Grid - PM - 5766973-0': 50,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 50,
                 },
                 {
                     'month': 'February 2020',
-                    'Electric - Grid - PM - 5766973-0': 50,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 50,
                 },
                 {
                     'month': 'March 2020',
-                    'Electric - Grid - PM - 5766973-0': 100,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 100,
                 },
                 {
                     'month': 'April 2020',
-                    'Electric - Grid - PM - 5766973-0': 200,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 200,
                 },
                 {
                     'month': 'May 2020',
-                    'Electric - Grid - PM - 5766973-0': 10,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 10,
                 },
                 {
                     'month': 'June 2020',
-                    'Electric - Grid - PM - 5766973-0': 300,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 300,
                 },
                 {
                     'month': 'July 2020',
-                    'Electric - Grid - PM - 5766973-0': 10,
+                    'Electric - Grid - Portfolio Manager - 5766973-0': 10,
                 },
             ],
             'column_defs': [
@@ -2231,13 +2236,13 @@ class PropertyMeterViewTests(DataMappingBaseTestCase):
                     '_filter_type': 'datetime',
                 },
                 {
-                    'field': 'Electric - Grid - PM - 5766973-0',
-                    'displayName': 'Electric - Grid - PM - 5766973-0 (kWh (thousand Watt-hours))',
+                    'field': 'Electric - Grid - Portfolio Manager - 5766973-0',
+                    'displayName': 'Electric - Grid - Portfolio Manager - 5766973-0 (kWh (thousand Watt-hours))',
                     '_filter_type': 'reading',
                 },
                 {
-                    'field': 'Natural Gas - PM - 5766973-1',
-                    'displayName': 'Natural Gas - PM - 5766973-1 (kBtu (thousand Btu))',
+                    'field': 'Natural Gas - Portfolio Manager - 5766973-1',
+                    'displayName': 'Natural Gas - Portfolio Manager - 5766973-1 (kBtu (thousand Btu))',
                     '_filter_type': 'reading',
                 },
             ]

@@ -241,15 +241,14 @@ class TaxLotProperty(models.Model):
 
             obj_dict['merged_indicator'] = obj.state_id in merged_state_ids
 
+            # This is only applicable to Properties since Tax Lots don't have meters
+            if this_cls == 'Property':
+                obj_dict['meters_exist_indicator'] = len(obj.property.meters.all()) > 0
+
             # bring in GIS data
             obj_dict[lookups['bounding_box']] = bounding_box_wkt(obj.state)
             obj_dict[lookups['long_lat']] = long_lat_wkt(obj.state)
             obj_dict[lookups['centroid']] = centroid_wkt(obj.state)
-
-            # store the property / taxlot data to the object dictionary as well. This is hacky.
-            if lookups['obj_class'] == 'PropertyView':
-                if 'campus' in filtered_fields:
-                    obj_dict[obj_column_name_mapping['campus']] = obj.property.campus
 
             # These are not added in model_to_dict_with_mapping as these fields are not 'editable'
             # Also, do not make these timestamps naive. They persist correctly.
@@ -317,8 +316,6 @@ class TaxLotProperty(models.Model):
 
             # custom handling for when it is TaxLotView
             if lookups['obj_class'] == 'TaxLotView':
-                if 'campus' in filtered_fields:
-                    related_dict[related_column_name_mapping['campus']] = related_view.property.campus
                 # Do not make these timestamps naive. They persist correctly.
                 if 'updated' in filtered_fields:
                     related_dict[related_column_name_mapping['updated']] = related_view.property.updated

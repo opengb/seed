@@ -32,25 +32,12 @@ DATABASES = {
     },
 }
 
-# These celery variables can be overriden by the local_untracked values
+# These celery variables can be overridden by the local_untracked values
 CELERY_BROKER_BACKEND = 'memory'
 CELERY_TASK_ALWAYS_EAGER = True
 CELERY_TASK_EAGER_PROPAGATES = True
 # this celery log level is currently not overridden.
 CELERY_LOG_LEVEL = LOG_LEVELS['WARNING']
-
-# Testing
-INSTALLED_APPS += ( # noqa F405
-    "django_nose",
-)
-TEST_RUNNER = 'django_nose.NoseTestSuiteRunner'
-NOSE_PLUGINS = [
-    'nose_exclude.NoseExclude',
-]
-NOSE_ARGS = [
-    '--nocapture',
-    '--nologcapture',
-]
 
 REQUIRE_UNIQUE_EMAIL = False
 

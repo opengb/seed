@@ -29,6 +29,7 @@ from seed.models import (
     TaxLotView
 )
 from seed.serializers.pint import apply_display_unit_preferences
+from seed.utils.search import build_view_filters_and_sorts
 
 
 def get_changed_fields(old, new):
@@ -176,6 +177,73 @@ def properties_across_cycles(org_id, profile_id, cycle_ids=[]):
             ).values_list('column_id', flat=True))
         except ColumnListProfile.DoesNotExist:
             show_columns = None
+
+    results = {}
+    for cycle_id in cycle_ids:
+        # get -Views for this Cycle
+        property_views = PropertyView.objects.select_related('property', 'state', 'cycle') \
+            .filter(property__organization_id=org_id, cycle_id=cycle_id) \
+            .order_by('id')
+
+        related_results = TaxLotProperty.serialize(property_views, show_columns, columns_from_database)
+
+        org = Organization.objects.get(pk=org_id)
+        unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+
+        results[cycle_id] = unit_collapsed_results
+
+    return results
+
+
+def properties_across_cycles_with_filters(org_id, cycle_ids=[], query_dict={}, column_ids=[]):
+    # Identify column preferences to be used to scope fields/values
+    columns_from_database = Column.retrieve_all(org_id, 'property', False)
+    org = Organization.objects.get(pk=org_id)
+
+    results = {cycle_id: [] for cycle_id in cycle_ids}
+    property_views = _get_filter_group_views(org_id, cycle_ids, query_dict)
+    views_cycle_ids = [v.cycle_id for v in property_views]
+    related_results = TaxLotProperty.serialize(property_views, column_ids, columns_from_database, include_related=False)
+    unit_collapsed_results = [apply_display_unit_preferences(org, x) for x in related_results]
+
+    for cycle_id, unit_collapsed_result in zip(views_cycle_ids, unit_collapsed_results):
+        results[cycle_id].append(unit_collapsed_result)
+
+    return results
+
+
+# helper function for getting filtered properties
+def _get_filter_group_views(org_id, cycles, query_dict):
+
+    columns = Column.retrieve_all(
+        org_id=org_id,
+        inventory_type='property',
+        only_used=False,
+        include_related=False
+    )
+
+    annotations = {}
+    try:
+        filters, annotations, order_by = build_view_filters_and_sorts(query_dict, columns)
+    except Exception:
+        return JsonResponse({
+            'status': 'error',
+            'message': 'error with filter group'
+        }, status=status.HTTP_404_NOT_FOUND)
+
+    views_list = (
+        PropertyView.objects.select_related('property', 'state', 'cycle')
+        .filter(property__organization_id=org_id, cycle__in=cycles)
+    )
+
+    views_list = views_list.filter(filters).order_by('id')
+
+    return views_list
+
+
+def properties_across_cycles_with_columns(org_id, show_columns=[], cycle_ids=[]):
+    # Identify column preferences to be used to scope fields/values
+    columns_from_database = Column.retrieve_all(org_id, 'property', False)
 
     results = {}
     for cycle_id in cycle_ids:

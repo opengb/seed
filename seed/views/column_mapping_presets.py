@@ -105,7 +105,7 @@ class ColumnMappingPresetViewSet(ViewSet):
 
                 preset.mappings = final_mappings
             elif updated_mappings:
-                # indiscriminantly update the mappings
+                # indiscriminately update the mappings
                 preset.mappings = updated_mappings
 
         preset.save()
@@ -227,7 +227,8 @@ class ColumnMappingPresetViewSet(ViewSet):
             # Fix the table name, eventually move this to the build_column_mapping
             for m in suggested_mappings:
                 table, _destination_field, _confidence = suggested_mappings[m]
-                # Do not return the campus, created, updated fields... that is force them to be in the property state
+                # Do not return the created or updated fields... that is force them to be
+                # in the property state. Not sure where this happens in this code block.
                 if not table or table == 'Property':
                     suggested_mappings[m][0] = 'PropertyState'
                 elif table == 'TaxLot':

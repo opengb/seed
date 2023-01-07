@@ -27,12 +27,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       const filters = {};
-      for (const {column_name, operator, value} of column_filters) {
-        filters[`${column_name}__${operator}`] = value;
+      for (const {name, operator, value} of column_filters) {
+        filters[`${name}__${operator}`] = value;
       }
 
       return filters;
     };
+
+    inventory_service.get_format_column_filters = format_column_filters;
 
     const format_column_sorts = function (column_sorts) {
       // turn column sort objects into usable query parameter
@@ -41,21 +43,22 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
       }
 
       const sorts = [];
-      for (const {column_name, direction} of column_sorts) {
+      for (const {name, direction} of column_sorts) {
         const direction_operator = direction == 'desc' ? '-' : '';
-        sorts.push(`${direction_operator}${column_name}`);
+        sorts.push(`${direction_operator}${name}`);
       }
 
       return {order_by: sorts};
     };
 
-    inventory_service.get_properties = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
+    inventory_service.get_properties = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null, shown_column_ids = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
         organization_id: organization_id,
         include_related: include_related,
         ids_only: ids_only,
+        shown_column_ids: shown_column_ids,
         ...format_column_sorts(column_sorts),
         ...format_column_filters(column_filters)
       };
@@ -320,13 +323,14 @@ angular.module('BE.seed.service.inventory', []).factory('inventory_service', [
     };
 
 
-    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null) {
+    inventory_service.get_taxlots = function (page, per_page, cycle, profile_id, include_view_ids, exclude_view_ids, save_last_cycle = true, organization_id = null, include_related = true, column_filters = null, column_sorts = null, ids_only = null, shown_column_ids = null) {
       organization_id = organization_id == undefined ? user_service.get_organization().id : organization_id;
 
       var params = {
         organization_id: organization_id,
         include_related: include_related,
         ids_only: ids_only,
+        shown_column_ids: shown_column_ids,
         ...format_column_sorts(column_sorts),
         ...format_column_filters(column_filters)
       };
