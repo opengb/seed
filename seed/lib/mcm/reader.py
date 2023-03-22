@@ -263,7 +263,8 @@ class GeoJSONParser(object):
         features = raw_data.get("features")
         raw_column_names = features[0].get("properties").keys()
 
-        self.headers = [self._display_name(col) for col in raw_column_names]
+        # add in the property footprint to the headers/columns
+        self.headers = [self._display_name(col) for col in raw_column_names] + ["property_footprint"]
         self.column_translations = {col: self._display_name(col) for col in raw_column_names}
         self.first_five_rows = [self._capture_row(feature) for feature in features[:5]]
 
@@ -272,7 +273,7 @@ class GeoJSONParser(object):
             properties = feature.get('properties')
 
             entry = {self.column_translations.get(k, k): v for k, v in properties.items()}
-            entry["bounding_box"] = self._get_bounding_box(feature)
+            entry["property_footprint"] = self._get_bounding_box(feature)
 
             self.data.append(entry)
 
@@ -287,7 +288,7 @@ class GeoJSONParser(object):
         return f"POLYGON (({', '.join(coords_strings)}))"
 
     def _capture_row(self, feature):
-        stringified_values = [str(value) for value in feature.get('properties').values()]
+        stringified_values = [str(value) for value in feature.get('properties').values()] + ['Property Footprint - Not Displayed']
         return "|#*#|".join(stringified_values)
 
     def num_columns(self):
@@ -352,6 +353,9 @@ class ExcelParser(object):
         """Handle different value types for XLS.
 
         :param item: xlrd cell object
+        :kwargs:
+            :trim_and_clean_strings: boolean, default False, strip whitespace before and after, remove
+                                     multiple whitespaces within string. Used specifically for headers
         :returns: items value with dates parsed properly
         """
 
@@ -380,7 +384,14 @@ class ExcelParser(object):
 
         # XL_CELL_TEXT
         if isinstance(item.value, basestring):
-            return unidecode(item.value)
+            if kwargs.get('trim_and_clean_strings', False):
+                # remove leading and trailing whitespace
+                value = item.value.strip()
+                # remove any double spaces within the string
+                value = " ".join(value.split())
+            else:
+                value = item.value
+            return unidecode(value)
 
         # only remaining items should be booleans
         return item.value
@@ -398,13 +409,13 @@ class ExcelParser(object):
         # called later (which it is in `seek_to_beginning` then don't reparse the headers
         if not self.cache_headers:
             for j in range(sheet.ncols):
-                self.cache_headers.append(self.get_value(sheet.cell(header_row, j)).strip())
+                self.cache_headers.append(self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True))
 
         def item(i, j):
             """returns a tuple (column header, cell value)"""
             # self.cache_headers[j],
             return (
-                self.get_value(sheet.cell(header_row, j)),
+                self.get_value(sheet.cell(header_row, j), trim_and_clean_strings=True),
                 self.get_value(sheet.cell(i, j))
             )
 

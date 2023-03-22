@@ -6,6 +6,7 @@
 """
 import json
 
+from django.core.exceptions import ValidationError
 from django.http import JsonResponse
 from django.utils.decorators import method_decorator
 from drf_yasg.utils import swagger_auto_schema
@@ -110,6 +111,35 @@ class ColumnViewSet(OrgValidateMixin, SEEDOrgNoPatchOrOrgCreateModelViewSet, Org
             'status': 'success',
             'columns': columns,
         })
+
+    @api_endpoint_class
+    @ajax_request_class
+    def create(self, request):
+        self.get_organization(self.request)
+
+        table_name = self.request.data.get("table_name")
+        if table_name != "PropertyState" and table_name != "TaxLotState":
+            return JsonResponse({
+                'status': 'error',
+                'message': 'table_name must be "PropertyState" or "TaxLotState"'
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        try:
+            new_column = Column.objects.create(
+                is_extra_data=True,
+                **self.request.data
+            )
+            new_column.save()
+        except ValidationError as e:
+            return JsonResponse({
+                'status': 'error',
+                'message': str(e)
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        return JsonResponse({
+            'status': 'success',
+            'column': ColumnSerializer(new_column).data,
+        }, status=status.HTTP_201_CREATED)
 
     @swagger_auto_schema_org_query_param
     @ajax_request_class

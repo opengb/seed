@@ -60,7 +60,6 @@ angular.module('BE.seed.controller.insights_property', [])
         let data = compliance_metric_service.evaluate_compliance_metric($scope.compliance_metric.id).then((data) => {
           $scope.data = data;
         }).then(() => {
-          // console.log( "DATA RETURNED: ", $scope.data)
           if ($scope.data) {
             // set options
             // x axis
@@ -86,7 +85,6 @@ angular.module('BE.seed.controller.insights_property', [])
                 $scope.chart_metric = _.first($scope.y_axis_options).id;
               }
             }
-
           }
           _rebuild_datasets();
 
@@ -147,14 +145,13 @@ angular.module('BE.seed.controller.insights_property', [])
       }
 
       const _rebuild_datasets = () => {
-        // console.log("REBUILD DATASETS")
-
         $scope.x_categorical = false;
 
         let datasets = [{'data': [], 'label': 'compliant', 'pointStyle': 'circle'},
         {'data': [], 'label': 'non-compliant', 'pointStyle': 'triangle', 'radius': 7},
         {'data': [], 'label': 'unknown', 'pointStyle': 'rect'}]
 
+        $scope.display_annotation = true;
         let annotation =  {
           type: 'line',
           xMin: 0,
@@ -163,6 +160,7 @@ angular.module('BE.seed.controller.insights_property', [])
           yMax: 0,
           backgroundColor: '#333',
           borderWidth: 1,
+          display: (ctx) => $scope.display_annotation,
           arrowHeads: {
             end: {
               display: true,
@@ -289,7 +287,7 @@ angular.module('BE.seed.controller.insights_property', [])
                 if (activePoints[0]) {
                   var activePoint = activePoints[0]
                   var item = event.chart.data.datasets[activePoint.datasetIndex].data[activePoint.index]
-                  window.location.href = '/app/#/properties/' + item["id"];
+                  window.open('/app/#/properties/' + item["id"])
                 }
               },
               elements: {
@@ -346,7 +344,6 @@ angular.module('BE.seed.controller.insights_property', [])
                 },
                 y: {
                   beginAtZero: true,
-                  stacked: true,
                   position: 'left',
                   display: true,
                   title: {
@@ -423,9 +420,18 @@ angular.module('BE.seed.controller.insights_property', [])
           $scope.insightsChart.data.labels = labels;
         }
 
-        // console.log("REFRESH CHART");
         $scope.insightsChart.update()
+      }
 
+      $scope.toggle_dataset_visibility = (index) => {
+        is_visibile = $scope.insightsChart.isDatasetVisible(index);
+        $scope.insightsChart.setDatasetVisibility(index, !is_visibile);
+        $scope.insightsChart.update();
+      }
+
+      $scope.toggle_annotation_visibility = () => {
+        $scope.display_annotation = !$scope.display_annotation;
+        $scope.insightsChart.update();
       }
 
       setTimeout(_load_data, 0); // avoid race condition with route transition spinner.

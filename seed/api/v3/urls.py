@@ -34,6 +34,7 @@ from seed.views.v3.label_inventories import LabelInventoryViewSet
 from seed.views.v3.labels import LabelViewSet
 from seed.views.v3.measures import MeasureViewSet
 from seed.views.v3.media import MediaViewSet
+from seed.views.v3.meter_readings import MeterReadingViewSet
 from seed.views.v3.meters import MeterViewSet
 from seed.views.v3.notes import NoteViewSet
 from seed.views.v3.organization_users import OrganizationUserViewSet
@@ -46,6 +47,7 @@ from seed.views.v3.property_scenarios import PropertyScenarioViewSet
 from seed.views.v3.property_states import PropertyStateViewSet
 from seed.views.v3.property_views import PropertyViewViewSet
 from seed.views.v3.tax_lot_properties import TaxLotPropertyViewSet
+from seed.views.v3.taxlot_views import TaxlotViewViewSet
 from seed.views.v3.taxlots import TaxlotViewSet
 from seed.views.v3.ubid import UbidViewSet
 from seed.views.v3.uploads import UploadViewSet
@@ -82,6 +84,7 @@ api_v3_router.register(r'progress', ProgressViewSet, basename="progress")
 api_v3_router.register(r'properties', PropertyViewSet, basename='properties')
 api_v3_router.register(r'property_states', PropertyStateViewSet, basename="property_states")
 api_v3_router.register(r'property_views', PropertyViewViewSet, basename="property_views")
+api_v3_router.register(r'taxlot_views', TaxlotViewViewSet, basename='taxlot_views')
 api_v3_router.register(r'tax_lot_properties', TaxLotPropertyViewSet, basename="tax_lot_properties")
 api_v3_router.register(r'taxlots', TaxlotViewSet, basename='taxlots')
 api_v3_router.register(r'ubid', UbidViewSet, basename='ubid')
@@ -107,6 +110,9 @@ properties_router = nested_routers.NestedSimpleRouter(api_v3_router, r'propertie
 properties_router.register(r'meters', MeterViewSet, basename='property-meters')
 properties_router.register(r'notes', NoteViewSet, basename='property-notes')
 properties_router.register(r'scenarios', PropertyScenarioViewSet, basename='property-scenarios')
+# This is a third level router, so we need to register it with the second level router
+meters_router = nested_routers.NestedSimpleRouter(properties_router, r'meters', lookup='meter')
+meters_router.register(r'readings', MeterReadingViewSet, basename='property-meter-readings')
 
 taxlots_router = nested_routers.NestedSimpleRouter(api_v3_router, r'taxlots', lookup='taxlot')
 taxlots_router.register(r'notes', NoteViewSet, basename='taxlot-notes')
@@ -130,6 +136,7 @@ urlpatterns = [
     re_path(r'^', include(analysis_messages_router.urls)),
     re_path(r'^', include(analysis_view_messages_router.urls)),
     re_path(r'^', include(properties_router.urls)),
+    re_path(r'^', include(meters_router.urls)),
     re_path(r'^', include(taxlots_router.urls)),
     re_path(r'^celery_queue/$', celery_queue, name='celery_queue'),
     re_path(r'media/(?P<filepath>.*)$', MediaViewSet.as_view()),
