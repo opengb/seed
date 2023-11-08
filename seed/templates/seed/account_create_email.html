@@ -1,15 +1,42 @@
-{% load i18n %}{% autoescape off %}
+{% extends "seed/email_base.html" %}
+{% load i18n %}
+{% block email_body %}
+{% autoescape off %}
+
+<img src="{{ protocol }}://{{ domain }}{{STATIC_URL}}seed/images/seed_logo.png"/>
+
+<p>
 {% blocktrans %}Hello {{first_name}}, {% endblocktrans %}
+</p>
 
+<p>
 {% trans "You're receiving this e-mail because you've been registered for a SEED account." %}
+</p>
 
-{% blocktrans %}SEED is easy, flexible, and cost effective software designed to help organizations clean, manage and share information about large portfolios of buildings. SEED is a free, open source web application that you can use privately.  While SEED was originally designed to help cities and States implement benchmarking programs for public or private buildings, it has the potential to be useful for many other activities by public entities, efficiency programs and private companies.{% endblocktrans %}
+<p>
+  {% trans "This version of SEED is hosted by OPEN Technologies. When choosing to use software hosted by OPEN Technologies, you are responsible for ensuring the owner of any data stored in said software is aware of the Terms and Conditions under which their data is stored. Our Terms & Conditions are available here" %} - <a href="https://opentech.eco/grid-terms-conditions/">https://opentech.eco/grid-terms-conditions/</a> {% trans "and our Privacy Policy is available here" %} - <a href="https://opentech.eco/grid-privacy-policy/">https://opentech.eco/grid-privacy-policy/</a>.
+</p>
 
+<p>
 {% trans "Please go to the following page and setup your account:" %}
 {% block reset_link %}
-{{ protocol }}://{{ domain }}{{signup_url}}
+<a href="{{ protocol }}://{{ domain }}{{signup_url}}">{{ protocol }}://{{ domain }}{{signup_url}}</a>
 {% endblock %}
+</p>
 
-{% blocktrans %}The SEED Team{% endblocktrans %}
+<p>
+{% blocktrans %}If you need any additional support, let us know!{% endblocktrans %}
+</p>
+
+<p>
+{% blocktrans %}The GRID support team{% endblocktrans %}
+</p>
+
+<p>
+{% blocktrans %}OPEN Technologies{% endblocktrans %}
+</p>
+
+<img src="{{ protocol }}://{{ domain }}{{STATIC_URL}}seed/images/grid_logo.png"/>
 
 {% endautoescape %}
+{% endblock %}
