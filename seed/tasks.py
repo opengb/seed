@@ -66,19 +66,24 @@ def invite_new_user_to_seed(domain, email_address, token, user_pk, first_name):
         'domain': domain,
         'protocol': settings.PROTOCOL,
         'first_name': first_name,
-        'signup_url': signup_url
+        'signup_url': signup_url,
+        'STATIC_URL': settings.STATIC_URL
     }
 
     subject = 'New SEED account'
     email_body = loader.render_to_string(
+        'seed/account_create_email.txt',
+        context
+    )
+    html_email_body = loader.render_to_string(
         'seed/account_create_email.html',
         context
     )
-    send_mail(subject, email_body, settings.SERVER_EMAIL, [email_address])
+    send_mail(subject, email_body, settings.SERVER_EMAIL, [email_address], html_message=html_email_body)
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
         new_subject = "{} ({})".format(subject, email_address)
-        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
+        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address],  html_message=html_email_body)
     except AttributeError:
         pass
 
@@ -105,21 +110,30 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
         })
     }))
 
-    content = Template(organization.new_user_email_content).render(Context({
+    context = {
+        'email': email_address,
+        'domain': domain,
+        'protocol': settings.PROTOCOL,
         'first_name': first_name,
-        'sign_up_link': sign_up_url
-    }))
+        'signup_url': sign_up_url,
+        'STATIC_URL': settings.STATIC_URL
+    }
 
-    body = Template("{{content}}\n\n{{signature}}").render(Context({
-        'content': content,
-        'signature': organization.new_user_email_signature
-    }))
+    subject = 'New SEED account'
+    email_body = loader.render_to_string(
+        'seed/account_create_email.txt',
+        context
+    )
+    html_email_body = loader.render_to_string(
+        'seed/account_create_email.html',
+        context
+    )
 
-    send_mail(organization.new_user_email_subject, body, organization.new_user_email_from, [email_address])
+    send_mail(subject, email_body, settings.SERVER_EMAIL, [email_address], html_message=html_email_body)
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
         new_subject = "{} ({})".format(organization.new_user_email_subject, email_address)
-        send_mail(new_subject, body, organization.new_user_email_from, [bcc_address])
+        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address], html_message=html_email_body)
     except AttributeError:
         pass
 
@@ -143,18 +157,23 @@ def invite_to_organization(domain, new_user, requested_by, new_org):
         'protocol': settings.PROTOCOL,
         'new_org': new_org,
         'requested_by': requested_by,
+        'STATIC_URL': settings.STATIC_URL
     }
 
     subject = 'Your SEED account has been added to an organization'
     email_body = loader.render_to_string(
+        'seed/account_org_added.txt',
+        context
+    )
+    html_email_body = loader.render_to_string(
         'seed/account_org_added.html',
         context
     )
-    send_mail(subject, email_body, settings.SERVER_EMAIL, [new_user.email])
+    send_mail(subject, email_body, settings.SERVER_EMAIL, [new_user.email], html_message=html_email_body)
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
         new_subject = "{} ({})".format(subject, new_user.email)
-        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address])
+        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address], html_message=html_email_body)
     except AttributeError:
         pass
 
