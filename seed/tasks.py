@@ -83,7 +83,7 @@ def invite_new_user_to_seed(domain, email_address, token, user_pk, first_name):
     try:
         bcc_address = settings.SEED_ACCOUNT_CREATION_BCC
         new_subject = "{} ({})".format(subject, email_address)
-        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address],  html_message=html_email_body)
+        send_mail(new_subject, email_body, settings.SERVER_EMAIL, [bcc_address], html_message=html_email_body)
     except AttributeError:
         pass
 
@@ -115,7 +115,7 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
         'domain': domain,
         'protocol': settings.PROTOCOL,
         'first_name': first_name,
-        'signup_url': sign_up_url, # remember this includes the protocol and domain, unlike other template vars (inconsistent)
+        'signup_url': sign_up_url,  # remember this includes the protocol and domain, unlike other template vars (inconsistent)
         'STATIC_URL': settings.STATIC_URL
     }
 
