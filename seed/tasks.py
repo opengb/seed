@@ -115,7 +115,7 @@ def invite_to_seed(domain, email_address, token, organization, user_pk, first_na
         'domain': domain,
         'protocol': settings.PROTOCOL,
         'first_name': first_name,
-        'signup_url': sign_up_url,
+        'signup_url': sign_up_url, # remember this includes the protocol and domain, unlike other template vars (inconsistent)
         'STATIC_URL': settings.STATIC_URL
     }
 
