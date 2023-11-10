@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
@@ -231,7 +231,7 @@ class UserViewSet(viewsets.ViewSet):
         except Exception:
             domain = 'seed-platform.org'
         invite_to_seed(
-            domain, user.email, default_token_generator.make_token(user), user.pk, first_name
+            domain, user.email, default_token_generator.make_token(user), org, user.pk, first_name
         )
 
         return JsonResponse({
@@ -244,7 +244,7 @@ class UserViewSet(viewsets.ViewSet):
         })
 
     @ajax_request_class
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     def list(self, request):
         """
         Retrieves all users' email addresses and IDs.

@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
@@ -174,10 +174,12 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     )
     @api_endpoint_class
     @ajax_request_class
-    @has_perm_class('requires_owner')
+    @has_perm_class('requires_owner_or_superuser_without_org', False)
     def create(self, request):
         """
-        Creates a new SEED user.  One of 'organization_id' or 'org_name' is needed.
+        Creates a new SEED user.
+        Organization owners must specify the `organization_id` query param.
+        Superusers can add `org_name` to the body and create a new organization for the new user.
         Sends invitation email to the new user.
         """
         # WARNING: we aren't using the OrgMixin here to validate the organization
@@ -237,7 +239,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
             domain = request.get_host()
         except Exception:
             domain = 'seed-platform.org'
-        invite_to_seed(domain, user.email, default_token_generator.make_token(user), user.pk, first_name)
+        invite_to_seed(domain, user.email, default_token_generator.make_token(user), org, user.pk, first_name)
 
         return JsonResponse({
             'status': 'success',
@@ -254,7 +256,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         }
     )
     @ajax_request_class
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     def list(self, request):
         """
         Retrieves all users' email addresses and IDs.
@@ -347,7 +349,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
     @ajax_request_class
     def retrieve(self, request, pk=None):
         """
-        Retrieves the a user's first_name, last_name, email
+        Retrieves user's first_name, last_name, email
         and api key if exists by user ID (pk).
         """
 
@@ -632,7 +634,7 @@ class UserViewSet(viewsets.ViewSet, OrgMixin):
         user.save()
         return {'status': 'success'}
 
-    @has_perm_class('requires_superuser')
+    @has_perm_class('requires_superuser', False)
     @ajax_request_class
     @action(detail=True, methods=['PUT'])
     def deactivate(self, request, pk=None):

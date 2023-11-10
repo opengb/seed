@@ -1,6 +1,6 @@
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 import os
@@ -70,6 +70,7 @@ from seed.utils.properties import (
     properties_across_cycles,
     update_result_with_master
 )
+from seed.utils.salesforce import update_salesforce_properties
 from seed.utils.sensors import PropertySensorReadingsExporter
 
 logger = logging.getLogger(__name__)
@@ -201,11 +202,18 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
         return new_state
 
     @swagger_auto_schema(
-        manual_parameters=[AutoSchemaHelper.query_org_id_field(required=True)],
+        manual_parameters=[
+            AutoSchemaHelper.query_org_id_field(required=True),
+            AutoSchemaHelper.query_integer_field(
+                name='cycle_id',
+                required=False,
+                description="Optional cycle id to restrict is_applied ids to only those in the specified cycle"
+            ),
+        ],
         request_body=AutoSchemaHelper.schema_factory(
             {
-                'selected': ['integer'],
-                'label_names': ['string'],
+                'selected': 'integer',
+                'label_names': 'string',
             },
             description='- selected: Property View IDs to be checked for which labels are applied\n'
                         '- label_names: list of label names to query'
@@ -229,11 +237,11 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
             super_organization=super_organization
         ).order_by('name').distinct()
 
-        # if labels names is passes, then get only those labels
+        # if label_names is present, then get only those labels
         if request.data.get('label_names', None):
             labels_qs = labels_qs.filter(
                 name__in=request.data.get('label_names')
-            ).order_by('name')
+            )
 
         # TODO: refactor to avoid passing request here
         return get_labels(request, labels_qs, super_organization, 'property_view')
@@ -543,7 +551,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def merge(self, request):
         """
         Merge multiple property records into a single new record, and run this
-        new record through a match and merge round within it's current Cycle.
+        new record through a match and merge round within its current Cycle.
         """
         body = request.data
         organization_id = int(self.get_organization(request))
@@ -1018,7 +1026,7 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
     def update(self, request, pk=None):
         """
         Update a property and run the updated record through a match and merge
-        round within it's current Cycle.
+        round within its current Cycle.
         """
         data = request.data
 
@@ -1062,6 +1070,13 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                         # create the new property state, and perform an initial save / moving relationships
                         new_state = new_property_state_serializer.save()
 
+                        # preserve any non-preferred UBIDs from the Import Creation state
+                        ubid_models = property_view.state.ubidmodel_set.filter(preferred=False)
+                        for ubid_model in ubid_models:
+                            new_state.ubidmodel_set.create(
+                                ubid=ubid_model.ubid,
+                            )
+
                         # Since we are creating a new relationship when we are manually editing the Properties, then
                         # we need to move the relationships over to the new manually edited record.
                         new_state = self._move_relationships(property_view.state, new_state)
@@ -1085,9 +1100,6 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                         result.update(
                             {'state': new_property_state_serializer.data}
                         )
-
-                        # save the property view so that the datetime gets updated on the property.
-                        property_view.save()
                     else:
                         result.update({
                             'status': 'error',
@@ -1423,6 +1435,53 @@ class PropertyViewSet(generics.GenericAPIView, viewsets.ViewSet, OrgMixin, Profi
                 'success': False,
                 'message': str(e)
             }, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
+
+    @swagger_auto_schema(
+        manual_parameters=[AutoSchemaHelper.query_org_id_field()],
+        request_body=AutoSchemaHelper.schema_factory(
+            {
+                'property_view_ids': ['integer']
+            },
+            required=['property_view_ids'],
+            description='A list of property view ids to sync with Salesforce')
+    )
+    @api_endpoint_class
+    @ajax_request_class
+    @action(detail=False, methods=['POST'])
+    @has_perm_class('can_modify_data')
+    def update_salesforce(self, request):
+        """
+        Update an existing PropertyView's Salesforce Benchmark object.
+        Use an array so it can update one or more properties
+        """
+        org_id = self.get_organization(request)
+        ids = request.data.get('property_view_ids', [])
+        try:
+            the_status, messages = update_salesforce_properties(org_id, ids)
+            if not the_status:
+                return JsonResponse({
+                    'status': 'error',
+                    'message': messages,
+                }, status=status.HTTP_400_BAD_REQUEST)
+        except Exception as err:
+            template = "An exception of type {0} occurred. Arguments:\n{1!r}"
+            message = template.format(type(err).__name__, err.args)
+            return JsonResponse({
+                'status': 'error',
+                'message': message
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+        if the_status:
+            return JsonResponse({
+                'success': True,
+                'status': 'success',
+                'message': 'successful sync with Salesforce'
+            })
+        else:
+            return JsonResponse({
+                'status': 'error',
+                'message': 'failed to sync with Salesforce'
+            }, status=status.HTTP_400_BAD_REQUEST)
 
     @action(detail=True, methods=['DELETE'])
     @has_perm_class('can_modify_data')

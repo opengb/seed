@@ -7,7 +7,7 @@
 
 {% trans "Please go to the following page and setup your account:" %}
 {% block reset_link %}
-{{ protocol }}://{{ domain }}{{signup_url}}
+{{signup_url}}
 {% endblock %}
 
 {% blocktrans %}If you need any additional support, let us know!{% endblocktrans %}

@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import json
 
@@ -271,7 +271,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id
             })
         )
         result = response.json()
@@ -303,7 +304,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -315,7 +317,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'property_name',
-                'overwrite': True
+                'overwrite': True,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -352,7 +355,8 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
             content_type='application/json',
             data=json.dumps({
                 'new_column_name': 'address_line_1_extra_data',
-                'overwrite': False
+                'overwrite': False,
+                'organization_id': self.org.id,
             })
         )
         result = response.json()
@@ -370,6 +374,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         response = self.client.post(
             reverse('api:v3:columns-rename', args=[self.cross_org_column.pk]),
             content_type='application/json',
+            data={'organization_id': self.org.id}
         )
         result = response.json()
         # self.assertFalse(result['success'])
@@ -383,6 +388,7 @@ class DefaultColumnsViewTests(DeleteModelsTestCase):
         response = self.client.post(
             reverse('api:v3:columns-rename', args=[-999]),
             content_type='application/json',
+            data={'organization_id': self.org.id},
         )
         self.assertEqual(response.status_code, 404)
         result = response.json()

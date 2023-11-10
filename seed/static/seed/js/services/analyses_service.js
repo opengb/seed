@@ -1,3 +1,7 @@
+/**
+ * SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+ * See also https://github.com/seed-platform/seed/main/LICENSE.md
+ */
 angular.module('BE.seed.service.analyses', [])
   .factory('analyses_service', [
     '$http',
@@ -136,12 +140,24 @@ angular.module('BE.seed.service.analyses', [])
         });
       };
 
+      const verify_token = (organization_id) => {
+        return $http({
+          url: '/api/v3/analyses/verify_better_token/',
+          method: 'GET',
+          params: { organization_id }
+        }).then((response) => {
+          return response.data;
+        }).catch((response) => {
+          return response.data;
+        })
+      }
+
       const get_progress_key = function (analysis_id) {
         const organization_id = user_service.get_organization().id;
         return $http({
           url: '/api/v3/analyses/' + analysis_id + '/progress_key/',
           method: 'GET',
-          params: { organization_id: organization_id }
+          params: { organization_id }
         }).then(function (response) {
           return response.data;
         }).catch(function (response) {
@@ -181,7 +197,7 @@ angular.module('BE.seed.service.analyses', [])
         // recursive func for checking the progress of the analysis.
         // Gets the key for the current progress data, polls it until it finishes
         // then starts over by getting the new key for the next progress data.
-        // Termination condition is when there's no progress data (ie no progress key
+        // Termination condition is when there's no progress data (i.e., no progress key
         // returned by the get_progress_key service)
         const get_key_and_check_progress = () => {
           get_progress_key(id)
@@ -248,7 +264,8 @@ angular.module('BE.seed.service.analyses', [])
         delete_analysis: delete_analysis,
         get_summary: get_summary,
         get_progress_key: get_progress_key,
-        check_progress_loop: check_progress_loop
+        check_progress_loop: check_progress_loop,
+        verify_token: verify_token,
       };
 
       return analyses_factory;

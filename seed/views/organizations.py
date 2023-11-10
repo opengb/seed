@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 from random import randint
@@ -596,10 +596,10 @@ class OrganizationViewSet(viewsets.ViewSet):
         org = Organization.objects.get(pk=pk)
         user = User.objects.get(pk=body['user_id'])
 
-        _orguser, status = org.add_member(user)
+        created = org.add_member(user)
 
         # Send an email if a new user has been added to the organization
-        if status:
+        if created:
             try:
                 domain = request.get_host()
             except Exception:

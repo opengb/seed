@@ -1,9 +1,8 @@
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import JsonResponse
 from rest_framework import status, viewsets
@@ -23,7 +22,7 @@ from seed.views.v3.organizations import _get_js_role
 
 
 class OrganizationUserViewSet(viewsets.ViewSet):
-    # allow using `organization_pk` in url path for authorization (ie for has_perm_class)
+    # allow using `organization_pk` in url path for authorization (i.e., for has_perm_class)
     authz_org_id_kwarg = 'organization_pk'
 
     @api_endpoint_class
@@ -62,15 +61,15 @@ class OrganizationUserViewSet(viewsets.ViewSet):
     @action(detail=True, methods=['PUT'])
     def add(self, request, organization_pk, pk):
         """
-        Adds an existing user to an organization.
+        Adds an existing user to an organization as an owner.
         """
         org = Organization.objects.get(pk=organization_pk)
         user = User.objects.get(pk=pk)
 
-        _orguser, status = org.add_member(user)
+        created = org.add_member(user)
 
         # Send an email if a new user has been added to the organization
-        if status:
+        if created:
             try:
                 domain = request.get_host()
             except Exception:

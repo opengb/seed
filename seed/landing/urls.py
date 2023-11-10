@@ -1,10 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
-
 from django.conf import settings
 from django.conf.urls import re_path
 from django.contrib.auth.views import (
@@ -18,7 +17,6 @@ from seed.landing.views import (
     activate,
     create_account,
     landing_page,
-    login_view,
     password_reset,
     password_reset_complete,
     password_reset_done,
@@ -27,7 +25,7 @@ from seed.landing.views import (
 
 urlpatterns = [
     re_path(r'^$', landing_page, name='landing_page'),
-    re_path(r'^accounts/login/$', login_view, name='login'),
+    re_path(r'^accounts/login/$', landing_page, name='login'),
     re_path(
         r'^accounts/logout/$',
         logout_then_login,

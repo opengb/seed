@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import logging
 
@@ -61,7 +61,7 @@ class Analysis(models.Model):
     organization = models.ForeignKey(Organization, on_delete=models.CASCADE)
     configuration = models.JSONField(default=dict, blank=True)
     # parsed_results can contain any results gathered from the resulting file(s)
-    # that are applicable to the entire analysis (ie all properties involved).
+    # that are applicable to the entire analysis (i.e., all properties involved).
     # For property-specific results, use the AnalysisPropertyView's parsed_results
     parsed_results = models.JSONField(default=dict, blank=True)
 
@@ -116,7 +116,7 @@ class Analysis(models.Model):
                 }, {
                     'name': ['BETTER Inverse Model R^2 (Electricity', 'Fossil Fuel)'],
                     'value_template': ['{json_value:,.2f}', '{json_value:,.2f}'],
-                    'json_path': ['inverse_model.Electricity.r2', 'inverse_model.Fossil Fuel.r2'],
+                    'json_path': ['inverse_model.ELECTRICITY.r2', 'inverse_model.FOSSIL_FUEL.r2'],
                 }
             ]
 

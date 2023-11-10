@@ -1,8 +1,8 @@
 # !/usr/bin/env python
 # encoding: utf-8
 """
-:copyright (c) 2014 - 2022, The Regents of the University of California, through Lawrence Berkeley National Laboratory (subject to receipt of any required approvals from the U.S. Department of Energy) and contributors. All rights reserved.
-:author
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
 """
 import csv
 import datetime
@@ -365,7 +365,7 @@ class LocalUploaderViewSet(viewsets.ViewSet):
         f = ImportFile.objects.create(import_record=record,
                                       uploaded_filename=file_name,
                                       file=path,
-                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW],
+                                      source_type=SEED_DATA_SOURCES[PORTFOLIO_RAW][1],
                                       **{'source_program': 'PortfolioManager',
                                          'source_program_version': '1.0'})
 

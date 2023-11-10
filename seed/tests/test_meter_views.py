@@ -1,6 +1,9 @@
 # !/usr/bin/env python
 # encoding: utf-8
-
+"""
+SEED Platform (TM), Copyright (c) Alliance for Sustainable Energy, LLC, and other contributors.
+See also https://github.com/seed-platform/seed/main/LICENSE.md
+"""
 import ast
 import copy
 import json
@@ -334,7 +337,6 @@ class TestMeterReadingCRUD(DeleteModelsTestCase):
             })
 
         response = self.client.post(url, data=json.dumps(payload), content_type='application/json')
-        print(response)
         self.assertEqual(response.status_code, 201)
         self.assertEqual(response.json()[0]['reading'], 22.2)
         self.assertEqual(response.json()[1]['reading'], 44.4)
