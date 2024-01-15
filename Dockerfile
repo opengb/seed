@@ -4,6 +4,8 @@
 
 FROM alpine:3.14
 
+ENV PGSSLCERT /tmp/postgresql.crt
+
 RUN apk add --no-cache python3-dev \
         postgresql-dev \
         coreutils \
